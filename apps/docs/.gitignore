@@ -1,0 +1,6 @@
+.astro/
+dist/
+qa/out/
+# Generated on every build from docs/API.md and docs/MCP.md (scripts/sync-generated.mjs).
+src/content/docs/reference/rest-api.md
+src/content/docs/reference/mcp.md

@@ -1,0 +1,25 @@
+{
+  "_fixture": "FIXTURE (synthetic test data in the documented Blockfrost response shape; not real chain data)",
+  "_endpoint": "GET /addresses/{address}/total",
+  "_shape": "address_content_total",
+  "body": {
+    "address": "addr_test1qqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyfzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3qwzdgzn",
+    "received_sum": [
+      {
+        "unit": "lovelace",
+        "quantity": "5000000000"
+      },
+      {
+        "unit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa74657374746f6b656e",
+        "quantity": "1000"
+      }
+    ],
+    "sent_sum": [
+      {
+        "unit": "lovelace",
+        "quantity": "3480000000"
+      }
+    ],
+    "tx_count": 42
+  }
+}

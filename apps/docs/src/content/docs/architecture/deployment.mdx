@@ -1,0 +1,62 @@
+---
+title: "Deployment"
+description: "Where ZyroPay runs today: Cloudflare Workers on the zyropay.online zone, Neon Postgres, Turnkey, and the demo sellers. Test networks only."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+
+ZyroPay's staging deployment runs on test networks only (`ZYROPAY_MODE=development`, real adapters,
+no mocks). Production has not been deployed.
+
+<Diagram
+  name="deployment"
+  alt="Deployment: in the zyropay.online zone, the landing, docs and web app are static; the API worker with a cron and the MCP worker are bound to each other; the API uses a queue with dead letters and Neon Postgres; the MCP worker stores OAuth state in KV and retries x402 calls to the demo sellers, which run as separate workers."
+  caption="Staging on Cloudflare and Neon."
+/>
+
+| Part         | Runs as                                                                    | Address                                  | Notes                                                                                      |
+| ------------ | -------------------------------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Landing      | Static assets on Workers                                                   | https://zyropay.online                   | Frames the web app on desktop                                                              |
+| Docs         | Static assets on Workers                                                   | https://docs.zyropay.online              | This site                                                                                  |
+| Web app      | Static assets on Workers (Expo web export)                                 | https://app.zyropay.online               | Strict CSP; passkey rpId `zyropay.online`                                                  |
+| API          | Worker (Hono), cron every minute, queue consumer                           | https://api.zyropay.online               | `/health`; queue with a dead-letter queue                                                  |
+| MCP          | Worker                                                                     | https://mcp.zyropay.online/mcp           | OAuth state in KV; rate-limit bindings; service binding to the API                         |
+| Database     | Neon Postgres, eu-central-1                                                | private                                  | Pooled URL for the API, direct URL for migrations                                          |
+| Key custody  | Turnkey                                                                    | external                                 | One parent organization; one sub-org per user                                              |
+| Chain data   | Blockfrost (Cardano preprod), Helius, Alchemy                              | external                                 | Prices from CoinGecko and Jupiter                                                          |
+| Demo sellers | Workers on `address-intel.`, `token-intel.`, `masumi-agent.zyropay.online` | separate workers run by the ZyroPay team | Address Intelligence (direct and escrow routes, cron sweeper), Token Intelligence, MIP-003 |
+| Masumi node  | Masumi Payment Service 0.29.0 in Docker, behind a gateway and a tunnel     | local, not on Cloudflare                 | Registry entry, signed terms and result hashes for Masumi hires                            |
+
+The API and MCP workers call each other through service bindings, authenticated with the shared
+internal token. A Cloudflare cron sweeps expired requests every minute; a queue runs signing,
+broadcast, confirmation polling, push and webhook jobs with retries and dead letters. The demo
+sellers are separate workers with their own keys and secrets, operated by the ZyroPay team but
+treated by the code as third parties ZyroPay pays.
+
+## The demo sellers and Masumi
+
+| Worker                         | Host                                 | What it does                                                                                                        |
+| ------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `cardano-address-intel`        | https://address-intel.zyropay.online | x402 seller: the direct and escrow routes; a cron every minute sweeps its escrows (SubmitResult, Withdraw, refunds) |
+| `cardano-token-intel`          | https://token-intel.zyropay.online   | The specialist Address Intelligence hires (sub-hire)                                                                |
+| `cardano-address-intel-masumi` | https://masumi-agent.zyropay.online  | MIP-003 API for Sokosumi and Masumi buyers; jobs in a Durable Object                                                |
+
+The Masumi Payment Service (`infrastructure/masumi`, Docker Compose: the node, its Postgres, an
+allow-list gateway and `cloudflared`) runs on a workstation, not on Cloudflare. The MIP-003 Worker
+reaches it through the tunnel and the gateway, which passes only the three payment routes it needs;
+`/admin` is not reachable from outside.
+
+| Piece                                         | State                                                                             |
+| --------------------------------------------- | --------------------------------------------------------------------------------- |
+| Registry entry "Cardano Address Intelligence" | Live: NFT minted on preprod ([Evidence](/evidence/#masumi-registry-entry))        |
+| MIP-003 Worker                                | Live: `/availability` answers `available`; `/start_job` returns node-signed terms |
+| Payment Service, gateway, tunnel              | Running locally; the tunnel is a quick tunnel, so its URL changes on restart      |
+| Sokosumi Coworker                             | Set up up to the Sokosumi login                                                   |
+| A paid Sokosumi task                          | Pending: waits on the interactive Sokosumi login                                  |
+
+Because the node is local, a paid hire only works while that machine and its tunnel are up. A hosted
+Payment Service (Masumi's Railway template) is the documented fallback for a stable URL. CPU limits
+shaped two parts of the seller and the API: see [Engineering notes](/architecture/engineering-notes/).
+
+The runbook is [Deploy](/operations/deploy/); environments, secrets and migrations are in
+[Environments and migrations](/operations/environments/).

@@ -1,0 +1,43 @@
+# Completes onboarding against the DEV mock transport (EXPO_PUBLIC_USE_MOCKS=1).
+# The simulated signer replaces the passkey prompt, so this runs without Turnkey.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "simulated-banner"
+- tapOn:
+    id: "welcome-create"
+- assertVisible:
+    id: "onboarding-intro"
+- tapOn:
+    id: "intro-continue"
+- assertVisible:
+    id: "onboarding-passkey"
+- tapOn:
+    id: "passkey-name"
+- inputText: "Maestro"
+- hideKeyboard
+- tapOn:
+    id: "passkey-continue"
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-wallet"
+    timeout: 10000
+- extendedWaitUntil:
+    visible: "Main wallet"
+    timeout: 10000
+- tapOn:
+    id: "wallet-continue"
+- tapOn:
+    id: "recovery-understood"
+- tapOn:
+    id: "recovery-continue"
+- tapOn:
+    id: "notifications-skip"
+- tapOn:
+    id: "done-open"
+- extendedWaitUntil:
+    visible:
+      id: "home-screen"
+    timeout: 10000

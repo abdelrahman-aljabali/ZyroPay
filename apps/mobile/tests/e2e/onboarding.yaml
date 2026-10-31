@@ -1,0 +1,15 @@
+# Onboarding: welcome -> intro -> passkey (simulated) -> wallet -> recovery -> notifications -> done.
+# Run: maestro test -e APP_ID=app.zyropay.mobile.dev tests/e2e/onboarding.yaml
+appId: ${APP_ID}
+name: Onboarding
+tags:
+  - smoke
+---
+- runFlow: subflows/onboard-simulated.yaml
+- assertVisible:
+    id: "home-balance"
+- assertVisible: "Simulated"
+- assertVisible:
+    id: "action-send"
+- assertVisible:
+    id: "action-receive"

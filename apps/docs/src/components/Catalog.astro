@@ -1,0 +1,57 @@
+---
+/**
+ * Every component of the system: what it is, why it exists, what it guarantees, and where the
+ * claim is sourced. Data: src/data/architecture.json (moved from the landing page).
+ */
+import arch from "../data/architecture.json";
+
+const GROUPS: [string, string][] = [
+  ["agent", "AI side"],
+  ["client", "Your device"],
+  ["edge", "ZyroPay edge"],
+  ["core", "ZyroPay core"],
+  ["custody", "Key custody (Turnkey)"],
+  ["data", "Data and prices"],
+  ["chain", "Chain layer"],
+  ["external", "Third parties on Cardano"],
+  ["ops", "Operations"],
+];
+const label = new Map(arch.nodes.map((n) => [n.id, n.label]));
+const edgesFrom = (id: string) =>
+  arch.edges.filter((e) => e.from === id).map((e) => `${e.label} → ${label.get(e.to) ?? e.to}`);
+---
+
+{
+  GROUPS.map(([group, title]) => {
+    const nodes = arch.nodes.filter((n) => n.group === group);
+    if (nodes.length === 0) return null;
+    return (
+      <>
+        <h3 id={`group-${group}`}>{title}</h3>
+        <div class="zp-catalog">
+          {nodes.map((n) => (
+            <section class="zp-node" id={`c-${n.id}`} aria-label={n.label}>
+              <p class="zp-node__name">{n.label}</p>
+              <p>{n.what}</p>
+              <p>
+                <span class="zp-node__label">Why: </span>
+                {n.why}
+              </p>
+              {n.guarantee && (
+                <p>
+                  <span class="zp-node__label">Guarantee: </span>
+                  {n.guarantee}
+                </p>
+              )}
+              {edgesFrom(n.id).length > 0 && (
+                <p class="zp-node__tech">Talks to: {edgesFrom(n.id).join(" · ")}</p>
+              )}
+              <p class="zp-node__tech">Built with: {n.tech.join(" · ")}</p>
+              <p class="zp-node__refs">Sources: {n.refs.join(" · ")}</p>
+            </section>
+          ))}
+        </div>
+      </>
+    );
+  })
+}

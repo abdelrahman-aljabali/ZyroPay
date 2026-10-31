@@ -1,0 +1,30 @@
+{
+  "name": "@zyropay/wallet",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Turnkey integration: stamped-request forwarding and verification, delegated signer, sub-org reads, MockTurnkey. Owner: API.",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@noble/curves": "catalog:",
+    "@turnkey/api-key-stamper": "0.6.17",
+    "@turnkey/sdk-server": "catalog:",
+    "@zyropay/shared": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "zyropay-api",
+  // @x402/cardano derives the Masumi escrow address (~2 s CPU on Cloudflare) on every masumi
+  // quote; src/evolution answers that one call from a precomputed constant.
+  "alias": { "@evolution-sdk/evolution": "./src/evolution/index.ts" },
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // Non-secret vars only. Secrets: `wrangler secret put <NAME>` (see .env.example);
+  // locally they come from apps/api/.dev.vars (git-ignored; template: .dev.vars.example).
+  "vars": {
+    "ZYROPAY_MODE": "development",
+    "ZYROPAY_USE_MOCK_ADAPTERS": "true",
+    "API_PUBLIC_URL": "http://localhost:8787",
+    "APP_DEEP_LINK_SCHEME": "zyropay",
+    "TURNKEY_API_BASE_URL": "https://api.turnkey.com",
+    "SESSION_ACCESS_TOKEN_TTL_SECONDS": "900",
+    "SESSION_REFRESH_TOKEN_TTL_SECONDS": "2592000",
+    "PRICE_MAX_AGE_SECONDS": "120",
+    "AGENT_CONNECTION_CODE_TTL_SECONDS": "600",
+    "CORS_ALLOWED_ORIGINS": "",
+    "EVM_CONFIRMATIONS": "2",
+    "SOLANA_COMMITMENT": "confirmed",
+    "COINGECKO_PLAN": "demo",
+    "TRANSAK_ENVIRONMENT": "STAGING",
+    // JSON {assetId: maxBaseUnits}; an asset without a cap is never paid via x402.
+    // Cardano preprod ADA: at most 5 tADA per x402 payment.
+    "X402_CAPS": "{\"cardano-preprod:native\":\"5000000\"}",
+  },
+  // API -> MCP: push agent revocations (POST /internal/v1/agents/:id/revoke-grants).
+  // Locally, set MCP_INTERNAL_URL in .dev.vars instead (the URL takes precedence).
+  "services": [{ "binding": "MCP", "service": "zyropay-mcp" }],
+  // Async stages: signing/broadcast, confirmation polling, push dispatch, webhook processing.
+  // Handlers are idempotent; failed messages retry with backoff, then go to the DLQ.
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "zyropay-api-jobs" }],
+    "consumers": [
+      {
+        "queue": "zyropay-api-jobs",
+        "max_batch_size": 10,
+        "max_batch_timeout": 2,
+        "max_retries": 10,
+        "dead_letter_queue": "zyropay-api-jobs-dlq",
+      },
+    ],
+  },
+  // Expiry sweeper + straggler re-polls, every minute.
+  "triggers": { "crons": ["* * * * *"] },
+  "dev": { "port": 8787 },
+  // Deployed environments (docs/DEPLOY.md). The top level above is LOCAL DEVELOPMENT only;
+  // always deploy with --env (`pnpm --filter @zyropay/api deploy:staging|deploy:production`).
+  // staging = real adapters on TESTNETS (ZYROPAY_MODE=development); production = mainnets.
+  // Replace every *.example host with your own domains before the first deploy.
+  "env": {
+    "staging": {
+      // Testnet deployment on zyropay.online (docs/DEPLOY.md §6).
+      // Secrets: `wrangler secret put <NAME> --env staging`.
+      "name": "zyropay-online-api",
+      "vars": {
+        "ZYROPAY_MODE": "development",
+        "ZYROPAY_USE_MOCK_ADAPTERS": "false",
+        "API_PUBLIC_URL": "https://api.zyropay.online",
+        "APP_DEEP_LINK_SCHEME": "zyropay",
+        "TURNKEY_API_BASE_URL": "https://api.turnkey.com",
+        "SESSION_ACCESS_TOKEN_TTL_SECONDS": "900",
+        "SESSION_REFRESH_TOKEN_TTL_SECONDS": "2592000",
+        "PRICE_MAX_AGE_SECONDS": "120",
+        "AGENT_CONNECTION_CODE_TTL_SECONDS": "600",
+        // The web app's exact origin (no trailing slash). Comma-separate several.
+        "CORS_ALLOWED_ORIGINS": "https://app.zyropay.online,https://zyropay.online",
+        "EVM_CONFIRMATIONS": "2",
+        "SOLANA_COMMITMENT": "confirmed",
+        "COINGECKO_PLAN": "demo",
+        "TRANSAK_ENVIRONMENT": "STAGING",
+        "X402_CAPS": "{\"cardano-preprod:native\":\"5000000\"}",
+        // Testnets valued at mainnet prices, labelled (development only; refused in production).
+        "VALUE_TESTNETS_AT_MAINNET_PRICES": "true",
+      },
+      "services": [{ "binding": "MCP", "service": "zyropay-online-mcp" }],
+      "queues": {
+        "producers": [{ "binding": "JOBS", "queue": "zyropay-online-jobs" }],
+        "consumers": [
+          {
+            "queue": "zyropay-online-jobs",
+            "max_batch_size": 10,
+            "max_batch_timeout": 2,
+            "max_retries": 10,
+            "dead_letter_queue": "zyropay-online-jobs-dlq",
+          },
+        ],
+      },
+      "triggers": { "crons": ["* * * * *"] },
+      "workers_dev": false,
+      "routes": [{ "pattern": "api.zyropay.online", "custom_domain": true }],
+    },
+    "production": {
+      // Worker "zyropay-api-production". Secrets: `wrangler secret put <NAME> --env production` (docs/DEPLOY.md).
+      "vars": {
+        "ZYROPAY_MODE": "production",
+        "ZYROPAY_USE_MOCK_ADAPTERS": "false",
+        "API_PUBLIC_URL": "https://api.zyropay.example",
+        "APP_DEEP_LINK_SCHEME": "zyropay",
+        "TURNKEY_API_BASE_URL": "https://api.turnkey.com",
+        "SESSION_ACCESS_TOKEN_TTL_SECONDS": "900",
+        "SESSION_REFRESH_TOKEN_TTL_SECONDS": "2592000",
+        "PRICE_MAX_AGE_SECONDS": "120",
+        "AGENT_CONNECTION_CODE_TTL_SECONDS": "600",
+        // The web app's exact origin (no trailing slash). Comma-separate several.
+        "CORS_ALLOWED_ORIGINS": "https://app.zyropay.example",
+        "EVM_CONFIRMATIONS": "2",
+        "SOLANA_COMMITMENT": "confirmed",
+        "COINGECKO_PLAN": "demo",
+        "TRANSAK_ENVIRONMENT": "PRODUCTION",
+        "X402_CAPS": "{}",
+      },
+      "services": [{ "binding": "MCP", "service": "zyropay-mcp-production" }],
+      "queues": {
+        "producers": [{ "binding": "JOBS", "queue": "zyropay-api-jobs-production" }],
+        "consumers": [
+          {
+            "queue": "zyropay-api-jobs-production",
+            "max_batch_size": 10,
+            "max_batch_timeout": 2,
+            "max_retries": 10,
+            "dead_letter_queue": "zyropay-api-jobs-production-dlq",
+          },
+        ],
+      },
+      "triggers": { "crons": ["* * * * *"] },
+      // Custom domain (the zone must be on this Cloudflare account). Until then the worker is
+      // reachable at https://zyropay-api-production.<your-subdomain>.workers.dev.
+      // "routes": [{ "pattern": "api.zyropay.example", "custom_domain": true }],
+    },
+  },
+}

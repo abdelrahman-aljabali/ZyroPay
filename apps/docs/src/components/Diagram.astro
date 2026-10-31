@@ -1,0 +1,38 @@
+---
+/**
+ * A pre-rendered diagram (scripts/render-diagrams.mjs): a light and a dark SVG, one shown per
+ * theme. Width and height come from the SVG so the page does not shift while it loads. Each
+ * image links to its full-size file, for wide diagrams on a phone.
+ */
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+interface Props {
+  name: string;
+  alt: string;
+  caption?: string;
+}
+const { name, alt, caption } = Astro.props;
+
+function variant(scheme: "light" | "dark") {
+  const src = `/diagrams/${name}-${scheme}.svg`;
+  const svg = readFileSync(join(process.cwd(), "public", src), "utf8");
+  const root = /<svg\b[^>]*>/.exec(svg)?.[0] ?? "";
+  const width = Number(/\swidth="(\d+)"/.exec(root)?.[1]);
+  const height = Number(/\sheight="(\d+)"/.exec(root)?.[1]);
+  if (!width || !height) throw new Error(`diagram ${name}-${scheme}: no width/height`);
+  return { src, width, height };
+}
+const light = variant("light");
+const dark = variant("dark");
+---
+
+<figure class="zp-diagram">
+  <a class="zp-only-light" href={light.src} title="Open the full-size diagram">
+    <img src={light.src} width={light.width} height={light.height} alt={alt} loading="lazy" decoding="async" />
+  </a>
+  <a class="zp-only-dark" href={dark.src} title="Open the full-size diagram">
+    <img src={dark.src} width={dark.width} height={dark.height} alt={alt} loading="lazy" decoding="async" />
+  </a>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

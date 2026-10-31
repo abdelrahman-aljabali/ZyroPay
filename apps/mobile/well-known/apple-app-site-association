@@ -1,0 +1,21 @@
+{
+  "webcredentials": {
+    "apps": [
+      "APPLE_TEAM_ID.app.zyropay.mobile",
+      "APPLE_TEAM_ID.app.zyropay.mobile.preview",
+      "APPLE_TEAM_ID.app.zyropay.mobile.dev"
+    ]
+  },
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "APPLE_TEAM_ID.app.zyropay.mobile",
+          "APPLE_TEAM_ID.app.zyropay.mobile.preview",
+          "APPLE_TEAM_ID.app.zyropay.mobile.dev"
+        ],
+        "components": [{ "/": "/approvals/*", "comment": "Approval deep links" }]
+      }
+    ]
+  }
+}

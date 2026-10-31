@@ -1,0 +1,131 @@
+[
+  {
+    "tokens": [
+      {
+        "name": "USDC",
+        "szDecimals": 8,
+        "weiDecimals": 8,
+        "index": 0,
+        "tokenId": "0x6d1e7cde53ba9467b783cb7c530ce054",
+        "isCanonical": true,
+        "evmContract": {
+          "address": "0x6b9e773128f453f5c2c60935ee2de2cbc5390a24",
+          "evm_extra_wei_decimals": -2
+        },
+        "fullName": null,
+        "deployerTradingFeeShare": "0.0"
+      },
+      {
+        "name": "PURR",
+        "szDecimals": 0,
+        "weiDecimals": 5,
+        "index": 1,
+        "tokenId": "0xc1fb593aeffbeb02f85e0308e9956a90",
+        "isCanonical": true,
+        "evmContract": {
+          "address": "0x9b498c3c8a0b8cd8ba1d9851d40d186f1872b44e",
+          "evm_extra_wei_decimals": 13
+        },
+        "fullName": null,
+        "deployerTradingFeeShare": "0.0"
+      },
+      {
+        "name": "HFUN",
+        "szDecimals": 2,
+        "weiDecimals": 8,
+        "index": 2,
+        "tokenId": "0xbaf265ef389da684513d98d68edf4eae",
+        "isCanonical": false,
+        "evmContract": {
+          "address": "0xa320d9f65ec992eff38622c63627856382db726c",
+          "evm_extra_wei_decimals": 10
+        },
+        "fullName": null,
+        "deployerTradingFeeShare": "0.0"
+      },
+      {
+        "name": "LICK",
+        "szDecimals": 0,
+        "weiDecimals": 5,
+        "index": 3,
+        "tokenId": "0xba3aaf468f793d9b42fd3328e24f1de9",
+        "isCanonical": false,
+        "evmContract": null,
+        "fullName": null,
+        "deployerTradingFeeShare": "0.0"
+      }
+    ],
+    "universe": [
+      {
+        "tokens": [1, 0],
+        "name": "PURR/USDC",
+        "index": 0,
+        "isCanonical": true
+      },
+      {
+        "tokens": [2, 0],
+        "name": "@1",
+        "index": 1,
+        "isCanonical": false
+      },
+      {
+        "tokens": [3, 0],
+        "name": "@2",
+        "index": 2,
+        "isCanonical": false
+      }
+    ]
+  },
+  [
+    {
+      "prevDayPx": "0.10526",
+      "dayNtlVlm": "1792230.2239239996",
+      "markPx": "0.10378",
+      "midPx": "0.10384",
+      "circulatingSupply": "594745159.986989975",
+      "coin": "PURR/USDC",
+      "totalSupply": "594745171.2935099602",
+      "dayBaseVlm": "17389656.0"
+    },
+    {
+      "prevDayPx": "11.775",
+      "dayNtlVlm": "57835.29466",
+      "markPx": "11.484",
+      "midPx": "11.4835",
+      "circulatingSupply": "995719.76841183",
+      "coin": "@1",
+      "totalSupply": "995719.81923799",
+      "dayBaseVlm": "5005.32"
+    },
+    {
+      "prevDayPx": "0.00005901",
+      "dayNtlVlm": "9609.34523331",
+      "markPx": "0.00005865",
+      "midPx": "0.00005874",
+      "circulatingSupply": "4870308794.8697395325",
+      "coin": "@2",
+      "totalSupply": "6868314588.1768903732",
+      "dayBaseVlm": "162846791.0"
+    },
+    {
+      "prevDayPx": "4.5442",
+      "dayNtlVlm": "0.0",
+      "markPx": "4.5442",
+      "midPx": "9.77155",
+      "circulatingSupply": "141999999.9039199948",
+      "coin": "@1059",
+      "totalSupply": "141999999.9039199948",
+      "dayBaseVlm": "0.0"
+    },
+    {
+      "prevDayPx": "0.0",
+      "dayNtlVlm": "0.0",
+      "markPx": "0.109",
+      "midPx": null,
+      "circulatingSupply": "300000000.0",
+      "coin": "@1060",
+      "totalSupply": "300000000.0",
+      "dayBaseVlm": "0.0"
+    }
+  ]
+]

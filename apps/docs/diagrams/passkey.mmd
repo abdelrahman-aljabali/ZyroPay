@@ -1,0 +1,17 @@
+sequenceDiagram
+  autonumber
+  participant A as ZyroPay API
+  participant U as ZyroPay app
+  participant P as Your passkey
+  participant T as Turnkey, your sub-org
+  A->>A: build the unsigned transaction and its payload hash, store both
+  U->>A: open the approval
+  A-->>U: review: recipient, amount, fee cap, agent, warnings, body hash
+  U->>P: confirm SIGN_RAW_PAYLOAD_V2 over the body hash
+  P-->>U: WebAuthn stamp (X-Stamp-Webauthn)
+  U->>A: approve with payloadHash and the stamped request
+  A->>A: check stamp type, sub-org, signing key, recomputed body hash, payloadHash, expiry, independent decode
+  A->>A: move to SIGNING, so one approval yields at most one signature
+  A->>T: forward the stamped request unchanged
+  T-->>A: Ed25519 signature
+  A->>A: verify the signature, attach the witness, re-check signed against reviewed bytes

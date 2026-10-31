@@ -1,0 +1,51 @@
+{
+  "_fixture": "FIXTURE (synthetic test data in the documented Blockfrost response shape; not real chain data)",
+  "_endpoint": "GET /addresses/{address}/utxos?count=100",
+  "_shape": "address_utxo_content",
+  "body": [
+    {
+      "address": "addr_test1qqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyfzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3qwzdgzn",
+      "tx_hash": "92b3cc18c7e9321dee2513ebeb0bb41df2a7f8ba9c3b89adf8236a390725dfc0",
+      "tx_index": 0,
+      "output_index": 0,
+      "amount": [
+        {
+          "unit": "lovelace",
+          "quantity": "1500000000"
+        }
+      ],
+      "block": "87ffe8ed1ae9762cd9881c824dde13a34bddeed2a5be5ed311c891d288f5d3eb",
+      "data_hash": null,
+      "inline_datum": null,
+      "reference_script_hash": null
+    },
+    {
+      "address": "addr_test1qqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyfzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3qwzdgzn",
+      "tx_hash": "a18f6100400da6992258d25cbdf83150f638159873a45855e97994ba98826f7d",
+      "tx_index": 1,
+      "output_index": 1,
+      "amount": [
+        {
+          "unit": "lovelace",
+          "quantity": "20000000"
+        },
+        {
+          "unit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa74657374746f6b656e",
+          "quantity": "1000"
+        },
+        {
+          "unit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa6f74686572",
+          "quantity": "5"
+        },
+        {
+          "unit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "quantity": "1"
+        }
+      ],
+      "block": "dfccf359ff63fbc22dd2fb41bf605abd50a991ed6e69f5c8cfc6deebbe99bdc3",
+      "data_hash": null,
+      "inline_datum": null,
+      "reference_script_hash": null
+    }
+  ]
+}

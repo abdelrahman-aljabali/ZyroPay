@@ -1,0 +1,2160 @@
+/*
+ * ZyroPay landing, "Dark glass & light".
+ * Near-black room, one warm key light, glass that bends it. The phone is the light source of
+ * the page: everything else stays quiet so the screen can glow.
+ */
+
+.s {
+  --bg: #060709;
+  --bg-2: #0b0c10;
+  --text: #f3f4f6;
+  --text-2: #a9adb6;
+  --text-3: #868a94;
+  --line: rgb(255 255 255 / 0.09);
+  --line-2: rgb(255 255 255 / 0.14);
+  --glass: rgb(255 255 255 / 0.045);
+  --glass-edge: rgb(255 255 255 / 0.11);
+  --warm: #fff1de;
+  --danger: #ff6b5e;
+  --amber: #ffc56b;
+  --ok: #5fd68a;
+  --mono: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
+  --m: clamp(16px, 3vw, 48px);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --focus: #ffffff;
+
+  background: var(--bg);
+  color: var(--text);
+  color-scheme: dark;
+}
+
+.s ::selection {
+  background: var(--warm);
+  color: #0b0c10;
+}
+
+.s :focus-visible {
+  outline-color: #ffffff;
+}
+
+/* Header ---------------------------------------------------------------------------------- */
+.s-top {
+  position: absolute;
+  z-index: 10;
+  inset: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 36px;
+  height: 76px;
+  padding: 0 var(--m);
+}
+
+/* A scrim under the header so the nav keeps AA contrast over any light below it. */
+.s-top::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 -40px;
+  background: linear-gradient(180deg, rgb(6 7 9 / 0.92), rgb(6 7 9 / 0.6) 60%, transparent);
+  pointer-events: none;
+}
+
+.s-brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 10px;
+  justify-self: start;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.s-brand svg {
+  width: 26px;
+  height: 26px;
+}
+
+/* The mark: black petals in a white rounded square. */
+.mark rect {
+  fill: #ffffff;
+}
+
+.mark path {
+  fill: #000000;
+}
+
+.s-title span {
+  display: block;
+}
+
+.s-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 14px;
+  color: var(--warm);
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .s-more:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+.s-nav {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.s-nav a {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #c9ccd3;
+  text-decoration: none;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .s-nav a:hover {
+    color: var(--text);
+    background: rgb(255 255 255 / 0.06);
+  }
+}
+
+/* Header actions: the GitHub link sits just left of "Open the app". */
+.s-top__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: end;
+}
+
+.s-gh {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  color: #e6e8ec;
+  background: rgb(255 255 255 / 0.04);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.s-gh svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.s-gh:active {
+  transform: scale(0.95);
+}
+
+.s-gh:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .s-gh:hover {
+    background: rgb(255 255 255 / 0.1);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.3);
+  }
+}
+
+.s-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--text);
+  color: #0b0c10;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.2),
+    0 8px 30px -8px rgb(255 241 222 / 0.35);
+  transition:
+    transform 160ms var(--ease),
+    box-shadow 300ms ease;
+}
+
+.s-btn:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .s-btn:hover {
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.3),
+      0 10px 40px -6px rgb(255 241 222 / 0.5);
+  }
+}
+
+.s-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.s-btn--lg {
+  height: 56px;
+  padding: 0 28px;
+  font-size: 16px;
+}
+
+/* Hero ------------------------------------------------------------------------------------ */
+.s-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  min-height: max(100svh, 760px);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.s-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    radial-gradient(60% 50% at 78% 0%, rgb(255 241 222 / 0.07), transparent 70%),
+    radial-gradient(40% 40% at 10% 100%, rgb(120 140 190 / 0.06), transparent 70%);
+}
+
+.s-hero__copy {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 112px 0 56px var(--m);
+}
+
+.s-title {
+  max-width: none;
+  font-size: clamp(40px, 3.9vw, 68px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.042em;
+  animation: s-in 1400ms var(--ease) both;
+}
+
+@keyframes s-in {
+  from {
+    opacity: 0.001;
+    filter: blur(14px);
+    transform: translate3d(0, 12px, 0);
+  }
+}
+
+.s-lede {
+  max-width: 40ch;
+  margin-top: 22px;
+  color: var(--text-2);
+  font-size: clamp(16px, 1.2vw, 18px);
+  line-height: 1.55;
+  animation: s-in 1400ms 120ms var(--ease) both;
+}
+
+/* Glass chat */
+.s-chat {
+  position: relative;
+  width: min(100%, 540px);
+  margin-top: clamp(28px, 4.5vh, 52px);
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.025));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    inset 0 0 0 1px var(--glass-edge),
+    0 30px 80px -30px rgb(0 0 0 / 0.8);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  animation: s-in 1400ms 220ms var(--ease) both;
+}
+
+.s-chat::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 30%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(255 241 222 / 0.7), transparent);
+}
+
+.s-chat__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 10px 10px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.s-chat__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.s-chat__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7d8590;
+}
+
+.s-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.s-seg__btn {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+.s-seg__btn[aria-checked="true"] {
+  background: var(--text);
+  color: #0b0c10;
+}
+
+.s-hero[data-scenario="attack"] .s-seg__btn[aria-checked="true"] {
+  background: var(--danger);
+  color: #1a0806;
+}
+
+.s-chat__log {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px 6px;
+}
+
+/* The waiting line and the final reply never show together: they share one slot, so the
+   reserved space (no layout shift) is a single row. */
+.s-chat__log > :nth-child(3),
+.s-chat__log > :nth-child(4) {
+  grid-row: 3;
+  grid-column: 1;
+}
+
+.s-chat__log > :nth-child(3) {
+  align-self: start;
+}
+
+.s-bubble {
+  max-width: 88%;
+  padding: 12px 16px;
+  border-radius: 20px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.s-bubble--you {
+  justify-self: end;
+  border-bottom-right-radius: 6px;
+  background: rgb(255 255 255 / 0.1);
+}
+
+.s-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  min-height: 72px;
+  transition:
+    opacity 500ms ease,
+    transform 600ms var(--ease),
+    visibility 500ms;
+}
+
+.s-row[data-on="false"] {
+  visibility: hidden;
+  opacity: 0;
+  transform: translate3d(0, 6px, 0);
+}
+
+.s-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--text);
+  color: #0b0c10;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.s-bubble--ai {
+  min-height: 2.9em;
+  border-bottom-left-radius: 6px;
+  background: rgb(255 255 255 / 0.04);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.s-bubble--end {
+  display: grid;
+  gap: 2px;
+}
+
+.s-bubble--end b {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.s-row[data-tone="danger"] .s-bubble--end b {
+  color: var(--danger);
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+.s-bubble--end span {
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.s-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 38px;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.4;
+  transition:
+    opacity 400ms ease,
+    visibility 400ms;
+}
+
+.s-hero[data-scenario="attack"] .s-status {
+  color: #ffb3ab;
+}
+
+.s-status[data-on="false"] {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.s-status__light {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warm);
+  box-shadow: 0 0 12px 2px rgb(255 241 222 / 0.6);
+  animation: s-breathe 1.8s ease-in-out infinite;
+}
+
+.s-hero[data-scenario="attack"] .s-status__light {
+  background: var(--danger);
+  box-shadow: 0 0 12px 2px rgb(255 107 94 / 0.6);
+}
+
+@keyframes s-breathe {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.s-dots {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  height: 1.45em;
+}
+
+.s-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-2);
+  animation: s-breathe 1s ease-in-out infinite;
+}
+
+.s-dots i:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.s-dots i:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+.s-chat__note {
+  padding: 8px 20px 14px;
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+/* Small-screen pieces (shown below 1100px) */
+.s-lede-short,
+.s-mbar,
+.s-mini {
+  display: none;
+}
+
+.s-seg__btn {
+  white-space: nowrap;
+}
+
+.s-seg--sm .s-seg__btn {
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+/* Extend the switch's hit area to 44px without growing it visually. */
+.s-seg__btn {
+  position: relative;
+}
+
+.s-seg__btn::after {
+  content: "";
+  position: absolute;
+  inset: -6px -2px;
+}
+
+.s-seg--sm .s-seg__btn::after {
+  inset: -7px -2px;
+}
+
+.s-mcap {
+  display: none;
+}
+
+.s-mini__msg {
+  display: block;
+  max-width: 92%;
+  padding: 7px 12px;
+  border-radius: 16px 16px 16px 6px;
+  background: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.3;
+  text-align: left;
+  overflow: hidden;
+  animation: s-mini-in 420ms var(--ease) both;
+}
+
+.s-mini__msg[data-who="you"] {
+  margin-left: auto;
+  border-radius: 16px 16px 6px 16px;
+  background: rgb(255 255 255 / 0.12);
+  box-shadow: none;
+}
+
+.s-mini__msg[data-tone="danger"] {
+  color: #ffb3ab;
+  box-shadow: inset 0 0 0 1px rgb(255 107 94 / 0.4);
+}
+
+.s-mini__msg[data-tone="ok"] {
+  box-shadow: inset 0 0 0 1px rgb(95 214 138 / 0.35);
+}
+
+/* At most three lines, clipped at the text box (not the padding), plus truncation in Hero.tsx. */
+.s-mini__text {
+  display: block;
+  max-height: calc(3 * 1.3em);
+  overflow: hidden;
+}
+
+.s-mini__who {
+  margin-right: 6px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+@keyframes s-mini-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.98);
+  }
+}
+
+/* Stage: canvas (1) < light (2) < screen (3) */
+.s-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 640px;
+  /* Visible, so the receipt can reach into the gutter; .s-hero still clips the light. */
+  overflow: visible;
+}
+
+.s-beam {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 22%;
+  width: 66%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgb(255 241 222 / 0.24),
+    rgb(255 241 222 / 0.04) 70%,
+    transparent
+  );
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  filter: blur(34px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 6%, #000 30%, #000 70%, transparent);
+  mask-image: linear-gradient(180deg, transparent 6%, #000 30%, #000 70%, transparent);
+  transform: rotate(-12deg);
+  transform-origin: 50% 0;
+  opacity: 0.8;
+  transition: opacity 1200ms ease;
+  pointer-events: none;
+}
+
+.s-stage[data-lit="true"] .s-beam {
+  opacity: 1;
+}
+
+.s-floor {
+  position: absolute;
+  z-index: 0;
+  bottom: 8%;
+  left: 50%;
+  width: 70%;
+  height: 90px;
+  margin-left: -35%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 241 222 / 0.14), transparent);
+  pointer-events: none;
+}
+
+.s-fallback {
+  position: relative;
+  z-index: 1;
+  padding-top: 40px;
+  transition: opacity 600ms ease;
+}
+
+.s-fallback .phone {
+  --phone-w: min(360px, 74vw, calc((100svh - 150px) * 0.475));
+  transform: perspective(1600px) rotateY(-10deg) rotateX(2deg);
+}
+
+.s-fallback .phone__frame {
+  box-shadow:
+    inset 0 0 0 0.35cqw rgb(255 255 255 / 0.22),
+    inset 0 0 0 0.9cqw rgb(0 0 0 / 0.4),
+    -6cqw 4cqw 30cqw -4cqw rgb(255 241 222 / 0.1),
+    0 26cqw 50cqw -16cqw rgb(0 0 0 / 0.9);
+}
+
+.s-hero[data-3d="on"] .s-fallback {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.s-hero[data-3d="on"] .s-floor {
+  opacity: 0;
+}
+
+/* With 3D on, the beam sits between the canvas and the DOM screen: it lights the scene and
+   the glass, never the phone's display. */
+.s-hero[data-3d="on"] .s-beam {
+  z-index: 2;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+}
+
+.s-hero[data-3d="on"] .s-stage[data-lit="true"] .s-beam {
+  opacity: 0.75;
+}
+
+.s-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.s-gl {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 94%, transparent);
+}
+
+.s-hero[data-3d="on"] .s-gl {
+  opacity: 1;
+}
+
+.s-overlay {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  width: 393px;
+  height: 852px;
+  transform-origin: 0 0;
+  visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Inner radius of the bezel: body radius 0.112 minus the 0.02 inset, in screen pixels. */
+.s-screen3d {
+  width: 393px;
+  height: 852px;
+  border-radius: 50px;
+}
+
+/* Sections -------------------------------------------------------------------------------- */
+.s-sec {
+  position: relative;
+  padding: clamp(96px, 13vw, 176px) var(--m) 0;
+}
+
+.s-sec__head {
+  max-width: 780px;
+}
+
+.s-h2 {
+  font-size: clamp(34px, 4.2vw, 60px);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.038em;
+}
+
+.s-sub {
+  max-width: 46ch;
+  margin-top: 20px;
+  color: var(--text-2);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+/* Try to hack it */
+.s-hack {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+  margin-top: clamp(40px, 5vw, 64px);
+}
+
+.s-hack__list {
+  display: grid;
+  gap: 6px;
+}
+
+.s-hack__pick {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  min-height: 56px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 18px;
+  background: none;
+  color: var(--text-2);
+  font-size: 18px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+.s-hack__pick[aria-checked="true"] {
+  background: var(--glass);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .s-hack__pick:hover {
+    color: var(--text);
+  }
+}
+
+.s-hack__n {
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.s-console {
+  position: sticky;
+  top: 96px;
+  min-height: 380px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #101116, #0a0b0e);
+  box-shadow:
+    inset 0 0 0 1px var(--line-2),
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 40px 90px -40px rgb(0 0 0 / 0.9);
+  outline: none;
+}
+
+.s-console__bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.s-console__bar span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.s-console__bar p {
+  margin-left: 10px;
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+.s-console__body {
+  display: grid;
+  gap: 12px;
+  padding: 22px 22px 26px;
+  font-family: var(--mono);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.s-console__line {
+  display: grid;
+  grid-template-columns: 6.5em 1fr;
+  gap: 12px;
+  transition:
+    opacity 300ms ease,
+    transform 400ms var(--ease),
+    visibility 300ms;
+}
+
+.s-console__line[data-on="false"] {
+  visibility: hidden;
+  opacity: 0;
+  transform: translate3d(0, 4px, 0);
+}
+
+.s-console__who {
+  color: var(--text-3);
+}
+
+.s-console__line--attacker {
+  color: #ffb3ab;
+}
+
+.s-console__line--attacker .s-console__who {
+  color: var(--danger);
+}
+
+.s-console__verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 8px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--line-2);
+  font-family: "Inter", "Inter Fallback", sans-serif;
+  transition:
+    opacity 400ms ease,
+    visibility 400ms;
+}
+
+.s-console__verdict[data-on="false"],
+.s-console__try[data-on="false"] {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.s-verdict {
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.s-verdict--blocked {
+  background: rgb(255 107 94 / 0.14);
+  color: var(--danger);
+}
+
+.s-verdict--needs-you {
+  background: rgb(255 197 107 / 0.14);
+  color: var(--amber);
+}
+
+.s-verdict--nothing {
+  background: rgb(95 214 138 / 0.12);
+  color: var(--ok);
+}
+
+.s-console__ref {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.s-console__try {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--text);
+  color: #0b0c10;
+  font-family: "Inter", "Inter Fallback", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 160ms var(--ease),
+    opacity 400ms ease;
+}
+
+.s-console__try:active {
+  transform: scale(0.97);
+}
+
+/* Stack */
+.s-spec {
+  margin-top: clamp(40px, 5vw, 64px);
+  border-top: 1px solid var(--line-2);
+}
+
+.s-spec__row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 32px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.s-spec dt {
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.s-spec dd {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--text-2);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* Proof */
+.s-proof__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: clamp(40px, 5vw, 64px);
+}
+
+.s-artifact {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 28px;
+  margin: 0;
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.02));
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.s-artifact--hash {
+  grid-column: 1 / 8;
+}
+
+.s-artifact--policy {
+  grid-column: 8 / 13;
+  grid-row: span 2;
+}
+
+.s-artifact h3 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.s-artifact figcaption p {
+  max-width: 46ch;
+  margin-top: 8px;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.s-hash {
+  display: grid;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.s-hash p {
+  display: grid;
+  grid-template-columns: 6em 1fr;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.s-hash span {
+  color: var(--text-3);
+}
+
+.s-hash code {
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.s-hash p.s-hash__ok {
+  display: flex;
+  gap: 8px;
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.s-hash__ok span {
+  color: var(--ok);
+}
+
+.s-policy {
+  display: grid;
+  margin: 0;
+}
+
+.s-policy div {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  font-size: 16px;
+}
+
+.s-policy dt {
+  color: var(--text-2);
+}
+
+.s-policy dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Final CTA */
+.s-final {
+  display: grid;
+  justify-items: center;
+  padding-bottom: clamp(104px, 13vw, 176px);
+  text-align: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.s-final__glow {
+  position: absolute;
+  z-index: -1;
+  top: 26%;
+  left: 50%;
+  width: min(1000px, 130vw);
+  height: 560px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgb(255 241 222 / 0.12), transparent);
+  pointer-events: none;
+}
+
+.s-final__title {
+  font-size: clamp(56px, 9vw, 136px);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.s-final .s-sub {
+  margin: 26px auto 34px;
+}
+
+@media (min-width: 1700px) {
+  .s-hero {
+    padding-inline: calc((100vw - 1600px) / 2);
+  }
+
+  .s-hero__copy {
+    padding-left: 0;
+  }
+
+  .s-sec,
+  .s-top,
+  .s-foot {
+    padding-inline: calc((100vw - 1600px) / 2);
+  }
+}
+
+/* Tablet ---------------------------------------------------------------------------------- */
+@media (max-width: 1099px) {
+  .s-nav {
+    display: none;
+  }
+
+  .s-top .s-btn {
+    height: 44px;
+  }
+
+  .s-gh {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* The hero starts right under the header here: keep the scrim off the headline. */
+  .s-top::before {
+    inset: 0;
+    background: linear-gradient(180deg, rgb(6 7 9 / 0.9), rgb(6 7 9 / 0));
+  }
+
+  /* Small screens: headline, one line, the switch, the incoming message, then the phone.
+     The phone is sized so the approval card and its buttons fit in the first viewport
+     (375x667 and up). Card bottom sits at ~1.4 phone widths from the phone's top. */
+  .s-hero {
+    --pw: clamp(214px, calc((100svh - 346px) / 1.5), min(330px, 84vw));
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 0;
+    padding: 64px var(--m) 8px;
+    text-align: center;
+  }
+
+  .s-hero__copy {
+    display: contents;
+  }
+
+  .s-title {
+    max-width: 16ch;
+    font-size: clamp(26px, 7vw, 52px);
+    line-height: 1.02;
+    animation-duration: 900ms;
+  }
+
+  .s-lede,
+  .s-chat {
+    display: none;
+  }
+
+  .s-lede-short {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-2);
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .s-mcap {
+    display: block;
+    margin-top: 2px;
+    color: var(--text-3);
+    font-size: 12px;
+  }
+
+  .s-mbar {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  /* The incoming message sits fully above the phone, never on its frame or status bar. */
+  .s-mini {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    align-items: flex-end;
+    width: min(100%, calc(var(--pw) + 40px));
+    height: 66px;
+    margin: 8px 0 10px;
+  }
+
+  .s-mini__msg {
+    box-shadow:
+      inset 0 0 0 1px var(--line-2),
+      0 12px 30px -8px rgb(0 0 0 / 0.8);
+    background: rgb(30 31 36 / 0.92);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+
+  .s-mini__msg[data-who="you"] {
+    background: rgb(52 54 60 / 0.95);
+  }
+
+  .s-stage {
+    width: 100%;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .s-beam {
+    display: none;
+  }
+
+  .s-floor {
+    top: 30%;
+    bottom: auto;
+    height: 50%;
+    background: radial-gradient(closest-side, rgb(255 241 222 / 0.1), transparent);
+  }
+
+  .s-fallback {
+    padding-top: 0;
+  }
+
+  .s-fallback .phone {
+    --phone-w: var(--pw);
+    transform: none;
+  }
+
+  .s-hack {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .s-console {
+    position: relative;
+    top: 0;
+  }
+
+  .s-artifact {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+  }
+}
+
+@media (max-width: 719px) {
+  .s-top {
+    height: 64px;
+    gap: 12px;
+  }
+
+  .s-hack__pick {
+    font-size: 16px;
+  }
+
+  .s-console__body {
+    padding: 18px;
+    font-size: 13.5px;
+  }
+
+  .s-console__line {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .s-spec__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .s-artifact {
+    padding: 22px;
+  }
+
+  .s-hash p {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .s-title,
+  .s-lede,
+  .s-chat,
+  .s-mini__msg,
+  .s-status__light,
+  .s-dots i {
+    animation: none;
+  }
+
+  .s-fallback .phone {
+    transform: none;
+  }
+}
+
+/* Networks: one line ------------------------------------------------------------------ */
+.s-netplate {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1c1c1e;
+  box-shadow: inset 0 0 0 1px var(--line);
+  vertical-align: middle;
+}
+
+.s-netplate img {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+}
+
+/* Base: the blue Square at exactly 50% of a white circular plate (docs/BRAND_ASSETS.md). */
+.s-netplate--white {
+  background: #ffffff;
+}
+
+.s-netplate--white img {
+  width: 50%;
+  height: 50%;
+}
+
+/* Cardano: the standalone starburst at 62% of the plate. */
+.s-netplate--cardano img {
+  width: 62%;
+  height: 62%;
+}
+
+/* ======================================================================================== */
+/* Polish: header menu, section kickers, audiences, evidence, showcase and the final steps. */
+/* ======================================================================================== */
+
+.s :focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.s-btn:focus-visible,
+.s-nav a:focus-visible,
+.s-seg__btn:focus-visible {
+  border-radius: 999px;
+}
+
+.s-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+/* Small-screen menu (a <details> disclosure: works without script). */
+.s-menu {
+  display: none;
+  position: relative;
+}
+
+.s-menu summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  list-style: none;
+  cursor: pointer;
+}
+
+.s-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.s-menu__icon {
+  display: grid;
+  gap: 5px;
+  width: 16px;
+}
+
+.s-menu__icon i {
+  display: block;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform 260ms var(--ease);
+}
+
+.s-menu[open] .s-menu__icon i:first-child {
+  transform: translateY(3.25px) rotate(45deg);
+}
+
+.s-menu[open] .s-menu__icon i:last-child {
+  transform: translateY(-3.25px) rotate(-45deg);
+}
+
+.s-menu__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  display: grid;
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 20px;
+  background: rgb(20 21 26 / 0.96);
+  box-shadow:
+    inset 0 0 0 1px var(--line-2),
+    0 24px 60px -12px rgb(0 0 0 / 0.9);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  animation: s-menu-in 260ms var(--ease) both;
+}
+
+.s-menu__panel a {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.s-menu__panel a:active {
+  background: rgb(255 255 255 / 0.08);
+}
+
+@keyframes s-menu-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) scale(0.98);
+  }
+}
+
+/* Section rhythm */
+.s-kicker {
+  margin-bottom: 18px;
+  color: var(--warm);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.s-fine {
+  max-width: 80ch;
+  margin-top: 20px;
+  color: var(--text-3);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.s-fine a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin: -12px 0;
+  color: var(--text-2);
+  text-underline-offset: 3px;
+}
+
+.s-fine a::after {
+  content: " →";
+  white-space: pre;
+}
+
+/* Who it's for */
+.s-for__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: clamp(40px, 5vw, 64px);
+}
+
+.s-for__card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 28px;
+  border-radius: 28px;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.s-for__n {
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.s-for__card h3 {
+  font-size: clamp(21px, 1.7vw, 25px);
+  font-weight: 500;
+  letter-spacing: -0.022em;
+}
+
+.s-for__card p {
+  color: var(--text-2);
+  font-size: 15.5px;
+  line-height: 1.55;
+}
+
+/* Evidence ledger: live rows */
+.s-ledger__label {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.s-ledger__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgb(95 214 138 / 0.18);
+  transform: translateY(-1px);
+}
+
+.s-ledger__when {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-3);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.s-ledger__tx {
+  flex: none;
+  padding: 0 4px;
+  border-radius: 8px;
+  transition: color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .s-ledger__tx:hover {
+    color: #c3d0ff;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+.s-next {
+  display: grid;
+  gap: 10px;
+}
+
+.s-next__title {
+  color: var(--text-3);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.s-next__list {
+  display: grid;
+}
+
+.s-next__list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  border-top: 1px dashed var(--line);
+  color: var(--text-2);
+  font-size: 14.5px;
+}
+
+.s-hash em {
+  color: var(--text-3);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* Showcase section spacing (the component styles itself). */
+.s-show {
+  padding-top: clamp(96px, 12vw, 160px);
+}
+
+/* Final: three steps */
+.s-final__head {
+  display: grid;
+  justify-items: center;
+}
+
+.s-try {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 1200px;
+  margin-top: clamp(48px, 6vw, 80px);
+  text-align: left;
+}
+
+.s-try__step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.02));
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.s-try__n {
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.s-try__step h3 {
+  font-size: clamp(21px, 1.7vw, 25px);
+  font-weight: 500;
+  letter-spacing: -0.022em;
+}
+
+.s-try__step p {
+  color: var(--text-2);
+  font-size: 15.5px;
+  line-height: 1.55;
+}
+
+.s-try__step > :last-child:not(p) {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.s-try .s-btn--lg {
+  height: 52px;
+  margin-top: auto;
+}
+
+.s-btn--ghost {
+  background: transparent;
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .s-btn--ghost:hover {
+    background: rgb(255 255 255 / 0.06);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.24);
+  }
+}
+
+.s-copy {
+  container-type: inline-size;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: auto;
+  padding: 5px 5px 5px 16px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.35);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+
+.s-copy__url {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: all;
+  -webkit-user-select: all;
+}
+
+.s-copy__scheme {
+  color: var(--text-3);
+}
+
+@container (max-width: 360px) {
+  .s-copy__scheme {
+    display: none;
+  }
+}
+
+.s-copy__btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 96px;
+  height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--text);
+  color: #0b0c10;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    transform 160ms var(--ease);
+}
+
+.s-copy__btn:active {
+  transform: scale(0.97);
+}
+
+.s-copy__btn[data-state="copied"] {
+  background: var(--ok);
+}
+
+.s-copy__btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 1099px) {
+  .s-top {
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+  }
+
+  .s-menu {
+    display: block;
+  }
+
+  .s-for__grid,
+  .s-try {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 560px;
+  }
+
+  .s-try {
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 719px) {
+  .s-menu__label {
+    display: none;
+  }
+
+  .s-for__card,
+  .s-try__step {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .s-next__list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .s-menu__panel,
+  .s-menu__icon i {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Kickers: monospaced, with a hairline trailing off ------------------------------------- */
+.s-kicker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  opacity: 1;
+}
+
+.s-kicker::after {
+  content: "";
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, currentColor, transparent);
+  opacity: 0.6;
+}
+
+/* Glass that catches the light: a warm sheen and a lit edge under the pointer ------------ */
+@property --lx {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+
+@property --ly {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+
+.s-for__card,
+.s-try__step,
+.s-artifact {
+  position: relative;
+}
+
+:is(.s-for__card, .s-try__step, .s-artifact)::before,
+:is(.s-for__card, .s-try__step, .s-artifact, .s-strip__cell)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 500ms var(--ease);
+  pointer-events: none;
+}
+
+:is(.s-for__card, .s-try__step, .s-artifact)::before {
+  background: radial-gradient(
+    480px circle at var(--lx) var(--ly),
+    rgb(255 241 222 / 0.055),
+    transparent 62%
+  );
+}
+
+:is(.s-for__card, .s-try__step, .s-artifact, .s-strip__cell)::after {
+  padding: 1px;
+  background: radial-gradient(
+    260px circle at var(--lx) var(--ly),
+    rgb(255 241 222 / 0.55),
+    rgb(255 241 222 / 0.08) 55%,
+    transparent 75%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+:is(.s-for__card, .s-try__step, .s-artifact, .s-strip__cell)[data-lit]::before,
+:is(.s-for__card, .s-try__step, .s-artifact, .s-strip__cell)[data-lit]::after {
+  opacity: 1;
+}
+
+/* Footer ---------------------------------------------------------------------------------- */
+.s-foot {
+  container-type: inline-size;
+  position: relative;
+  display: grid;
+  gap: 0;
+  padding: clamp(40px, 5vw, 72px) var(--m) 0;
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: 14px;
+}
+
+/* The key light from above, pooling on the wordmark. */
+.s-foot::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 70%;
+  background: radial-gradient(60% 90% at 50% 100%, rgb(255 241 222 / 0.07), transparent 70%);
+  pointer-events: none;
+}
+
+.s-foot a {
+  color: var(--text-2);
+  text-decoration: none;
+  text-underline-offset: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .s-foot a:hover {
+    color: var(--text);
+  }
+
+  .s-foot__nav a:hover {
+    text-decoration: underline;
+  }
+}
+
+.s-foot__top {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) auto;
+  justify-content: space-between;
+  gap: 40px 64px;
+  padding-bottom: clamp(40px, 5vw, 64px);
+}
+
+.s-foot__id {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.s .s-foot__brand {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 12px;
+  min-height: 44px;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.s-foot__brand .mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  box-shadow: 0 0 24px rgb(255 241 222 / 0.12);
+}
+
+.s-foot__note {
+  max-width: 34ch;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.s-foot__nav {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(3, auto);
+  align-content: start;
+  gap: 2px 56px;
+  padding-left: 22px;
+  border-left: 1px solid var(--line);
+}
+
+.s-foot__nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 16px;
+}
+
+.s-foot__bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px 48px;
+  padding: 22px 0;
+  border-top: 1px solid var(--line);
+}
+
+.s-foot__copy {
+  flex: none;
+  color: var(--text-2);
+}
+
+.s-foot__tm {
+  max-width: 88ch;
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: right;
+}
+
+/*
+ * The wordmark spans the footer's content width (Inter at -0.02em sets "ZyroPay" in about
+ * 3.7em) and the page edge cuts it below the x-height, so it reads as a horizon rather than a
+ * heading. Two copies of the letters: an engraved outline that fades downward, and a warm fill
+ * shown only inside a soft circle around the pointer. Without a pointer the light drifts.
+ */
+.s-word {
+  position: relative;
+  height: 0.62em;
+  margin-top: -0.04em;
+  overflow: hidden;
+  font-size: calc(100cqw / 3.72);
+  font-weight: 650;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  user-select: none;
+  --lx: 20%;
+  --ly: 35%;
+}
+
+.s-word__ghost,
+.s-word__lit {
+  position: absolute;
+  inset: 0 auto auto 0;
+  display: flex;
+}
+
+.s-word__ghost > span,
+.s-word__lit > span {
+  display: inline-block;
+  transition:
+    transform 1100ms var(--ease),
+    opacity 900ms var(--ease);
+}
+
+.s-word__ghost > span {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.075) 10%, rgb(255 255 255 / 0) 62%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(255 255 255 / 0.11);
+}
+
+.s-word__lit {
+  -webkit-mask-image: radial-gradient(
+    circle 0.62em at var(--lx) var(--ly),
+    #000 0%,
+    rgb(0 0 0 / 0.45) 45%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    circle 0.62em at var(--lx) var(--ly),
+    #000 0%,
+    rgb(0 0 0 / 0.45) 45%,
+    transparent 100%
+  );
+  animation: s-word-drift 18s ease-in-out infinite alternate;
+}
+
+.s-word[data-lit] .s-word__lit {
+  animation: none;
+}
+
+.s-word__lit > span {
+  background: linear-gradient(180deg, #fff7ec 0%, rgb(255 213 160 / 0.55) 38%, transparent 66%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes s-word-drift {
+  0% {
+    --lx: 8%;
+    --ly: 20%;
+  }
+
+  50% {
+    --lx: 52%;
+    --ly: 55%;
+  }
+
+  100% {
+    --lx: 94%;
+    --ly: 25%;
+  }
+}
+
+/* Letters rise into place once, left to right. Hidden only when script can reveal them. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .s-foot:not([data-in]) .s-word__ghost > span,
+  .s-foot:not([data-in]) .s-word__lit > span {
+    transform: translateY(0.45em);
+    opacity: 0;
+  }
+
+  .s-word :is(.s-word__ghost, .s-word__lit) > span:nth-child(2) {
+    transition-delay: 60ms;
+  }
+  .s-word :is(.s-word__ghost, .s-word__lit) > span:nth-child(3) {
+    transition-delay: 120ms;
+  }
+  .s-word :is(.s-word__ghost, .s-word__lit) > span:nth-child(4) {
+    transition-delay: 180ms;
+  }
+  .s-word :is(.s-word__ghost, .s-word__lit) > span:nth-child(5) {
+    transition-delay: 240ms;
+  }
+  .s-word :is(.s-word__ghost, .s-word__lit) > span:nth-child(6) {
+    transition-delay: 300ms;
+  }
+  .s-word :is(.s-word__ghost, .s-word__lit) > span:nth-child(7) {
+    transition-delay: 360ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .s-word__lit {
+    animation: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .s-foot__top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .s-foot__nav {
+    grid-template-rows: repeat(5, auto);
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .s-foot__bar {
+    flex-direction: column;
+  }
+
+  .s-foot__tm {
+    text-align: left;
+  }
+}

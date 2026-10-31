@@ -1,0 +1,24 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.turbo/
+dist/
+.expo/
+.wrangler/
+ios/
+android/
+*.log
+.DS_Store
+coverage/
+*.tsbuildinfo
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.neon
+
+# local test credentials (web-e2e.mjs --persist)
+.secrets/
+
+# private research notes, kept locally only
+docs/research/

@@ -1,0 +1,14 @@
+{
+  "$comment": "One source for the demo video and the source-code link, read by apps/landing and apps/docs. Leave a value null to show the placeholder state; set it to publish.",
+  "video": {
+    "url": null,
+    "embedUrl": null,
+    "poster": null,
+    "title": "ZyroPay on Cardano: the 2½-minute demo",
+    "durationSeconds": 150
+  },
+  "repository": {
+    "url": "https://github.com/abdelrahman-aljabali/ZyroPay",
+    "label": "Source code on GitHub"
+  }
+}

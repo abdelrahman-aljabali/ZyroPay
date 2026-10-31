@@ -1,0 +1,42 @@
+{
+  "name": "zyropay",
+  "private": true,
+  "description": "ZyroPay monorepo: non-custodial crypto wallet and AI-agent payments.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.30.2",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "node scripts/dev.mjs",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "contracts:check": "node scripts/contracts-check.mjs",
+    "check": "turbo run typecheck lint && node scripts/contracts-check.mjs && turbo run test && turbo run test:e2e --concurrency=1",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:e2e": "turbo run test:e2e --concurrency=1",
+    "smoke": "pnpm --filter @zyropay/e2e-smoke smoke",
+    "dev:setup": "node scripts/dev-setup.mjs",
+    "db:local": "node scripts/local-db.mjs",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "deploy:staging": "node scripts/deploy-staging.mjs",
+    "deploy:landing": "pnpm --filter @zyropay/landing build && pnpm --filter @zyropay/landing deploy:staging",
+    "test:web": "pnpm --filter @zyropay/mobile test:web",
+    "health": "node scripts/health-check.mjs",
+    "knip": "knip"
+  },
+  "devDependencies": {
+    "@neon/config": "^1.9.2",
+    "@neon/env": "^1.6.3",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "knip": "catalog:",
+    "prettier": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}

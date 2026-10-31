@@ -1,0 +1,4 @@
+{
+  "extends": "@zyropay/config/tsconfig/workers.json",
+  "include": ["src/**/*.ts", "vitest.config.ts"]
+}

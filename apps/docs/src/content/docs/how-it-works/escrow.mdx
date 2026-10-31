@@ -1,0 +1,160 @@
+---
+title: "5. Escrow with Masumi"
+description: "Paying a seller you do not know through Masumi's escrow script on Cardano. What ZyroPay verifies before the lock, the escrow's states and deadlines, how the seller gets paid and how you get a refund."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+import ExplorerChecks from "../../../components/ExplorerChecks.astro";
+
+A direct x402 payment pays the seller before you know what you will get. With escrow, the money goes
+to Masumi's payment-v2 `vested_pay` script (Plutus V3) instead. The seller collects it only after
+recording a result hash on chain and waiting until an unlock time; until then you can ask for a
+refund. x402 carries this as `assetTransferMethod: "masumi"`: the 402's `payTo` is the escrow
+script, and the seller signs the terms.
+
+ZyroPay only ever locks into the **canonical** deployment:
+`addr_test1wzs4e6wc95hkwezlccjw9mdvq0r0rsgx6zk34avptga3ftgn37w4g` on preprod, with 2-of-3 admins
+for disputes and a 7-minute cooldown between actions.
+
+## Choosing escrow
+
+`pay_x402` takes `escrow`:
+
+- `true`: pay into escrow (the 402 must offer the `masumi` method);
+- `false`: pay directly;
+- omitted: escrow when the 402 offers it **and** the agent's policy sets an escrow threshold
+  (`x402EscrowAboveUsdMinor`), otherwise direct.
+
+With a threshold set, a direct x402 payment valued above it, or with no valuation, is treated like an
+over-limit request (`ESCROW_REQUIRED`): it comes to you, or is denied if you chose that. A threshold
+of 0 means every x402 payment must use escrow.
+
+## From quote to lock
+
+<Diagram
+  name="escrow-flow"
+  alt="Sequence diagram of an escrow payment, steps 1 to 15, as described in the list below."
+  caption="An x402 payment into Masumi escrow. Numbers match the list below."
+/>
+
+1. The agent calls `pay_x402` with `escrow: true`.
+2. The MCP worker requests the seller's escrow route.
+3. The seller answers `402`: `payTo` is the escrow script, `extra` carries the terms signed by the
+   seller's key (CIP-8 / COSE over the terms digest), the input commitment and the deadlines.
+4. The worker passes the requirements to the API.
+5. The API verifies, with `@x402/cardano` 2.29's own functions plus its own rules: the seller's
+   signature over the terms; the recomputed input hash; `payTo` equal to the derived canonical escrow
+   address; the deadline order and a 30-day horizon; `payByTime` at least 60 s away and within
+   `maxTimeoutSeconds`; a commitment that names the paid URL; and, if the seller claims a registry
+   identity, that identity [on chain](/how-it-works/discover/). Any failure refuses the payment.
+6. It builds the datum and the exact locked lovelace (with live `coinsPerUtxoByte`), round-trips the
+   datum field by field, and puts the terms and the **exact datum bytes** into the payload, so your
+   approval commits to them.
+7. You approve with your passkey.
+8. The agent's next `get_approval_status` call picks up the signed lock.
+9. The MCP worker retries the URL with it in `PAYMENT-SIGNATURE`.
+10. The seller's facilitator checks the lock (one inline-datum output to the escrow, exact value,
+    datum equal to the signed terms, validity ending by `payByTime`) and submits it.
+11. The seller answers `200` with the report, `X-Escrow-Result-Hash` and a delivery receipt.
+12. The seller records `result_hash = SHA-256(body)` on chain with **SubmitResult**.
+13. The MCP worker reports what it received: the receipt and its own SHA-256 of the body.
+14. The API reads the escrow's datum from the chain.
+15. It compares the two hashes: that is [proof before release](/how-it-works/proof/).
+
+The lock transaction has one output to the escrow with the inline datum and exactly the locked value,
+plus change to you. Its validity ends at `payByTime`, rounded down to a slot, and the request itself
+expires at `payByTime`. No script runs at lock time, so the lock's rules are checked off chain, by
+ZyroPay's verifier and by the facilitator's.
+
+## The escrow's life
+
+<Diagram
+  name="escrow-states"
+  alt="Escrow state chart: from FundsLocked, the seller's SubmitResult leads to ResultSubmitted and, after unlock_time, the seller's Withdraw; the buyer's SetRefundRequested leads to RefundRequested, or to Disputed after a result; the seller's AuthorizeRefund leads to RefundAuthorized and the buyer's WithdrawRefund; after submit_result_time without a result the buyer can withdraw a refund directly; a dispute can be settled by 2 of 3 admins after the dispute time."
+  caption="Masumi vested_pay states and who can move them (the buyer is you, through ZyroPay)."
+/>
+
+| Deadline (from the seller's 402) | Demo seller default         | After it                                                     |
+| -------------------------------- | --------------------------- | ------------------------------------------------------------ |
+| `payByTime`                      | 402 time + 5 min            | The lock can no longer land                                  |
+| `submitResultTime`               | `payByTime` + 10 min        | Without a result, you can withdraw your refund on your own   |
+| `unlockTime`                     | `submitResultTime` + 15 min | With a result and no refund request, the seller can withdraw |
+| `externalDisputeUnlockTime`      | `unlockTime` + 15 min       | The admins (2 of 3) can settle a dispute                     |
+
+The live lock below carries exactly these: payBy 16:28:38, submitResult 16:38:38, unlock 16:53:38
+and dispute 17:08:38 UTC.
+
+## Getting a refund
+
+In the app, an escrow payment shows its state from the chain, the deadlines and the refund action
+that is open to you. Both buyer actions are script spends signed with your passkey:
+
+- **Request refund** (SetRefundRequested). Possible while the funds are locked. Before a result it
+  moves to `RefundRequested`; after a result it moves to `Disputed`. The demo seller's sweeper
+  authorizes refund requests automatically (`AUTO_AUTHORIZE_REFUNDS`, its preprod demo policy).
+- **Withdraw refund** (WithdrawRefund). Possible once the seller has authorized the refund, or after
+  `submitResultTime` if no result was ever submitted. After a result, a refund needs the seller's
+  authorization or the admins.
+
+For each, the API builds the spend, has Blockfrost evaluate the script and adds a 20 % margin to the
+measured units, sets the continuing datum (your cooldown is the validity end plus 420 s), and returns
+a review whose payload is the spend's body hash. On submit it re-verifies the spend against fresh
+protocol parameters, re-reads the escrow output, checks the stamp like an approval, claims the build
+by compare-and-set (one signature per build), then attaches the witness and submits. A refund spend
+needs a pure-ADA output in your wallet for Plutus collateral.
+
+## How the seller gets paid
+
+Right after answering, the seller's worker waits up to about 20 s for the lock, builds SubmitResult
+with the Evolution SDK, has Blockfrost evaluate it, signs with its key and submits. A cron sweeper
+runs every minute: it retries a pending SubmitResult, withdraws once chain time passes `unlockTime`,
+and authorizes refund requests. The seller pays the fees of its spends (about 0.7 ADA each, with the
+10 KB script inline) and needs its own collateral. Before it pays a fee for any output at the escrow
+address, it checks that the datum names it as seller, that at least 4 tADA is locked and that there is
+no reference script, because anyone can create an output at a script address.
+
+Why at least 4 tADA: the escrow output must still clear the minimum UTxO value once the result hash is
+in the datum (about 3.7 tADA). At 4 tADA or more the buyer's collateral return is 0 and the lock is
+exactly the price. The demo seller charges 5 tADA on its escrow route.
+
+## Proven live
+
+An AI agent paid the escrow route of the demo seller: 5 ADA locked, about 130 s from the request to the
+lock including the human approval.
+
+<ExplorerChecks id="escrow-lock" />
+
+The seller's SubmitResult followed 21 s later, in the next block: <TxRef id="escrow-result" />. Its
+checks are on [Proof before release](/how-it-works/proof/).
+
+The seller's cron sweeper then collected the escrow 39 s after `unlockTime`, on its own, with the
+Withdraw redeemer. That closes the honest lifecycle: lock, SubmitResult, Withdraw, each spending the
+output the one before created.
+
+<ExplorerChecks id="seller-collect" />
+
+The refund lifecycle is live too, against the seller's dishonest demo mode: ChatGPT paid
+(<TxRef id="refund-lock" />), the seller recorded a result hash that did not match what it delivered
+(<TxRef id="proof-mismatch" />, proof `mismatch`), the user requested the refund with the passkey,
+the seller's worker authorized it 32 s later, and the passkey signed the withdrawal: 4.357182 ADA
+back to the user, 4 min 54 s after the lock, 23 minutes before the seller could have collected.
+
+<ExplorerChecks id="refund" />
+
+<ExplorerChecks id="refund-withdraw" />
+
+The seller's authorization (<TxRef id="refund-authorize" />) and every check are on
+[Evidence](/evidence/#dishonest-seller-caught-refund-on-chain).
+
+Still offline only <Status kind="offline" />: a withdrawal after the deadline without the seller's
+authorization (`not_delivered`), and the rest of the state chart: lock, refund request, seller
+authorization, withdrawal, refunded; the seller collected; a forged
+body hash or stamp refused and audited; one signature per build
+(`apps/api/test/integration/x402-masumi.test.ts`, `escrow-chain.test.ts`, and the lock checked by
+the facilitator's own `verifyMasumiLock` in
+`packages/integrations/src/__tests__/x402-masumi.test.ts`).
+
+**Code:** `packages/integrations/src/masumi.ts`, `packages/blockchain/src/cardano/escrow.ts`,
+`apps/api/src/services/escrow.ts`, `apps/api/src/services/escrow-view.ts`, `apps/seller/src/escrow/`.

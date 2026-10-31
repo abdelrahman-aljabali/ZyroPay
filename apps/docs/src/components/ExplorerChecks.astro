@@ -1,0 +1,40 @@
+---
+/** "What to check on the explorer" for one evidence item, as a table. */
+import { evidence, explorerUrl, shortHash } from "../lib/evidence";
+
+interface Props {
+  id: string;
+}
+const item = evidence(Astro.props.id);
+const url = explorerUrl(item);
+---
+
+{
+  url && item.txHash && item.checks && (
+    <>
+      <p>
+        Open{" "}
+        <a class="zp-hash" href={url}>
+          {shortHash(item.txHash)}
+        </a>{" "}
+        on Cardanoscan (preprod) and check:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Where</th>
+            <th scope="col">What you should see</th>
+          </tr>
+        </thead>
+        <tbody>
+          {item.checks.map(([where, what]) => (
+            <tr>
+              <td>{where}</td>
+              <td>{what}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}

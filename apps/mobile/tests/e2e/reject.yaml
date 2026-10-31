@@ -1,0 +1,27 @@
+# Reject: Approvals tab -> pending request -> swipe the card left -> rejected.
+appId: ${APP_ID}
+name: Reject request
+---
+- runFlow: subflows/onboard-simulated.yaml
+- tapOn: "Approvals"
+- extendedWaitUntil:
+    visible: "2 waiting"
+    timeout: 10000
+- tapOn:
+    id: "pending-approval-0192f3a1-0007-7000-8000-000000000002"
+- assertVisible:
+    id: "approval-detail"
+- assertVisible: "New recipient"
+- swipe:
+    from:
+      id: "approval-card"
+    direction: LEFT
+    duration: 600
+- extendedWaitUntil:
+    visible:
+      id: "approval-rejected"
+    timeout: 10000
+- assertVisible: "The agent was told no. Nothing was signed."
+- tapOn:
+    id: "approval-done"
+- assertVisible: "1 waiting"

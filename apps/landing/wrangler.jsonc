@@ -1,0 +1,25 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // Static assets only (no Worker script): the Astro build in ./dist, built by `pnpm build`.
+  // Workers static assets serve the files and apply dist/_headers (CSP, noindex, written by
+  // scripts/postbuild.mjs). Unknown paths get dist/404.html.
+  "name": "zyropay-landing",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+    "html_handling": "drop-trailing-slash",
+  },
+  "dev": { "port": 8787 },
+  "env": {
+    "staging": {
+      // https://zyropay.online (noindex everywhere).
+      "name": "zyropay-online-landing",
+      "workers_dev": false,
+      "routes": [
+        { "pattern": "zyropay.online", "custom_domain": true },
+        { "pattern": "www.zyropay.online", "custom_domain": true },
+      ],
+    },
+  },
+}

@@ -1,0 +1,24 @@
+flowchart TB
+  AG["AI client<br/>Claude, ChatGPT, any MCP client"]
+  subgraph Device["Your device"]
+    direction LR
+    APP["ZyroPay app<br/>iOS, Android, web"] --- PK(["Your passkey"])
+  end
+  subgraph CF["ZyroPay, on Cloudflare Workers"]
+    direction LR
+    MCP["MCP worker<br/>OAuth, 10 tools<br/>never signs, no database"]
+    API["API worker<br/>policy, state machine,<br/>reservations, audit"]
+  end
+  SUB["Turnkey: your sub-org<br/>your passkey is the only root"]
+  DB[("Neon Postgres")]
+  CH["Chain providers<br/>Blockfrost, Helius, Alchemy"]
+  SEL["x402 sellers,<br/>Masumi escrow"]
+  AG -- "OAuth 2.1 + MCP" --> MCP
+  APP -- "session, stamped approvals" --> API
+  MCP -- "internal calls only" --> API
+  MCP -- "402 probe, paid retry" --> SEL
+  API -- "forwards stamps unchanged" --> SUB
+  API --> DB
+  API --> CH
+  classDef ours stroke:{{accent}},stroke-width:1.5px
+  class MCP,API ours

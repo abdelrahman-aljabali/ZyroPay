@@ -1,0 +1,245 @@
+/* "Open the app": the centred phone with the real app. Loaded on every page. */
+
+html.is-locked {
+  overflow: hidden;
+}
+
+/* While the app phone is out, the hero phone it flew from is hidden. */
+html.is-app-from-hero .s-hero .s-stage {
+  opacity: 0;
+  transition: opacity 0s 80ms;
+}
+
+.appview {
+  --text: #f3f4f6;
+  --text-2: #a9adb6;
+  --line-2: rgb(255 255 255 / 0.14);
+
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  overflow: hidden;
+}
+
+.appview::backdrop {
+  background: transparent;
+}
+
+.appview__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 9 / 0.62);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+.appview__stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  pointer-events: none;
+}
+
+.appview__phone {
+  --phone-w: min(420px, calc((100vh - 120px) * 0.475));
+
+  pointer-events: auto;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.appview__phone .phone {
+  --phone-w: inherit;
+}
+
+/* The screen: a drawn status bar (the island sits in it), the app, and a home indicator.
+   1 app point = 100cqw / 393, like the simulated app. */
+.appview__screen {
+  --u: calc(100cqw / 393);
+
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: #111111;
+}
+
+.appview__status {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(var(--u) * 54);
+  padding: calc(var(--u) * 4) calc(var(--u) * 34) 0 calc(var(--u) * 44);
+  font-family: "Inter", "Inter Fallback", system-ui, sans-serif;
+  font-size: calc(var(--u) * 17);
+  font-weight: 600;
+}
+
+.appview__status-icons {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+}
+
+.appview__status-icons svg {
+  width: auto;
+  height: calc(var(--u) * 12);
+  fill: currentColor;
+}
+
+.appview__viewport {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.appview__homebar {
+  flex: none;
+  align-self: center;
+  width: calc(var(--u) * 136);
+  height: calc(var(--u) * 5);
+  margin: calc(var(--u) * 14) 0 calc(var(--u) * 9);
+  border-radius: 999px;
+  background: #111111;
+}
+
+.appview__frame,
+.appview__loading,
+.appview__blocked {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.appview__frame {
+  background: #ffffff;
+}
+
+.appview__loading {
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+  transition: opacity 300ms ease;
+}
+
+.appview__loading[data-on="false"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.appview__spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e3e3e6;
+  border-top-color: #111111;
+  border-radius: 50%;
+  animation: appview-spin 800ms linear infinite;
+}
+
+@keyframes appview-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.appview__blocked {
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  padding: 32px;
+  background: #ffffff;
+  color: #111111;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.appview__cta {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.appview__bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  pointer-events: auto;
+}
+
+.appview__hint {
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.appview__full {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+
+.appview__full[data-strong="true"] {
+  background: var(--text);
+  color: #0b0c10;
+}
+
+.appview__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.1);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  transition: background-color 160ms ease;
+}
+
+.appview__close svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .appview__close:hover {
+    background: rgb(255 255 255 / 0.18);
+  }
+}

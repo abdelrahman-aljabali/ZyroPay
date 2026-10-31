@@ -1,0 +1,25 @@
+sequenceDiagram
+  autonumber
+  participant C as AI client
+  participant M as ZyroPay MCP
+  participant S as Seller (x402)
+  participant A as ZyroPay API
+  participant U as You
+  participant L as Cardano preprod
+  C->>M: pay_x402 with resourceUrl and maxAmount
+  M->>S: GET the resource
+  S-->>M: 402 PAYMENT-REQUIRED (exact, cardano:preprod, amount, payTo, maxTimeoutSeconds)
+  M->>A: create the request with the requirements
+  Note over A: Check requirements and policy. Build an ADA transfer to payTo, valid at most maxTimeoutSeconds
+  A-->>C: PENDING_APPROVAL
+  U->>A: approve with your passkey (body hash)
+  Note over A: The API attaches the witness and broadcasts nothing
+  C->>M: get_approval_status
+  M->>A: fetch the payment header
+  M->>S: retry the exact URL with PAYMENT-SIGNATURE
+  Note over S: Facilitator verifies, the handler runs, settlement only if status is below 400
+  S->>L: facilitator submits the transaction
+  S-->>M: 200, report, PAYMENT-RESPONSE, X-Delivery-Receipt
+  M->>A: report delivery: the receipt and its own SHA-256 of the body
+  A->>L: follow the tx to CONFIRMED
+  M-->>C: the paid response and the receipt verdict

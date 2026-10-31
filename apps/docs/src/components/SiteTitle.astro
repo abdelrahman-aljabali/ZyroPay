@@ -1,0 +1,58 @@
+---
+/**
+ * Replaces Starlight's site title. The mark and the name go back to the landing page
+ * (zyropay.online); "Docs" beside them stays the docs home.
+ */
+import mark from "../assets/zyropay-mark.svg";
+
+const LANDING_URL = "https://zyropay.online/";
+---
+
+<span class="zp-title sl-flex">
+  <a href={LANDING_URL} class="zp-title__home sl-flex" aria-label="ZyroPay home">
+    <img alt="" src={mark.src} width={mark.width} height={mark.height} />
+    <span translate="no">ZyroPay</span>
+  </a>
+  <a href="/" class="zp-title__docs">Docs</a>
+</span>
+
+<style>
+  .zp-title {
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  .zp-title__home {
+    align-items: center;
+    gap: var(--sl-nav-gap);
+    min-width: 0;
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-h4);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .zp-title__home img {
+    width: auto;
+    height: calc(var(--sl-nav-height) - 2 * var(--sl-nav-pad-y));
+    object-fit: contain;
+  }
+
+  .zp-title__docs {
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--zp-line);
+    border-radius: 999px;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .zp-title__docs:hover {
+    border-color: var(--sl-color-gray-4);
+    color: var(--sl-color-white);
+  }
+</style>

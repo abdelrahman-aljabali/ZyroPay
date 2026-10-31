@@ -1,0 +1,38 @@
+{
+  "name": "@zyropay/integrations",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Third-party adapters: plugins (Jupiter, x402, Aave, Kamino, Hyperliquid), on-ramp (Transak), push (Expo). Owner: Chain.",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "test:live": "LIVE_TESTS=1 vitest run src/__tests__/live.test.ts",
+    "check:workers": "wrangler deploy --dry-run --config workers-smoke.jsonc --outdir .wrangler/smoke-dist",
+    "smoke:workers": "wrangler dev --config workers-smoke.jsonc --port 8799"
+  },
+  "dependencies": {
+    "@evolution-sdk/evolution": "catalog:",
+    "@solana-program/compute-budget": "catalog:",
+    "@solana-program/token": "catalog:",
+    "@solana/kit": "catalog:",
+    "@x402/cardano": "catalog:",
+    "@zyropay/blockchain": "workspace:*",
+    "@zyropay/shared": "workspace:*",
+    "viem": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

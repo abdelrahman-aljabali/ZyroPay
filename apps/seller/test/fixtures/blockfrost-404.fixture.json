@@ -1,0 +1,10 @@
+{
+  "_fixture": "FIXTURE (synthetic test data in the documented Blockfrost response shape; not real chain data)",
+  "_endpoint": "any GET for an address never seen on chain",
+  "_shape": "error (404)",
+  "body": {
+    "status_code": 404,
+    "error": "Not Found",
+    "message": "The requested component has not been found."
+  }
+}

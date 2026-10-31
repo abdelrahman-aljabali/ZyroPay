@@ -1,0 +1,20 @@
+---
+import Base from "../layouts/Base.astro";
+import Mark from "../components/Mark.astro";
+import { APP_CTA, APP_URL } from "../lib/content";
+import "../styles/plain.css";
+---
+
+<Base title="Legal notice · ZyroPay" description="Legal notice for ZyroPay." bodyClass="plain"
+  themeColor="#060709"
+  colorScheme="dark">
+  <main id="main" class="plain__main">
+    <a class="plain__back" href="/">
+      <Mark />
+      ZyroPay
+    </a>
+    <h1>Legal notice</h1>
+    <p>Coming soon.</p>
+    <a class="plain__app" href={APP_URL} data-open-app>{APP_CTA}</a>
+  </main>
+</Base>

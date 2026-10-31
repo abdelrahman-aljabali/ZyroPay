@@ -1,0 +1,3 @@
+ALTER TABLE "agent_policies" ADD COLUMN "x402_escrow_above_usd_minor" numeric(38, 0);--> statement-breakpoint
+ALTER TABLE "transaction_request_artifacts" ADD COLUMN "x402_escrow" jsonb;--> statement-breakpoint
+ALTER TABLE "agent_policies" ADD CONSTRAINT "agent_policies_x402_escrow_nonneg_ck" CHECK ("agent_policies"."x402_escrow_above_usd_minor" IS NULL OR "agent_policies"."x402_escrow_above_usd_minor" >= 0);

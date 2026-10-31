@@ -1,0 +1,30 @@
+{
+  "name": "@zyropay/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared TypeScript, ESLint and Prettier configuration. Owner: coordinator.",
+  "exports": {
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/workers.json": "./tsconfig/workers.json",
+    "./tsconfig/node.json": "./tsconfig/node.json",
+    "./tsconfig/react-native.json": "./tsconfig/react-native.json",
+    "./eslint": "./eslint.js",
+    "./prettier": "./prettier.js"
+  },
+  "dependencies": {
+    "@eslint/js": "catalog:",
+    "globals": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "peerDependencies": {
+    "eslint": "*",
+    "prettier": "*",
+    "typescript": "*"
+  },
+  "devDependencies": {
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
+  }
+}

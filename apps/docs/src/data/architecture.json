@@ -1,0 +1,1048 @@
+{
+  "$comment": "Moved from apps/landing/src/lib/architecture.json (the landing's /architecture page now redirects here). Corrected on 2026-10-30: 10 MCP tools, Cardano account at sign-up, envelope accepted live, x402 on Cardano; added the seller, Masumi escrow and registry, and the receipt verifier.",
+  "nodes": [
+    {
+      "id": "ai-agent",
+      "label": "AI agent",
+      "group": "agent",
+      "what": "An AI assistant such as Claude, ChatGPT or Grok, connected as an MCP client. It can read balances and ask for payments, but it can never sign anything.",
+      "why": "ZyroPay is built so agents can pay on a user's behalf, while every payment still goes through the policy engine.",
+      "tech": ["MCP client", "Streamable HTTP", "OAuth 2.1 + PKCE"],
+      "guarantee": "The agent's token only ever maps to its own agent id, and its tools can only create requests, never signatures.",
+      "refs": [
+        "ARCHITECTURE.md §1",
+        "ARCHITECTURE.md §2.4",
+        "MCP.md Server guide §1",
+        "SECURITY.md T1",
+        "SECURITY.md T5"
+      ]
+    },
+    {
+      "id": "mobile-app",
+      "label": "ZyroPay app",
+      "group": "client",
+      "what": "The iOS and Android app (with a web build) where people sign up, see their portfolio, send and receive, approve agent payments and manage agents.",
+      "why": "It is the only place where the user's passkey is used, so every human approval happens here.",
+      "tech": ["Expo SDK 57", "Expo Router", "React Native", "Turnkey RN Wallet Kit", "Expo push"],
+      "guarantee": "Approvals are signed with the passkey on the device, and the review shown must match the exact transaction the server checks.",
+      "refs": [
+        "ARCHITECTURE.md §1 Components",
+        "ARCHITECTURE.md §2.1",
+        "ARCHITECTURE.md §2.3",
+        "MONITORING.md §1",
+        "SECURITY.md T9"
+      ]
+    },
+    {
+      "id": "passkey",
+      "label": "Your passkey",
+      "group": "client",
+      "what": "A passkey on the user's device that proves it is really them. It is the only root of their Turnkey sub-organization.",
+      "why": "Being non-custodial means only the user can move their funds on their own, so the passkey is the one root credential and ZyroPay holds none.",
+      "tech": ["WebAuthn", "platform authenticator", "StamperType.Passkey", "X-Stamp-Webauthn"],
+      "guarantee": "Every approval needs a fresh passkey stamp; a session key stamp is accepted only for read-only queries.",
+      "refs": [
+        "ARCHITECTURE.md §3",
+        "ADR-001 D1",
+        "ADR-001 D2",
+        "SECURITY.md C7",
+        "SECURITY.md T15"
+      ]
+    },
+    {
+      "id": "turnkey-auth-proxy",
+      "label": "Turnkey Auth Proxy",
+      "group": "custody",
+      "what": "A Turnkey service that creates the passkey, the user's sub-organization and a default wallet at sign-up, with no ZyroPay backend involved.",
+      "why": "It lets sign-up happen directly between the app and Turnkey. Turnkey documents that it has no access to funds.",
+      "tech": ["Turnkey Auth Proxy", "signUpWithPasskey", "authProxyConfigId"],
+      "guarantee": "Its root layout is not documented, so the API checks the sub-org's root quorum on first login and refuses anything other than the user alone.",
+      "refs": ["ARCHITECTURE.md §2.1", "ADR-001 Facts 3", "ADR-001 D1", "SECURITY.md T14"]
+    },
+    {
+      "id": "turnkey-parent-org",
+      "label": "Turnkey parent org",
+      "group": "custody",
+      "what": "ZyroPay's organization in Turnkey. It sits above every user's sub-organization.",
+      "why": "The API needs to read a user's sub-org (for example to check its root quorum and mirror wallets), but should never be able to change it.",
+      "tech": ["Turnkey", "parent-org read key", "get_organization_configs"],
+      "guarantee": "The parent organization can read sub-orgs but cannot write to them.",
+      "refs": ["ARCHITECTURE.md §1 rule 2", "ADR-001 Facts 1", "SECURITY.md C8"]
+    },
+    {
+      "id": "turnkey-sub-org",
+      "label": "Your Turnkey sub-org",
+      "group": "custody",
+      "what": "A separate Turnkey organization for each user that holds their wallets and keys inside Turnkey. The user's passkey is its only root user.",
+      "why": "Root actions in Turnkey bypass policies, so ZyroPay keeps itself out of the root quorum entirely.",
+      "tech": [
+        "Turnkey (TEE)",
+        "sub-organization",
+        "root quorum threshold 1",
+        "SIGN_TRANSACTION_V2",
+        "SIGN_RAW_PAYLOAD_V2"
+      ],
+      "guarantee": "There is no ZyroPay root user, so no ZyroPay system can move funds on its own. ZyroPay also has no recovery override.",
+      "refs": [
+        "ARCHITECTURE.md §1",
+        "ADR-001 Context",
+        "ADR-001 Facts 2",
+        "ADR-001 D1",
+        "SECURITY.md Assets"
+      ]
+    },
+    {
+      "id": "delegated-signer",
+      "label": "Delegated signer",
+      "group": "custody",
+      "what": "An optional non-root key user inside the sub-org, used only for Autonomous mode. The user's own passkey creates it.",
+      "why": "Autonomous payments need a signer without a human in the loop. It does not exist until the user turns on Autonomous for an agent.",
+      "tech": [
+        "Turnkey non-root API-key user",
+        "P-256",
+        "AES-256-GCM",
+        "DELEGATED_KEY_ENCRYPTION_KEY",
+        "fetchOrCreateP256ApiKeyUser"
+      ],
+      "guarantee": "Its private key is stored encrypted, it is never in the root quorum, and revoking it destroys the key at once. In Always Ask, ZyroPay can sign nothing.",
+      "refs": [
+        "ADR-001 D5",
+        "ADR-001 D6",
+        "ADR-001 D8",
+        "ARCHITECTURE.md §2.6",
+        "SECURITY.md C8",
+        "SECURITY.md T3"
+      ]
+    },
+    {
+      "id": "turnkey-policies",
+      "label": "Turnkey policy envelope",
+      "group": "custody",
+      "what": "Rules inside Turnkey that limit what the delegated signer may sign: allowed chains, allowlisted recipients, per-transaction caps and allowed programs.",
+      "why": "A second, coarser line of defence that holds even if the ZyroPay API itself is compromised.",
+      "tech": [
+        "Turnkey policies",
+        "ACTIVITY_TYPE_CREATE_POLICIES",
+        "buildDelegatedPolicyEnvelope",
+        "P1 EVM ALLOW",
+        "P2 Solana ALLOW",
+        "P3 DENY lookup tables"
+      ],
+      "guarantee": "A fully compromised API still cannot exceed the per-transaction envelope or pay a non-allowlisted recipient.",
+      "refs": ["ADR-001 D6", "ADR-001 Consequence", "ADR-001 Open items", "SECURITY.md C3"]
+    },
+    {
+      "id": "mcp-server",
+      "label": "MCP server",
+      "group": "edge",
+      "what": "A Cloudflare Worker that exposes 10 tools to AI clients (8 wallet and payment tools plus 2 read-only Masumi registry tools) and turns each tool call into one internal API call.",
+      "why": "It keeps agents away from keys and data: it holds no Turnkey credentials, no database URL and no user session.",
+      "tech": [
+        "Cloudflare Workers",
+        "@modelcontextprotocol/sdk 1.32.1",
+        "Streamable HTTP (stateless)",
+        "INTERNAL_SERVICE_TOKEN"
+      ],
+      "guarantee": "It never signs. Results are sanitized and wrapped as untrusted data, and a compromised MCP worker can only create requests that still need approval or stay within limits.",
+      "refs": [
+        "ARCHITECTURE.md §1 rule 1",
+        "MCP.md Server guide §1",
+        "MCP.md Server guide §4",
+        "MCP.md Server guide §5",
+        "SECURITY.md C9",
+        "SECURITY.md T4"
+      ]
+    },
+    {
+      "id": "mcp-oauth",
+      "label": "Agent sign-in (OAuth)",
+      "group": "edge",
+      "what": "The OAuth 2.1 authorization server inside the MCP worker. It shows a short code that the user approves in the app.",
+      "why": "Agents need their own revocable access that is tied to one agent and approved by the user's passkey session.",
+      "tech": [
+        "OAuth 2.1",
+        "PKCE S256",
+        "CIMD (Client ID Metadata Documents)",
+        "DCR RFC 7591 (fallback)",
+        "RFC 9728",
+        "RFC 8414",
+        "RFC 8707",
+        "RFC 9207",
+        "RFC 7009",
+        "@cloudflare/workers-oauth-provider 1.2.3",
+        "Workers KV"
+      ],
+      "guarantee": "PKCE is required for every client, redirect URIs must match exactly, tokens are opaque and stored only as hashes, access tokens last 15 minutes by default, and revocation cuts off every token for an agent.",
+      "refs": [
+        "MCP.md Server guide §2",
+        "MCP.md Server guide §3",
+        "MCP.md Server guide §5",
+        "SECURITY.md C10",
+        "SECURITY.md T5"
+      ]
+    },
+    {
+      "id": "api",
+      "label": "ZyroPay API",
+      "group": "core",
+      "what": "The system of record, running on Cloudflare Workers. It handles sessions, policy checks, the request state machine, spending reservations, Turnkey forwarding, broadcast, webhooks and audit.",
+      "why": "One place enforces every rule, and it forwards the user's signed requests to Turnkey without being able to change them.",
+      "tech": [
+        "Cloudflare Workers",
+        "Hono",
+        "Zod",
+        "opaque access tokens (zp_at_)",
+        "rotating refresh tokens (zp_rt_)"
+      ],
+      "guarantee": "The API never holds a user's root credential, validates every input with Zod, and fails closed when something is missing or unexpected.",
+      "refs": [
+        "ARCHITECTURE.md §1 Components",
+        "ARCHITECTURE.md §1 rules 2 and 5",
+        "ARCHITECTURE.md §3",
+        "API.md Implementation notes",
+        "SECURITY.md C16"
+      ]
+    },
+    {
+      "id": "policy-engine",
+      "label": "Policy engine",
+      "group": "core",
+      "what": "Checks every agent payment against the agent's rules and returns allow, require approval or deny.",
+      "why": "Turnkey cannot enforce USD limits, daily or monthly totals or per-agent rules, so those live here.",
+      "tech": [
+        "evaluatePolicy",
+        "defaultAgentPolicy",
+        "AUTONOMY_ELIGIBLE_TOOLS",
+        "AUTONOMY_ELIGIBLE_FAMILIES",
+        "x402EscrowAboveUsdMinor",
+        "requireRegisteredAgent"
+      ],
+      "guarantee": "New agents start in Always Ask with spending disabled and zero limits. A missing price, or an error during evaluation, never auto-allows a payment. Swaps and Cardano are never autonomous.",
+      "refs": [
+        "ARCHITECTURE.md §2.5",
+        "ADR-001 D7",
+        "ADR-002 C5",
+        "SECURITY.md C1",
+        "SECURITY.md C2",
+        "SECURITY.md C6",
+        "SECURITY.md C20",
+        "SECURITY.md T1"
+      ]
+    },
+    {
+      "id": "state-machine",
+      "label": "Request state machine",
+      "group": "core",
+      "what": "Tracks every payment request from creation to its final outcome through a fixed set of states.",
+      "why": "An explicit transition table makes it impossible to skip a step, such as signing without a policy check.",
+      "tech": [
+        "transition()",
+        "optimistic locking (version)",
+        "ILLEGAL_STATE_TRANSITION",
+        "VERSION_CONFLICT"
+      ],
+      "guarantee": "Illegal transitions throw, and an approval moves to SIGNING before Turnkey is called, so a duplicate approve can never sign twice.",
+      "refs": [
+        "ARCHITECTURE.md §2.5",
+        "API.md Implementation notes: Transaction requests",
+        "SECURITY.md C15"
+      ]
+    },
+    {
+      "id": "payload-hash",
+      "label": "Payload hash binding",
+      "group": "core",
+      "what": "A SHA-256 fingerprint of the payment's terms: network, from, to, asset, amount, fee cap, plugin, tool, nonce, expiry and idempotency key.",
+      "why": "It ties an approval to exactly what the user saw, so nothing material can change after they approve.",
+      "tech": [
+        "CanonicalTransactionPayload",
+        "canonical JSON",
+        "SHA-256",
+        "payloadHash",
+        "PAYLOAD_HASH_MISMATCH"
+      ],
+      "guarantee": "Any material change produces a new hash and the old approval no longer applies. The stamped body must also be byte-equal to the reviewed transaction.",
+      "refs": [
+        "ARCHITECTURE.md §1 rule 3",
+        "ADR-001 D2",
+        "ADR-001 D4",
+        "SECURITY.md C7",
+        "SECURITY.md T2"
+      ]
+    },
+    {
+      "id": "postgres",
+      "label": "Neon Postgres",
+      "group": "data",
+      "what": "The database for users, wallets, agents, policies, payment requests, approvals, spending reservations, the spending ledger, webhook events and audit logs.",
+      "why": "Spending limits need an exact, shared record of what has been spent and what is reserved, even under concurrent requests.",
+      "tech": [
+        "Neon Postgres",
+        "Drizzle",
+        "SELECT ... FOR UPDATE",
+        "spending_reservation",
+        "spending_ledger",
+        "UNIQUE(user_id, idempotency_key)"
+      ],
+      "guarantee": "Agent requests run under a row lock and limits count spent plus reserved, so many requests at once can never jointly exceed a limit. Tokens are stored only as hashes.",
+      "refs": [
+        "ARCHITECTURE.md §1 Components",
+        "ARCHITECTURE.md §2.5 Concurrency",
+        "SECURITY.md C4",
+        "SECURITY.md C11",
+        "SECURITY.md C13",
+        "SECURITY.md T6",
+        "SECURITY.md T7"
+      ]
+    },
+    {
+      "id": "price-sources",
+      "label": "Price sources",
+      "group": "data",
+      "what": "Provide USD prices used to value payments and portfolios.",
+      "why": "USD limits need a valuation, and Turnkey has no price oracle.",
+      "tech": [
+        "Jupiter Price API v3 (Solana)",
+        "CoinGecko (Ethereum, Base, Cardano)",
+        "PriceProvider",
+        "maxAgeSeconds"
+      ],
+      "guarantee": "Values are rounded up, and a stale, unknown or failed price counts as no valuation, which never auto-allows a payment.",
+      "refs": ["INTEGRATIONS.md §2", "ARCHITECTURE.md §2.2", "SECURITY.md C5", "SECURITY.md T8"]
+    },
+    {
+      "id": "queues",
+      "label": "Job queue",
+      "group": "core",
+      "what": "A Cloudflare Queue that runs background steps: autonomous signing, broadcast, confirmation polling, push notifications, webhook processing and revocation retries.",
+      "why": "Slow or retryable work runs outside the request, with retries and a dead-letter queue.",
+      "tech": ["Cloudflare Queues", "zyropay-api-jobs", "zyropay-api-jobs-dlq"],
+      "guarantee": "",
+      "refs": ["API.md Implementation notes: Async stages"]
+    },
+    {
+      "id": "cron",
+      "label": "Scheduled sweeps",
+      "group": "ops",
+      "what": "A Cron Trigger that runs every minute to expire old requests and re-check stuck ones.",
+      "why": "A request waiting for approval should not stay open forever, and stuck broadcasts need a retry path.",
+      "tech": ["Cloudflare Cron Triggers", "* * * * *"],
+      "guarantee": "Requests past their expiry that have not started signing move to EXPIRED and their reserved spend is released.",
+      "refs": ["ARCHITECTURE.md §2.5 Expiry", "API.md Implementation notes: Transaction requests"]
+    },
+    {
+      "id": "tx-builders",
+      "label": "Transaction builders",
+      "group": "chain",
+      "what": "Build the unsigned transaction for Solana, EVM chains and Cardano from the payment terms, and simulate it before review.",
+      "why": "ZyroPay builds the exact bytes the user reviews, using Turnkey sign-only so nothing is filled in after review.",
+      "tech": ["TransactionBuilder", "@solana/kit", "viem", "own Cardano CBOR codec", "Blockfrost"],
+      "guarantee": "Fees are capped by the fee cap inside the payload hash, and a Solana transaction that is about to expire is rebuilt without changing the payload hash.",
+      "refs": [
+        "ARCHITECTURE.md §1 Components",
+        "ADR-001 D3",
+        "ADR-001 D4",
+        "INTEGRATIONS.md §3",
+        "INTEGRATIONS.md §7"
+      ]
+    },
+    {
+      "id": "tx-verifier",
+      "label": "Independent decoder",
+      "group": "chain",
+      "what": "Decodes the transaction bytes on its own, without network access, and checks they match the approved payment.",
+      "why": "It catches any mismatch between what was approved and what is about to be signed or sent.",
+      "tech": [
+        "verifyMatchesPayload",
+        "assertSignedMatchesUnsigned",
+        "verifyJupiterSwap",
+        "verifyX402Authorization"
+      ],
+      "guarantee": "It fails closed. A signed transaction that does not match the reviewed bytes fails the request before broadcast.",
+      "refs": [
+        "INTEGRATIONS.md §3",
+        "INTEGRATIONS.md Exported factories",
+        "API.md Implementation notes: Transaction requests",
+        "SECURITY.md C7"
+      ]
+    },
+    {
+      "id": "broadcasters",
+      "label": "Broadcasters",
+      "group": "chain",
+      "what": "Send the signed transaction to the network through ZyroPay's own RPC providers.",
+      "why": "One broadcast and confirmation path for every chain family, instead of Turnkey sign-and-send.",
+      "tech": [
+        "Broadcaster",
+        "createSolanaBroadcaster",
+        "createEvmBroadcaster",
+        "createCardanoBroadcaster"
+      ],
+      "guarantee": "The transaction hash is stored before sending, and a rebroadcast re-sends the same bytes.",
+      "refs": [
+        "ADR-001 D3",
+        "INTEGRATIONS.md §4",
+        "API.md Implementation notes: Transaction requests"
+      ]
+    },
+    {
+      "id": "confirmation-tracker",
+      "label": "Confirmation tracker",
+      "group": "chain",
+      "what": "Checks on chain whether a transaction is pending, confirmed, failed, expired or replaced.",
+      "why": "The final outcome of a payment is decided by the chain, read through ZyroPay's own RPC.",
+      "tech": [
+        "createConfirmationTracker",
+        "SOLANA_COMMITMENT",
+        "EVM_CONFIRMATIONS",
+        "CARDANO_CONFIRMATIONS"
+      ],
+      "guarantee": "On confirmation the reserved spend is settled into the ledger once; on failure it is released.",
+      "refs": [
+        "INTEGRATIONS.md §4",
+        "API.md Implementation notes: Transaction requests",
+        "ARCHITECTURE.md §2.3"
+      ]
+    },
+    {
+      "id": "rpc-providers",
+      "label": "Chain RPC providers",
+      "group": "chain",
+      "what": "The node providers ZyroPay uses to read balances and history and to broadcast: Helius for Solana, Alchemy for Ethereum and Base, Blockfrost for Cardano.",
+      "why": "Each provider is bound to one network, so mainnet and testnet are never mixed.",
+      "tech": ["Helius", "Alchemy", "Blockfrost", "rpcUrlFor"],
+      "guarantee": "Providers refuse any other network, the API checks genesis hash or chain id, and it never falls back to a public RPC.",
+      "refs": [
+        "INTEGRATIONS.md Wiring",
+        "INTEGRATIONS.md §1",
+        "INTEGRATIONS.md §7",
+        "SECURITY.md C14",
+        "SECURITY.md T13"
+      ]
+    },
+    {
+      "id": "plugins",
+      "label": "Payment plugins",
+      "group": "chain",
+      "what": "Adapters for swaps and paid web requests: Jupiter swaps on Solana mainnet, and x402 payments (Cardano preprod end to end; EVM and Solana signed but not handed off).",
+      "why": "They let agents do more than plain transfers, with the same quote, binding and decode checks.",
+      "tech": [
+        "PluginAdapter",
+        "Jupiter Swap API v1",
+        "x402 v1 and v2",
+        "@x402/cardano 2.29.0",
+        "createPluginRegistry"
+      ],
+      "guarantee": "Swaps are never autonomous. x402 on EVM and every Cardano payment always need the passkey.",
+      "refs": [
+        "INTEGRATIONS.md §5",
+        "ADR-001 D7",
+        "API.md Implementation notes: Transaction requests (x402)"
+      ]
+    },
+    {
+      "id": "webhooks",
+      "label": "Provider webhooks",
+      "group": "edge",
+      "what": "Incoming notifications from Helius, Alchemy and Transak about chain activity and on-ramp orders.",
+      "why": "They speed up updates, but are never the only source of truth.",
+      "tech": ["HMAC-SHA256", "webhook_events", "UNIQUE(provider, event_id)"],
+      "guarantee": "Signatures are checked on the raw body, duplicates are ignored, and events are reconciled with ZyroPay's own RPC reads before any state change.",
+      "refs": [
+        "ARCHITECTURE.md §2.8",
+        "API.md Implementation notes: Webhooks",
+        "SECURITY.md C11",
+        "SECURITY.md C12",
+        "SECURITY.md T11"
+      ]
+    },
+    {
+      "id": "push",
+      "label": "Push notifications",
+      "group": "ops",
+      "what": "Expo push messages that tell the user an approval is waiting or a payment landed.",
+      "why": "Always Ask needs to reach the user quickly, without leaking payment details.",
+      "tech": ["Expo push", "Notifier", "PushData", "buildPushData"],
+      "guarantee": "Pushes carry no amounts or addresses and deep link only to a fixed set of screens in the user's own app, which then reloads everything from the API.",
+      "refs": [
+        "ARCHITECTURE.md §2.7",
+        "API.md Implementation notes: Async stages",
+        "SECURITY.md T10"
+      ]
+    },
+    {
+      "id": "sentry",
+      "label": "Error monitoring",
+      "group": "ops",
+      "what": "Optional Sentry error reporting for the API, the MCP worker and the app. Nothing is sent until a DSN is configured.",
+      "why": "Debugging needs error types and stack traces, but never secrets or personal data.",
+      "tech": [
+        "Sentry",
+        "@sentry/cloudflare",
+        "@sentry/react-native",
+        "@sentry/react",
+        "scrubTelemetryEvent"
+      ],
+      "guarantee": "Every event is scrubbed and fails closed: bodies, headers, user data, tokens, keys, recovery phrases, emails and IP addresses are removed, and no traces are sent.",
+      "refs": ["MONITORING.md §1", "SECURITY.md C13", "SECURITY.md T12"]
+    },
+    {
+      "id": "x402-seller",
+      "label": "x402 seller (example)",
+      "group": "external",
+      "what": "Cardano Address Intelligence: a paid data API on Cloudflare Workers that answers 402 with x402 v2 requirements (exact scheme, cardano:preprod) and runs the official @x402/cardano facilitator in-process. A second one, Token Intelligence, sells token reports.",
+      "why": "ZyroPay needs a real third-party seller to pay. It is a separate party: it never sees a ZyroPay credential.",
+      "tech": ["@x402/hono 2.29.0", "@x402/cardano 2.29.0", "X-Delivery-Receipt", "Evolution SDK"],
+      "guarantee": "Settlement happens only when the handler answers below 400, so a Blockfrost failure returns 503 and the buyer is not charged.",
+      "refs": ["apps/seller/README.md", "apps/specialist/README.md"]
+    },
+    {
+      "id": "masumi-escrow",
+      "label": "Masumi escrow",
+      "group": "external",
+      "what": "The canonical Masumi payment-v2 vested_pay script (Plutus V3) on Cardano. It holds a payment until the seller submits a result hash and the unlock time passes, or refunds it.",
+      "why": "Paying a stranger up front needs a way to get the money back if nothing, or the wrong thing, is delivered.",
+      "tech": [
+        "vested_pay (Plutus V3)",
+        "inline datum",
+        "SubmitResult",
+        "SetRefundRequested",
+        "WithdrawRefund",
+        "2-of-3 admins"
+      ],
+      "guarantee": "ZyroPay locks only into the canonical deployment and binds the exact datum bytes into the payload hash; the user's refund spends are passkey-signed.",
+      "refs": ["CARDANO_X402.md Masumi escrow"]
+    },
+    {
+      "id": "masumi-registry",
+      "label": "Masumi registry",
+      "group": "external",
+      "what": "A permissionless registry of agents: each is a CIP-25 NFT under the V2 registry policy whose metadata names its endpoint and price.",
+      "why": "An agent can find sellers, and ZyroPay can check that a seller claiming an identity really holds it.",
+      "tech": ["CIP-25", "agentIdentifier (120 hex)", "Blockfrost"],
+      "guarantee": "Registration proves identity binding, not trustworthiness. ZyroPay verifies a claimed identity on chain at quote time and refuses on any failure.",
+      "refs": ["CARDANO_X402.md Discover and identify"]
+    },
+    {
+      "id": "receipt-verifier",
+      "label": "Delivery receipt verifier",
+      "group": "core",
+      "what": "Checks the seller's Ed25519 signature over the exact bytes the agent received, the paid URL, payTo and the payment transaction.",
+      "why": "A paid response alone proves nothing about who sent it or whether it was altered.",
+      "tech": ["X-Delivery-Receipt v1", "verifyX402Receipt", "blake2b-224", "Ed25519"],
+      "guarantee": "Only the holder of the paid address's key can produce a receipt that verifies; the MCP worker hashes the body itself, never trusting the seller's hash alone.",
+      "refs": ["CARDANO_X402.md Delivery receipt"]
+    }
+  ],
+  "edges": [
+    {
+      "from": "mobile-app",
+      "to": "passkey",
+      "label": "asks you to confirm"
+    },
+    {
+      "from": "mobile-app",
+      "to": "turnkey-auth-proxy",
+      "label": "sign up with passkey"
+    },
+    {
+      "from": "turnkey-auth-proxy",
+      "to": "turnkey-sub-org",
+      "label": "creates sub-org + wallet"
+    },
+    {
+      "from": "turnkey-parent-org",
+      "to": "turnkey-sub-org",
+      "label": "read-only access"
+    },
+    {
+      "from": "mobile-app",
+      "to": "api",
+      "label": "session, reviews, signed approvals"
+    },
+    {
+      "from": "api",
+      "to": "mobile-app",
+      "label": "reviews, status"
+    },
+    {
+      "from": "api",
+      "to": "turnkey-sub-org",
+      "label": "forwards stamped requests unchanged"
+    },
+    {
+      "from": "api",
+      "to": "turnkey-parent-org",
+      "label": "reads root quorum"
+    },
+    {
+      "from": "api",
+      "to": "delegated-signer",
+      "label": "autonomous signing only"
+    },
+    {
+      "from": "turnkey-policies",
+      "to": "delegated-signer",
+      "label": "bounds what it signs"
+    },
+    {
+      "from": "turnkey-sub-org",
+      "to": "turnkey-policies",
+      "label": "holds the envelope"
+    },
+    {
+      "from": "ai-agent",
+      "to": "mcp-oauth",
+      "label": "OAuth 2.1 + PKCE"
+    },
+    {
+      "from": "ai-agent",
+      "to": "mcp-server",
+      "label": "tool calls"
+    },
+    {
+      "from": "mcp-oauth",
+      "to": "api",
+      "label": "pending connection + user code"
+    },
+    {
+      "from": "mcp-server",
+      "to": "api",
+      "label": "internal calls only"
+    },
+    {
+      "from": "api",
+      "to": "mcp-server",
+      "label": "revoke agent grants"
+    },
+    {
+      "from": "api",
+      "to": "payload-hash",
+      "label": "hashes payment terms"
+    },
+    {
+      "from": "api",
+      "to": "policy-engine",
+      "label": "evaluates agent request"
+    },
+    {
+      "from": "api",
+      "to": "state-machine",
+      "label": "every state change"
+    },
+    {
+      "from": "policy-engine",
+      "to": "postgres",
+      "label": "spent + reserved under row lock"
+    },
+    {
+      "from": "api",
+      "to": "postgres",
+      "label": "records of truth"
+    },
+    {
+      "from": "api",
+      "to": "price-sources",
+      "label": "USD valuation"
+    },
+    {
+      "from": "api",
+      "to": "tx-builders",
+      "label": "build unsigned tx"
+    },
+    {
+      "from": "tx-builders",
+      "to": "tx-verifier",
+      "label": "self-check"
+    },
+    {
+      "from": "api",
+      "to": "tx-verifier",
+      "label": "check before and after signing"
+    },
+    {
+      "from": "api",
+      "to": "plugins",
+      "label": "swap and x402 quotes"
+    },
+    {
+      "from": "api",
+      "to": "queues",
+      "label": "background jobs"
+    },
+    {
+      "from": "queues",
+      "to": "broadcasters",
+      "label": "broadcast signed bytes"
+    },
+    {
+      "from": "broadcasters",
+      "to": "rpc-providers",
+      "label": "send transaction"
+    },
+    {
+      "from": "confirmation-tracker",
+      "to": "rpc-providers",
+      "label": "read status"
+    },
+    {
+      "from": "queues",
+      "to": "confirmation-tracker",
+      "label": "poll confirmations"
+    },
+    {
+      "from": "cron",
+      "to": "api",
+      "label": "expire and re-poll"
+    },
+    {
+      "from": "webhooks",
+      "to": "api",
+      "label": "signed events"
+    },
+    {
+      "from": "api",
+      "to": "push",
+      "label": "notify user"
+    },
+    {
+      "from": "push",
+      "to": "mobile-app",
+      "label": "deep link"
+    },
+    {
+      "from": "api",
+      "to": "sentry",
+      "label": "scrubbed errors"
+    },
+    {
+      "from": "mcp-server",
+      "to": "sentry",
+      "label": "scrubbed errors"
+    },
+    {
+      "from": "mobile-app",
+      "to": "sentry",
+      "label": "scrubbed errors"
+    }
+  ],
+  "stateMachine": {
+    "states": [
+      "CREATED",
+      "POLICY_CHECK",
+      "PENDING_APPROVAL",
+      "APPROVED",
+      "SIGNING",
+      "BROADCAST",
+      "CONFIRMED",
+      "REJECTED",
+      "EXPIRED",
+      "FAILED",
+      "CANCELLED"
+    ],
+    "notes": "A request is created, policy-checked, then either waits for the user (PENDING_APPROVAL) or is approved outright, and moves through SIGNING and BROADCAST to CONFIRMED. A deny ends in REJECTED, the expiry sweep moves CREATED, POLICY_CHECK, PENDING_APPROVAL and APPROVED requests to EXPIRED, and only requests that have not started signing can be CANCELLED; once signing starts, only the chain decides the outcome.",
+    "refs": [
+      "API.md listAgentRequests (state enum)",
+      "API.md cancelRequest",
+      "API.md Implementation notes: Transaction requests",
+      "ARCHITECTURE.md §2.5 Expiry",
+      "SECURITY.md C15"
+    ]
+  },
+  "flows": [
+    {
+      "id": "signup",
+      "title": "Signing up with a passkey",
+      "steps": [
+        {
+          "from": "mobile-app",
+          "to": "passkey",
+          "text": "You create a passkey on your phone when you sign up.",
+          "ref": "ARCHITECTURE.md §2.1 step 1"
+        },
+        {
+          "from": "mobile-app",
+          "to": "turnkey-auth-proxy",
+          "text": "The app asks Turnkey's Auth Proxy to set up your account, with no ZyroPay server involved.",
+          "ref": "ARCHITECTURE.md §2.1 step 1"
+        },
+        {
+          "from": "turnkey-auth-proxy",
+          "to": "turnkey-sub-org",
+          "text": "Turnkey creates your own sub-organization and a default wallet with a Solana, an EVM and a Cardano account.",
+          "ref": "ARCHITECTURE.md §2.1 step 1"
+        },
+        {
+          "from": "mobile-app",
+          "to": "api",
+          "text": "The app signs a who-am-I request with your passkey and sends it to the ZyroPay API.",
+          "ref": "ARCHITECTURE.md §2.1 step 2"
+        },
+        {
+          "from": "api",
+          "to": "turnkey-sub-org",
+          "text": "The API forwards that request to Turnkey unchanged, and Turnkey confirms who you are.",
+          "ref": "ARCHITECTURE.md §2.1 step 2; API.md Sign-in"
+        },
+        {
+          "from": "api",
+          "to": "turnkey-parent-org",
+          "text": "On first login the API reads your sub-org and refuses to continue unless your passkey user is its only root.",
+          "ref": "ARCHITECTURE.md §2.1 step 3; ADR-001 D1; SECURITY.md T14"
+        },
+        {
+          "from": "api",
+          "to": "postgres",
+          "text": "The API saves your account and wallet addresses and stores only hashes of your new session tokens.",
+          "ref": "ARCHITECTURE.md §2.1 step 4; SECURITY.md C13"
+        },
+        {
+          "from": "api",
+          "to": "mobile-app",
+          "text": "The app gets a short-lived access token and a rotating refresh token, and you are in.",
+          "ref": "ARCHITECTURE.md §2.1 steps 4-5"
+        }
+      ]
+    },
+    {
+      "id": "agent-connect",
+      "title": "Connecting an AI agent",
+      "steps": [
+        {
+          "from": "ai-agent",
+          "to": "mcp-oauth",
+          "text": "The agent finds ZyroPay's MCP server and identifies itself with a client metadata document, or registers if it cannot.",
+          "ref": "MCP.md Server guide §2, §3"
+        },
+        {
+          "from": "ai-agent",
+          "to": "mcp-oauth",
+          "text": "It starts an OAuth 2.1 sign-in with PKCE, bound to ZyroPay's single MCP resource.",
+          "ref": "MCP.md Server guide §2, §3"
+        },
+        {
+          "from": "mcp-oauth",
+          "to": "api",
+          "text": "The MCP worker asks the API for a pending connection and shows you a short code like ABCD-1234.",
+          "ref": "ARCHITECTURE.md §2.4 step 2; MCP.md Server guide §3"
+        },
+        {
+          "from": "mobile-app",
+          "to": "api",
+          "text": "You enter the code in the ZyroPay app and see the agent's name and where it will redirect.",
+          "ref": "ARCHITECTURE.md §2.4 step 3; MCP.md Server guide §3"
+        },
+        {
+          "from": "mobile-app",
+          "to": "api",
+          "text": "You pick which wallets and networks it may use and approve the connection.",
+          "ref": "ARCHITECTURE.md §2.4 step 3"
+        },
+        {
+          "from": "api",
+          "to": "policy-engine",
+          "text": "The new agent starts in Always Ask, with spending disabled, zero limits and no protocols.",
+          "ref": "ARCHITECTURE.md §2.4 step 3; SECURITY.md C1"
+        },
+        {
+          "from": "mcp-oauth",
+          "to": "api",
+          "text": "The MCP worker sees the approval and completes the sign-in for that one agent.",
+          "ref": "ARCHITECTURE.md §2.4 step 4"
+        },
+        {
+          "from": "mcp-oauth",
+          "to": "ai-agent",
+          "text": "The agent receives a 15-minute access token and a rotating refresh token, stored only as hashes on ZyroPay's side.",
+          "ref": "MCP.md Server guide §3, §5; SECURITY.md T5"
+        }
+      ]
+    },
+    {
+      "id": "agent-payment",
+      "title": "An agent payment you approve",
+      "steps": [
+        {
+          "from": "ai-agent",
+          "to": "mcp-server",
+          "text": "The agent calls the send tool with a recipient, amount and an idempotency key.",
+          "ref": "MCP.md send; ARCHITECTURE.md §2.5"
+        },
+        {
+          "from": "mcp-server",
+          "to": "api",
+          "text": "The MCP server passes the request to the API, which checks the agent is still active.",
+          "ref": "ARCHITECTURE.md §1 rule 1; MCP.md Server guide §4"
+        },
+        {
+          "from": "api",
+          "to": "payload-hash",
+          "text": "The API validates the details, builds the payment terms and fingerprints them with a hash.",
+          "ref": "ARCHITECTURE.md §2.5 step 2"
+        },
+        {
+          "from": "api",
+          "to": "price-sources",
+          "text": "It values the payment in USD, rounding up, and treats a missing price as no valuation.",
+          "ref": "API.md Implementation notes: Validate + value; SECURITY.md C5"
+        },
+        {
+          "from": "policy-engine",
+          "to": "postgres",
+          "text": "Under a row lock, the policy engine checks the agent's rules against what is already spent and reserved, and decides it needs your approval.",
+          "ref": "ARCHITECTURE.md §2.5 step 4; SECURITY.md C4"
+        },
+        {
+          "from": "api",
+          "to": "push",
+          "text": "The request waits in PENDING_APPROVAL and you get a push notification with no amounts in it.",
+          "ref": "ARCHITECTURE.md §2.5 step 5b; ARCHITECTURE.md §2.7"
+        },
+        {
+          "from": "mobile-app",
+          "to": "passkey",
+          "text": "You review the recipient and amount in the app and approve with your passkey.",
+          "ref": "ARCHITECTURE.md §2.5 step 5b; SECURITY.md T10"
+        },
+        {
+          "from": "mobile-app",
+          "to": "api",
+          "text": "The API checks the hash and that your signed request is byte-for-byte the reviewed transaction.",
+          "ref": "API.md Implementation notes: Approve = sign; SECURITY.md C7"
+        },
+        {
+          "from": "api",
+          "to": "turnkey-sub-org",
+          "text": "The request moves to SIGNING first, then the API forwards your passkey-signed request to Turnkey.",
+          "ref": "API.md Implementation notes: Approve = sign"
+        },
+        {
+          "from": "broadcasters",
+          "to": "rpc-providers",
+          "text": "The signed transaction is checked again, broadcast, and settled into the ledger when the chain confirms it.",
+          "ref": "API.md Implementation notes: Broadcast, Confirm"
+        }
+      ]
+    },
+    {
+      "id": "autonomous-payment",
+      "title": "An autonomous payment within limits",
+      "steps": [
+        {
+          "from": "mobile-app",
+          "to": "api",
+          "text": "You switch an agent to Autonomous, and the API creates a signing key and returns only its public half.",
+          "ref": "ARCHITECTURE.md §2.6 step 1; ADR-001 D6"
+        },
+        {
+          "from": "passkey",
+          "to": "delegated-signer",
+          "text": "Your passkey creates a limited, non-root signer user in your Turnkey sub-org for that key.",
+          "ref": "ARCHITECTURE.md §2.6 step 2"
+        },
+        {
+          "from": "passkey",
+          "to": "turnkey-policies",
+          "text": "Your passkey also approves Turnkey rules that limit that signer to allowed chains, allowlisted recipients and per-transaction caps.",
+          "ref": "ARCHITECTURE.md §2.6 steps 3-4; SECURITY.md C3"
+        },
+        {
+          "from": "ai-agent",
+          "to": "mcp-server",
+          "text": "Later the agent asks to send a native-token payment to an allowlisted recipient.",
+          "ref": "ARCHITECTURE.md §2.5; ARCHITECTURE.md §2.6"
+        },
+        {
+          "from": "policy-engine",
+          "to": "postgres",
+          "text": "The policy engine checks USD and daily or monthly limits against spent plus reserved, then reserves the amount.",
+          "ref": "ARCHITECTURE.md §2.5 step 4; ADR-001 Consequence"
+        },
+        {
+          "from": "api",
+          "to": "queues",
+          "text": "The approved request goes to the execute job, which re-checks that it is unexpired and the agent is still autonomous.",
+          "ref": "API.md Implementation notes: Autonomous"
+        },
+        {
+          "from": "api",
+          "to": "delegated-signer",
+          "text": "The API signs with the delegated key, and Turnkey only allows it inside the rules you set.",
+          "ref": "API.md Implementation notes: Autonomous; ADR-001 D6"
+        },
+        {
+          "from": "broadcasters",
+          "to": "rpc-providers",
+          "text": "The signed bytes are checked against the reviewed bytes and broadcast.",
+          "ref": "API.md Implementation notes: Broadcast; SECURITY.md C7"
+        },
+        {
+          "from": "confirmation-tracker",
+          "to": "postgres",
+          "text": "When the chain confirms, the reservation becomes a ledger entry and you get a notification.",
+          "ref": "API.md Implementation notes: Confirm; ARCHITECTURE.md §2.5 step 6"
+        }
+      ]
+    },
+    {
+      "id": "attack-blocked",
+      "title": "A hijacked agent tries to drain your wallet",
+      "steps": [
+        {
+          "from": "ai-agent",
+          "to": "mcp-server",
+          "text": "A prompt-injected agent asks to send a large amount to an attacker's address.",
+          "ref": "SECURITY.md T1"
+        },
+        {
+          "from": "mcp-server",
+          "to": "ai-agent",
+          "text": "The MCP server cannot sign anything; it can only turn the call into a request, and tool results reach the agent marked as untrusted data.",
+          "ref": "MCP.md Server guide §4, §5"
+        },
+        {
+          "from": "policy-engine",
+          "to": "api",
+          "text": "The policy engine denies a recipient that is not allowed, or requires your approval, because agents start in Always Ask.",
+          "ref": "SECURITY.md C1; SECURITY.md C2"
+        },
+        {
+          "from": "policy-engine",
+          "to": "postgres",
+          "text": "Many requests fired at once cannot add up past a limit, because each counts spent plus reserved under a row lock.",
+          "ref": "SECURITY.md T6; SECURITY.md C4"
+        },
+        {
+          "from": "push",
+          "to": "mobile-app",
+          "text": "If approval is needed, you see the real recipient and amount in the app and can simply reject it.",
+          "ref": "SECURITY.md T10; API.md rejectApproval"
+        },
+        {
+          "from": "api",
+          "to": "payload-hash",
+          "text": "If anyone swaps the recipient or amount after you approve, the hash changes and the old approval no longer applies.",
+          "ref": "ARCHITECTURE.md §1 rule 3; SECURITY.md T2"
+        },
+        {
+          "from": "api",
+          "to": "tx-verifier",
+          "text": "A signed transaction that is not byte-for-byte the reviewed one is refused, and a mismatch after signing fails the request before broadcast.",
+          "ref": "SECURITY.md C7; API.md Implementation notes: Broadcast"
+        },
+        {
+          "from": "turnkey-policies",
+          "to": "delegated-signer",
+          "text": "Even in Autonomous mode with a compromised server, Turnkey's rules block payments to recipients outside the allowlist or above the per-transaction cap.",
+          "ref": "ADR-001 Consequence; SECURITY.md T3"
+        },
+        {
+          "from": "mobile-app",
+          "to": "api",
+          "text": "You revoke the agent, which cancels its pending requests, releases its reservations and revokes its tokens at once.",
+          "ref": "ADR-001 D8; MCP.md Server guide §5 Revocation"
+        }
+      ]
+    }
+  ]
+}

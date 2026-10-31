@@ -1,0 +1,18 @@
+flowchart TD
+  S([Escrow payment confirmed]) --> R("Seller's SubmitResult on chain?")
+  R -- "not yet, before submit_result_time" --> P[pending]
+  R -- "no, submit_result_time passed" --> N[not_delivered]
+  R -- yes --> B("Could the MCP worker hash<br/>the body the agent received?")
+  B -- "no report yet" --> P
+  B -- "no, truncated or not text" --> U[unverifiable]
+  B -- yes --> C("received SHA-256 equals<br/>on-chain result_hash?")
+  C -- yes --> V[verified]
+  C -- no --> X[mismatch]
+  N --> RF["refund recommended:<br/>withdraw_refund"]
+  X --> RQ["refund recommended:<br/>request_refund"]
+  classDef deny fill:{{denyBg}},stroke:{{deny}},color:{{text}},stroke-width:1.5px
+  classDef ok fill:{{okBg}},stroke:{{ok}},color:{{text}},stroke-width:1.5px
+  classDef warn fill:{{warnBg}},stroke:{{warn}},color:{{text}},stroke-width:1.5px
+  class V ok
+  class X,N deny
+  class U,P warn

@@ -1,0 +1,39 @@
+{
+  "name": "@zyropay/blockchain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Chain access for Solana, EVM and Cardano: transaction builders and verifiers, broadcasters, portfolio and price providers. Owner: Chain.",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests --testTimeout=30000",
+    "test:live:cardano": "LIVE_TESTS=1 vitest run src/__tests__/cardano.live.test.ts",
+    "test:live:helius": "LIVE_TESTS=1 vitest run src/__tests__/helius.live.test.ts",
+    "allowance:preprod": "tsx scripts/allowance-preprod.ts"
+  },
+  "dependencies": {
+    "@noble/curves": "catalog:",
+    "@noble/hashes": "catalog:",
+    "@solana-program/compute-budget": "catalog:",
+    "@solana-program/system": "catalog:",
+    "@solana-program/token": "catalog:",
+    "@solana/kit": "catalog:",
+    "@zyropay/shared": "workspace:*",
+    "viem": "catalog:"
+  },
+  "devDependencies": {
+    "@emurgo/cardano-serialization-lib-nodejs": "17.0.0",
+    "@types/node": "catalog:",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

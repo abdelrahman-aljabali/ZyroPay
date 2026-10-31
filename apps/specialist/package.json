@@ -1,0 +1,32 @@
+{
+  "name": "@zyropay/specialist",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cardano Token Intelligence: a paid token-report API on Cloudflare Workers, paid per request via x402 on Cardano preprod.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit -p tsconfig.worker.json && tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@x402/cardano": "catalog:",
+    "@x402/core": "catalog:",
+    "@x402/hono": "catalog:",
+    "@zyropay/seller": "workspace:*",
+    "hono": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@evolution-sdk/evolution": "catalog:",
+    "@types/node": "catalog:",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

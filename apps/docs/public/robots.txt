@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+# Staging: every response carries X-Robots-Tag: noindex.

@@ -1,0 +1,219 @@
+---
+title: "Live transactions"
+description: "Every ZyroPay transaction on Cardano preprod that backs a claim in these docs, with block, fee, latency and what to check on the explorer. Runs still to come are listed as awaiting."
+---
+
+import EvidenceList from "../../../components/EvidenceList.astro";
+import ExplorerChecks from "../../../components/ExplorerChecks.astro";
+
+Every claim in these docs that says "live" points here. Each transaction links to Cardanoscan
+(preprod); blocks, fees, times and the details under "What to check" were read back from the chain.
+Nothing on this page is simulated, and no hash is filled in before its run has happened.
+
+:::note[How to read the numbers]
+Fees are what the chain charged. Latency is wall-clock time from the agent's request to the stated
+point and includes the human passkey approval, which dominates it. Preprod ADA (tADA) has no value.
+:::
+
+<EvidenceList show="live" />
+
+## What to check on the explorer
+
+### First passkey-signed send
+
+<ExplorerChecks id="first-send" />
+
+### x402 payment, direct
+
+<ExplorerChecks id="x402-direct" />
+
+Also in the seller's answer (not on chain): `PAYMENT-RESPONSE` names this transaction id, and the
+receipt verified against the seller's address.
+
+### Escrow lock
+
+<ExplorerChecks id="escrow-lock" />
+
+### Seller's SubmitResult
+
+<ExplorerChecks id="escrow-result" />
+
+The proof: the SHA-256 ZyroPay's MCP worker computed over the report the agent received equals the
+`result_hash` above, so the request's proof state is `verified`.
+
+### Seller's Withdraw
+
+<ExplorerChecks id="seller-collect" />
+
+Lock, SubmitResult and Withdraw are one escrow, start to finish: each spends the output the one
+before created (`630f2012…#0`, then `ee7b142e…#0`). The seller's own status route agrees:
+`GET https://address-intel.zyropay.online/v1/escrow/630f2012…c653` answers
+`"status": "withdrawn"`.
+
+### Masumi registry entry
+
+<ExplorerChecks id="registry" />
+
+The full `agentIdentifier` is
+`67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b106fe284ceb06b6c8510815f3d9813378d66b57c8c9cecf4e31532928f000000`
+([token on Cardanoscan](https://preprod.cardanoscan.io/token/67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b106fe284ceb06b6c8510815f3d9813378d66b57c8c9cecf4e31532928f000000)).
+Its endpoint answers: `GET https://masumi-agent.zyropay.online/availability` returns
+`{"status": "available", "type": "masumi-agent"}`, and `POST /start_job` returns node-signed terms
+in state `awaiting_payment`.
+
+### The x402 seller's own registry identity
+
+<ExplorerChecks id="registry-x402" />
+
+The entry above sits in the Payment Service's selling wallet, so x402 payments to the seller
+could not claim it. This second entry closes that gap: the NFT was minted straight to the x402
+seller's `payTo`, whose key signs the escrow terms. Its full `agentIdentifier` is
+`67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10ef4582034c97dbf2d8a68ae186a4cc429a944a77c45c7f4b58c38bf8000000`
+([token on Cardanoscan](https://preprod.cardanoscan.io/token/67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10ef4582034c97dbf2d8a68ae186a4cc429a944a77c45c7f4b58c38bf8000000)).
+Blockfrost `/assets/…/addresses` lists exactly one holder, `addr_test1qr954…kaen`. Every escrow 402
+from `https://address-intel.zyropay.online/v1/address-report/escrow` now carries this
+`agentIdentifier` in its signed terms, and the seller's info route names it
+(`escrowRoute.masumiAgentIdentifier`). ZyroPay's own checks ran against it on 2026-10-30:
+`verifySeller` with the seller's address, the escrow URL and the 5 ADA price returned `ok` with no
+reasons, and `quoteMasumiEscrow` on a live 402 bound the identity and the registered name
+"Cardano Address Intelligence (x402)". That is what the approval shows as a registered Masumi agent.
+The direct route (`/v1/address-report`, x402 `exact`) has no field for an identity claim, so it
+stays unclaimed.
+
+### A paid Sokosumi Task: lock, SubmitResult, collection
+
+Sokosumi Task `01a18f20-48e5-763f-a19f-658d790699c6`, "Paid address check", on the ZyroPay Coworker
+"Cardano Address Intelligence" (Coworker `01a18f1c-3cad-735b-8b57-6623ffc2a14d`, Vendor ZyroPay),
+paid 1 tUSDM through the Masumi Payment Service and the V2 escrow.
+
+<ExplorerChecks id="sokosumi" />
+
+<ExplorerChecks id="sokosumi-result" />
+
+<ExplorerChecks id="sokosumi-collect" />
+
+The three are one escrow: the SubmitResult spends `b786f50d…#1`, the collection spends
+`7c9a5d87…#0`. The datum's `agent_identifier` is the MIP-003 registry entry above, so Sokosumi paid
+the registered agent, and the SubmitResult carries that agent's NFT as an input. The worker's own
+settlement check matched the collection on Blockfrost and found a net 1,000,000 tUSDM units at the
+selling wallet before it marked the Task settled.
+
+Off chain, a free Task on the same Coworker ran first: Task `01a18f1e-f20c-72df-8744-45243bbce18f`
+is `COMPLETED` with the report, and a follow-up comment on it got the agent's reply with a refreshed
+report. A completed Task alone proves no payment; the three transactions above do.
+
+### Dishonest seller caught, refund on chain
+
+ChatGPT paid the demo seller's escrow route through the ZyroPay connector with the seller's
+dishonest switch on (`?demo=tamper`, which every response announces in `X-Demo-Mode`). Five
+transactions, each spending output `#0` of the one before; the three buyer transactions were signed
+with the user's passkey.
+
+<ExplorerChecks id="refund-lock" />
+
+<ExplorerChecks id="proof-mismatch" />
+
+The proof: ZyroPay's MCP worker hashed the report the agent received,
+`38c36289b3e24a0a91732c6e9ec1a08471f332c417daeae20db3cace0f29a6bc`. The datum says
+`75813c47…aeea`. They differ, so the request's proof state is `mismatch` and ZyroPay recommended
+`request_refund`.
+
+<ExplorerChecks id="refund" />
+
+<ExplorerChecks id="refund-authorize" />
+
+<ExplorerChecks id="refund-withdraw" />
+
+Proof before release caught the mismatch, and the buyer got the money back on chain: 4.357182 ADA
+returned, 4 min 54 s after the lock, while the seller still had 23 minutes before it could have
+collected. The seller's status route agrees:
+`GET https://address-intel.zyropay.online/v1/escrow/81f0c109…f29b` answers `"status": "refunded"`
+with `"closedBy": "bd2fff00…5303"`.
+
+### Agent hires agent
+
+The user's ZyroPay passkey wallet paid the direct x402 route
+`https://address-intel.zyropay.online/v1/address-report?address=addr_test1qr954…kaen` (the seller's
+own address, which holds native tokens). To build that report, the seller paid the Token
+Intelligence specialist (`https://token-intel.zyropay.online`) over x402 from its own budget wallet.
+Two payments, two sellers, one report.
+
+<ExplorerChecks id="sub-hire-buyer" />
+
+<ExplorerChecks id="sub-hire" />
+
+In the seller's answer (not on chain): HTTP 200, a delivery receipt that verified against
+`addr_test1qr954…kaen`, and `subcontracted[]` with status `ok`, the token report as delivered, the
+specialist's receipt (verified by the seller against `addr_test1qzh7p…wequ`) and the sub-payment id
+`07096aad…891a`. The sub-payment is one block before the buyer's payment: the seller verifies the
+buyer's payment, does the work (including the sub-hire), then settles. The budget wallet was funded
+from a ZyroPay team test wallet; that transfer is housekeeping and proves nothing on its own.
+
+### Discovery from ChatGPT (off chain)
+
+On 2026-10-31 ChatGPT, through the ZyroPay connector, called `find_agents` and got both ZyroPay
+agents from the Masumi preprod registry: "Cardano Address Intelligence (x402)" (5 tADA, escrow;
+the [x402 seller's identity](#the-x402-sellers-own-registry-identity)) and "Cardano Address
+Intelligence" (Sokosumi, MIP-003; the [first registry entry](#masumi-registry-entry)). It then
+called `verify_agent` for `address-intel.zyropay.online`, which returned `ok: true`. These are
+registry reads; no transaction is involved.
+
+### Policy deny, then allowed after the user changed the policy
+
+ChatGPT asked ZyroPay to send 1 tADA to `addr_test1vru7…2xv`. The address was not on the agent's
+recipient allowlist, so ZyroPay rejected the request at policy time (`RECIPIENT_NOT_ALLOWED`),
+before anything reached the phone, and no funds moved. A retry was rejected the same way. The
+denials are off chain: there is nothing to see on the explorer, which is the point. The user then
+added the address to the allowlist in the app and ChatGPT asked again; this time the request went
+to the phone, was approved with the passkey and was broadcast:
+
+<ExplorerChecks id="policy-allowlist" />
+
+### Agent allowance: lock, two agent payments, revoke
+
+<ExplorerChecks id="allowance-create" />
+
+<ExplorerChecks id="allowance" />
+
+<ExplorerChecks id="allowance-pay-2" />
+
+<ExplorerChecks id="allowance-revoke" />
+
+These four are one allowance, start to finish: each spends output `#0` of the one before. They
+were driven by `packages/blockchain/scripts/allowance-preprod.ts` with two test keys, not by the
+app; the app's own run is the [next section](#auto-pay-the-agent-paid-with-no-tap-limits-enforced-by-cardano). Three out-of-limit payments (over the
+per-payment maximum, to an unlisted payee, over the period cap) were sent only to Blockfrost's
+evaluator, never to the chain, and the validator refused each; the replies are in
+`contracts/allowance/deployments/preprod.json` and on the
+[allowance page](/architecture/allowance-contract/#live-on-preprod). The owner and agent keys were
+funded from a test wallet of the ZyroPay team; those transfers are housekeeping and prove nothing
+on their own.
+
+### Auto-pay: the agent paid with no tap, limits enforced by Cardano
+
+The same contract, this time from the app and the user's own passkey wallet
+`addr_test1vqj6…3wa`. In the agent's **Auto-pay on Cardano** screen the user set $5 per payment
+(25.943985 ADA at creation) and a daily cap of 103.77594 ADA, and approved the create with one
+passkey tap. Sixteen minutes later ChatGPT bought the address report on the direct x402 route and
+nothing reached the phone.
+
+<ExplorerChecks id="autopay-create" />
+
+<ExplorerChecks id="autopay" />
+
+The payment spends output `#0` of the create (the allowance) and its output `#1` (the agent's
+float). Off chain, ZyroPay recorded request `01a1913d-6fe7-7bd5-9b24-def768ce6540` with policy
+decision `allow`, reason `AUTO_PAY_ALLOWANCE`, state `CONFIRMED` and no approval record, and the
+seller's signed delivery receipt verified against `addr_test1qr954…kaen`. The limits were not
+ZyroPay's to enforce: the validator (script `fe651537…1aeb`, executed in this transaction)
+accepted the spend only because the 2 ADA went to a listed payee, stayed under the per-payment
+maximum and the day's cap, and the continuing output carries the datum with `spent_in_period`
+raised by exactly 2 ADA. The agent key is held encrypted by ZyroPay's API, one per allowance;
+what it can spend is bounded by that datum until the user revokes. Revoke from the app has not
+run live yet.
+
+## Awaiting a live run
+
+These are built and tested offline; each will be added here with its hash after it runs.
+
+<EvidenceList show="pending" />

@@ -1,0 +1,87 @@
+---
+title: "Limits and roadmap"
+description: "What ZyroPay does not do, what is not proven, what is not built, and what comes next. Read this before trusting anything else in these docs."
+---
+
+import Status from "../../components/Status.astro";
+
+## Not audited, not on mainnet
+
+- **No security audit** and no threat-model sign-off. Both block a launch.
+- **Test networks only.** Production is not deployed: no mainnet secrets, no production database, no
+  production domains.
+- **No payment privacy.** Payer, payee, amounts and times are public on Cardano, and an enterprise
+  address carries its whole history.
+
+## Known gaps in the security model
+
+- **The device checks outputs, not inputs.** On Cardano the app decodes the transaction itself and
+  refuses to sign if any output, the fee, the validity window or the escrow datum differs from what
+  it shows <Status kind="offline" />. It cannot see which UTxOs the inputs are, or recompute the
+  `script_data_hash` (that needs the protocol cost model); those stay with the API. For a refund
+  withdrawal it proves everything goes back to you, but not the exact amount.
+- **The proof trusts the MCP worker's measurement** of the body your agent received.
+- **Registry identity is checked at quote time,** not again at approval.
+- **Blockfrost is the only view of the chain** for confirmations and escrow state.
+- **The Masumi admins** (2 of 3) can settle a disputed escrow after the dispute time.
+- **Turnkey is the custody root of trust.** ZyroPay verifies the signatures it returns, which detects
+  a wrong signature, not a malicious one.
+
+## Not yet proven live <Status kind="pending" />
+
+Built and tested offline, waiting for a run on preprod:
+
+- a refund withdrawn after the deadline without the seller's authorization (`not_delivered`; the
+  `mismatch` refund with the seller's authorization is [live](/evidence/#dishonest-seller-caught-refund-on-chain));
+- push notifications (staging has none; the app polls);
+- the native iOS and Android apps on a device (the web app is live);
+- wallet import against a real Turnkey org.
+
+## Auto-pay on Cardano <Status kind="live" />
+
+- **Live from the app on preprod, not audited.** One create and one no-tap x402 payment by ChatGPT
+  ran on 2026-10-31 ([Evidence](/evidence/#auto-pay-the-agent-paid-with-no-tap-limits-enforced-by-cardano)).
+  Top-up, revoke and the fallbacks are tested offline only <Status kind="offline" />. Preprod only.
+- **The agent key is held by ZyroPay's server**: one Ed25519 key per allowance, encrypted at rest
+  (AES-256-GCM), destroyed on revoke. The chain bounds what it can do (per payment, per day, listed
+  payees, expiry, plus its fee float); it cannot touch the rest of your wallet.
+- **One payment at a time per allowance**: the next one waits for the previous to confirm (about
+  20 s), and meanwhile falls back to the passkey (`ALLOWANCE_BUSY`).
+- **Direct ADA payments only**: tokens, swaps and Masumi escrow keep the passkey.
+- **Fiat limits are converted once, at creation**; the chain counts lovelace.
+
+## Not built <Status kind="notbuilt" />
+
+- **x402 delivery on EVM and Solana.** Payments are signed but not handed to the resource.
+- **Concurrent Cardano sends from one address.** Without UTxO reservation the second one fails with
+  `inputs_spent`; retry it.
+- **Pre-registered OAuth clients** (needed if a client such as Grok wants a manually entered client
+  id).
+- **The 2026-07-28 MCP transport.** The server speaks the stateless 2025-11-25 transport, which
+  overlaps; the upgrade path is documented in the MCP reference.
+
+## Measured, not optimized
+
+Every live payment from ZyroPay so far was in ADA. The one native-token payment is the Sokosumi Task
+(1 tUSDM), paid by Sokosumi into the escrow and collected by our Payment Service.
+
+- A direct x402 payment took about 160 s from request to `CONFIRMED` and the escrow lock about 130 s,
+  most of it the human approval. The seller's SubmitResult landed 21 s after the lock.
+- Fees: 0.167349 ADA for a plain payment, 0.187589 ADA for an escrow lock (with the inline datum),
+  0.688128 ADA for the seller's SubmitResult and 0.642366 ADA for its Withdraw (a 10 KB Plutus
+  script inline in each). A reference script would make seller spends cheaper; not done.
+- The seller's Withdraw landed 39 s after `unlockTime`, inside one cron period.
+- The refund: 0.695215 ADA for the passkey's SetRefundRequested and 0.642818 ADA for its
+  WithdrawRefund (paid out of the escrow); 4 min 54 s from the lock to the money back, of which the
+  seller's AuthorizeRefund took 32 s after the request.
+- An agent payment from the on-chain allowance cost 0.291123 ADA (the 1.9 KB script inline, units
+  measured by the evaluator and declared exactly); the owner's revoke 0.259217 ADA. In the app,
+  the allowance create cost 0.174037 ADA and the auto-paid x402 payment 0.293462 ADA, paid from the
+  agent's float, not from the allowance.
+
+## Next
+
+1. The pending live runs above, each added to [Evidence](/evidence/) with its hash.
+2. On-device decoding of what you sign.
+3. A live top-up and revoke of an Auto-pay allowance from the app (create and payment are live).
+4. Audit, then production.

@@ -1,0 +1,18 @@
+{
+  "swapTransaction": "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAFCH6MCIdgv94d3c8ywX8gm4JC7lKq8TH6zYjQ6ixtCwbybQ/ffN89KMzS1moKr3xD+eaLjFLD93Uu7/6fCChoRW/T6oz1rKyozQUgdRIXXEPO9Upd2Z7eIKFrVSU3OPOX3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAAEedVb8jHAbu50xW7OaBUH/bGy3qP0jlECsc2iVrwTjwbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCptD/6J/XX9kp0wJsfKVh53ksJqzbfyd1RSzIap7OM5eiwiolmJN0Lo+aSob9044zeYkd1Ii0S5nxJJcCF62BEEQYEAAUCC0UAAAQACQNWFwAAAAAAAAMCAAEMAgAAAICWmAAAAAAABgEBAREFEgYAAQIFDAUHBQ0ACwkIAQIGCiPlF8uXeuOtKgEAAABtZAABgJaYAAAAAABaJhAAAAAAADIAAAYDAQAAAQkB7XU1/tHhSQn/sHHyiRIcpxQXmwYH1WoTNVhCnIdMw7gCSBUERkNCRA==",
+  "lastValidBlockHeight": 435385176,
+  "prioritizationFeeLamports": 105,
+  "computeUnitLimit": 17675,
+  "loadedAccountsDataSize": 3208180,
+  "loadedAccountsDataSizeLimit": null,
+  "transactionVersion": 0,
+  "prioritizationType": {
+    "computeBudget": { "microLamports": 5974, "estimatedMicroLamports": 5974 }
+  },
+  "simulationSlot": 457349196,
+  "dynamicSlippageReport": null,
+  "simulationError": null,
+  "addressesByLookupTableAddress": null,
+  "timeTaken": 0.005659357,
+  "createAtaTimeTaken": 0.002478581
+}

@@ -1,0 +1,70 @@
+---
+title: "6. Proof before release"
+description: "ZyroPay compares the result hash the seller records on chain with the SHA-256 of the bytes your agent actually received, before the seller can collect. The six proof states, what each means for a refund, and what the proof does not prove."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+import ExplorerChecks from "../../../components/ExplorerChecks.astro";
+
+With escrow, the seller is paid only after it writes a **result hash** on chain: SubmitResult sets
+`result_hash` in the escrow datum to the SHA-256 of the response body it delivered. That is a public,
+signed commitment. ZyroPay holds it against an independent measurement: the MCP worker computes its
+own SHA-256 over the exact bytes your agent received, without trusting any hash the seller sent.
+
+Whenever the API reads an escrow, it compares the two and returns the verdict as `x402.proof` on the
+request and `escrow.proof` on the escrow: `{state, receivedHash, onChainHash, resultTx, checkedAt,
+message}`. The verdict is stored, and each change of state is audited once.
+
+<Diagram
+  name="proof"
+  alt="Proof decision chart: no on-chain result before the deadline is pending; past the deadline is not_delivered; a result but no hashable body is unverifiable or pending; equal hashes are verified; different hashes are mismatch; mismatch recommends request_refund and not_delivered recommends withdraw_refund."
+  caption="How the proof state is decided, and the refund it recommends."
+/>
+
+| State           | Means                                                                                              | What you can do                                 |
+| --------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `pending`       | No on-chain result yet, or no delivery report yet                                                  | Wait, or request a refund                       |
+| `verified`      | The SHA-256 of what your agent received equals the on-chain `result_hash`                          | Nothing: the seller collects after `unlockTime` |
+| `mismatch`      | They differ: the seller recorded one result and delivered another                                  | Recommended: request a refund                   |
+| `not_delivered` | `submitResultTime` passed with no result on chain                                                  | Recommended: withdraw your refund               |
+| `unverifiable`  | The seller recorded a result, but the body could not be hashed (truncated or not text)             | Judge for yourself; a refund is still possible  |
+| `receipt_only`  | A direct payment: nothing is recorded on chain, only the [receipt](/how-it-works/receipts/) speaks | Nothing to release                              |
+
+On `mismatch` or `not_delivered`, `escrow.refund.recommended` names the refund to take
+(`request_refund`, or `withdraw_refund` once it is possible) and `refund.reason` says why. The audit
+events are `x402.proof_verified`, `security.x402_proof_mismatch`, `x402.proof_not_delivered` and
+`x402.proof_unverifiable`.
+
+## Proven live: verified
+
+The escrow payment on the [previous page](/how-it-works/escrow/) delivered a report; the seller then
+recorded its hash on chain, and ZyroPay's received hash was equal: `verified`.
+
+<ExplorerChecks id="escrow-result" />
+
+The hash in the datum, `d80a4d02d13d08a45d4662e432c5a5a6550ac9c2a093549f5dbbd0c6afbfbfce`, is the
+same value the seller's delivery receipt signs as `contentSha256`, so the receipt and the chain
+agree with each other as well as with the buyer.
+
+A live `mismatch` <Status kind="live" />, using the seller's deliberately dishonest demo mode:
+
+<TxRef id="proof-mismatch" />. The seller recorded `75813c47…aeea`; the body the agent received
+hashes to `38c36289…a6bc`. ZyroPay recommended the refund, and the user took it with the passkey
+before the seller could collect ([the five
+transactions](/evidence/#dishonest-seller-caught-refund-on-chain)). `not_delivered` and the other
+states are covered offline <Status kind="offline" />.
+
+## What the proof does not prove
+
+- **That the content is good.** A seller that commits to a useless report and delivers exactly that
+  report is `verified`. The proof is about integrity: you received what the seller committed to.
+- **Anything before the escrow is read.** The verdict is computed when the API reads the escrow, for
+  example when you or the agent open the request; nothing pushes it to you.
+- **Release.** ZyroPay does not block the seller's withdrawal on chain: after `unlockTime` the script
+  lets a seller with a result withdraw unless a refund was requested. The proof tells you, before
+  that time, whether to request one.
+
+**Code:** `apps/api/src/services/escrow-view.ts`, `packages/shared/src/domain/requests.ts`
+(`X402ProofStateSchema`), `apps/mcp/src/mcp/x402-delivery.ts`.

@@ -1,0 +1,22 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // Static assets only (no Worker script): the Astro Starlight build in ./dist, built by
+  // `pnpm build`. Workers static assets serve the files and apply dist/_headers (CSP, noindex,
+  // caching; written by scripts/postbuild.mjs). Unknown paths get dist/404.html.
+  "name": "zyropay-docs",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash",
+  },
+  "dev": { "port": 8788 },
+  "env": {
+    "staging": {
+      // https://docs.zyropay.online (noindex everywhere, test networks only).
+      "name": "zyropay-online-docs",
+      "workers_dev": false,
+      "routes": [{ "pattern": "docs.zyropay.online", "custom_domain": true }],
+    },
+  },
+}

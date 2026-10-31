@@ -1,0 +1,35 @@
+{
+  "name": "@zyropay/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Remote MCP server with OAuth on Cloudflare Workers. Never signs; calls the API's internal endpoints. Owner: MCP.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "echo \"Deploy with an environment: deploy:staging or deploy:production (docs/DEPLOY.md)\" && exit 1",
+    "typecheck": "tsc --noEmit -p tsconfig.worker.json && tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run tests/unit",
+    "test:e2e": "vitest run tests/e2e tests/security",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "check:deploy": "wrangler deploy --dry-run --env staging --outdir dist/staging && wrangler deploy --dry-run --env production --outdir dist/production"
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "catalog:",
+    "@modelcontextprotocol/sdk": "catalog:",
+    "@sentry/cloudflare": "catalog:",
+    "@zyropay/shared": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@types/node": "catalog:",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

@@ -1,0 +1,57 @@
+# Copy to apps/api/.dev.vars (git-ignored) for `wrangler dev`. Names match /.env.example.
+# Never commit real values.
+
+# Postgres (Neon). Required for every route except /health.
+DATABASE_URL=
+
+# Turnkey parent org (leave empty in development to use MockTurnkey: passkey
+# credentials named `dev-*` are accepted; refused in production).
+TURNKEY_ORGANIZATION_ID=
+TURNKEY_API_PUBLIC_KEY=
+TURNKEY_API_PRIVATE_KEY=
+# 32 bytes, base64 (e.g. `openssl rand -base64 32`). Encrypts delegated-signer keys.
+DELEGATED_KEY_ENCRYPTION_KEY=
+
+# >= 32 chars; same value in apps/mcp/.dev.vars.
+INTERNAL_SERVICE_TOKEN=
+INTERNAL_SERVICE_TOKEN_PREVIOUS=
+
+AUDIT_IP_HASH_SALT=
+
+# Webhook verification. Missing secret => that webhook is refused (fail closed).
+HELIUS_WEBHOOK_SECRET=
+ALCHEMY_WEBHOOK_SIGNING_KEY=
+TRANSAK_WEBHOOK_SECRET=
+
+# --- Real adapters (used when ZYROPAY_USE_MOCK_ADAPTERS=false; the API refuses to start
+# without HELIUS_API_KEY, ALCHEMY_API_KEY, Turnkey and DATABASE_URL) -------------------------
+HELIUS_API_KEY=
+# Optional Helius failover keys: 401/403/429 ("max usage reached") on one key => the request
+# is replayed with the next one, which also takes over until the failing key's cooldown ends.
+HELIUS_API_KEY_SECONDARY=
+HELIUS_API_KEYS=
+ALCHEMY_API_KEY=
+# Cardano (optional): Blockfrost project id of this mode's network. Development reads only
+# the preprod id (create a "Cardano preprod" project at blockfrost.io); without it Cardano is
+# simply not served.
+BLOCKFROST_PROJECT_ID_PREPROD=
+BLOCKFROST_PROJECT_ID_MAINNET=
+# Optional in development, required in production.
+COINGECKO_API_KEY=
+# Mainnet only (production): Jupiter swaps and Solana prices.
+JUPITER_API_KEY=
+# Development only (default true): value testnet SOL/ETH/ADA/USDC at mainnet prices (labelled).
+VALUE_TESTNETS_AT_MAINNET_PRICES=true
+# Transak sandbox (STAGING). Without keys the on-ramp endpoints refuse.
+TRANSAK_API_KEY=
+TRANSAK_API_SECRET=
+TRANSAK_REFERRER_DOMAIN=
+# Optional Expo access token (enhanced push security).
+EXPO_ACCESS_TOKEN=
+
+# Local MCP worker (apps/mcp `wrangler dev`) for agent revocation pushes.
+MCP_INTERNAL_URL=http://localhost:8788
+
+# Error monitoring (docs/MONITORING.md). Empty = Sentry off.
+SENTRY_DSN_API=
+SENTRY_ENVIRONMENT=development

@@ -1,0 +1,242 @@
+[
+  {
+    "name": "Solana",
+    "slug": "solana",
+    "file": "/brand/networks/solana.svg",
+    "live": true,
+    "plate": "dark",
+    "source": "https://solana.com/branding",
+    "rules": "Do not distort, skew, rotate, recolor, or otherwise alter a mark. ... Do not imply Foundation sponsorship, endorsement, or affiliation where none exists.",
+    "sha256": "3d340110"
+  },
+  {
+    "name": "Ethereum",
+    "slug": "ethereum",
+    "file": "/brand/networks/ethereum.svg",
+    "live": true,
+    "plate": "dark",
+    "source": "https://ethereum.org/assets/",
+    "rules": "no published rules (site images CC BY 4.0 unless otherwise marked)",
+    "sha256": "7320e64e"
+  },
+  {
+    "name": "Base",
+    "slug": "base",
+    "file": "/brand/networks/base.svg",
+    "live": true,
+    "plate": "white",
+    "source": "https://github.com/base/brand-kit",
+    "rules": "place the blue Square on a white ground ... in a circular mask, reduce to fifty percent.",
+    "sha256": "b4f2b487"
+  },
+  {
+    "name": "Cardano",
+    "slug": "cardano",
+    "file": "/brand/networks/cardano.svg",
+    "live": true,
+    "plate": "dark",
+    "source": "https://cardano.org/brand-assets/",
+    "rules": "display the official Cardano logo ... in a standalone and unaltered form, provided it does not imply an official sponsorship or endorsement",
+    "sha256": "e4744a97"
+  },
+  {
+    "name": "Bitcoin",
+    "slug": "bitcoin",
+    "file": "/brand/networks/bitcoin.svg",
+    "live": false,
+    "plate": "dark",
+    "source": "https://github.com/bitcoin/bitcoin/blob/master/src/qt/res/src/bitcoin.svg",
+    "rules": "no published rules (file header: 'License: MIT'; Bitcoin has no brand owner)",
+    "sha256": "86cdf6d0"
+  },
+  {
+    "name": "XRP Ledger",
+    "slug": "xrp",
+    "file": "/brand/networks/xrp.svg",
+    "live": false,
+    "plate": "dark",
+    "source": "https://xrpl.org/XRPL_Brand_Kit.zip",
+    "rules": "no published rules",
+    "sha256": "22b041ad"
+  },
+  {
+    "name": "BNB Chain",
+    "slug": "bnb-chain",
+    "file": null,
+    "live": false,
+    "plate": "dark",
+    "source": "https://www.bnbchain.org/en/brand-guidelines",
+    "rules": "Projects should seek approval from BNB Chain before using the logo.",
+    "sha256": null
+  },
+  {
+    "name": "Tron",
+    "slug": "tron",
+    "file": null,
+    "live": false,
+    "plate": "dark",
+    "source": "https://tronbrandkit.figma.site/",
+    "rules": "When using TRON brand assets, please include proper legal attribution and ensure all logos link back to the official website. Neutral on the landing page: attribution line and link not provided.",
+    "sha256": null
+  },
+  {
+    "name": "Dogecoin",
+    "slug": "dogecoin",
+    "file": null,
+    "live": false,
+    "plate": "dark",
+    "source": "https://dogecoin.com/trademarks/",
+    "rules": "Do not use the Dogecoin name, trademark, or other assets to suggest endorsement by Dogecoin without talking to us first (no logo download offered)",
+    "sha256": null
+  },
+  {
+    "name": "TON",
+    "slug": "ton",
+    "file": null,
+    "live": false,
+    "plate": "dark",
+    "source": "https://ton.org/media",
+    "rules": "no published rules (TON logo shipped only as a mark+wordmark lockup)",
+    "sha256": null
+  },
+  {
+    "name": "Sui",
+    "slug": "sui",
+    "file": "/brand/networks/sui.svg",
+    "live": false,
+    "plate": "dark",
+    "source": "https://sui.io/media-kit",
+    "rules": "Media, press professionals, and community partners may use Sui logos, trademarks, images, and colors by adhering to the instructions in the Brand Guidelines",
+    "sha256": "5ec5b369"
+  },
+  {
+    "name": "Avalanche",
+    "slug": "avalanche",
+    "file": "/brand/networks/avalanche.svg",
+    "live": false,
+    "plate": "dark",
+    "source": "https://support.avax.network/en/articles/4132288-avalanche-press-kit-and-brand-assets",
+    "rules": "Respectful use of our logo is key to protecting the strength of our brand's identity ... Maintain safe space around the logo",
+    "sha256": "67d21317"
+  },
+  {
+    "name": "Litecoin",
+    "slug": "litecoin",
+    "file": "/brand/networks/litecoin.svg",
+    "live": false,
+    "plate": "white",
+    "source": "https://litecoin.org/assets/ltc-DIEMRQHk.svg",
+    "rules": "no published rules found (litecoin.com brand page blocks automated access)",
+    "sha256": "9af83348"
+  },
+  {
+    "name": "Polkadot",
+    "slug": "polkadot",
+    "file": null,
+    "live": false,
+    "plate": "dark",
+    "source": "https://polkadot.network/brand-assets",
+    "rules": "no reachable rules (brand pages now 404 / redirect to polkadot.com)",
+    "sha256": null
+  },
+  {
+    "name": "NEAR",
+    "slug": "near",
+    "file": null,
+    "live": false,
+    "plate": "dark",
+    "source": "https://near.org/",
+    "rules": "no official brand kit found",
+    "sha256": null
+  },
+  {
+    "name": "Aptos",
+    "slug": "aptos",
+    "file": null,
+    "live": false,
+    "plate": "dark",
+    "source": "https://aptosnetwork.com/media-kit",
+    "rules": "not reachable (HTTP 429 security checkpoint)",
+    "sha256": null
+  },
+  {
+    "name": "Polygon",
+    "slug": "polygon",
+    "file": "/brand/networks/polygon.svg",
+    "live": false,
+    "plate": "none",
+    "source": "https://polygon.technology/brand-guidelines",
+    "rules": "our logo shouldn't be altered in any way ... Don't put the logo in a container or frame",
+    "sha256": "28e03cff"
+  },
+  {
+    "name": "Arbitrum",
+    "slug": "arbitrum",
+    "file": "/brand/networks/arbitrum.svg",
+    "live": false,
+    "plate": "dark",
+    "source": "https://arbitrumfoundation.notion.site/Arbitrum-brand-guidelines-6014e69d7b574f378a50f5ee678495d3",
+    "rules": "Use the primary variation whenever possible ... should never be used below 12px/5mm",
+    "sha256": "006d01bb"
+  },
+  {
+    "name": "Optimism",
+    "slug": "optimism",
+    "file": "/brand/networks/optimism.svg",
+    "live": false,
+    "plate": "none",
+    "source": "https://optimism.io/brand",
+    "rules": "OP Mainnet mark: Use only when referring to the Optimism blockchain.",
+    "sha256": "a301cb9b"
+  },
+  {
+    "name": "Cosmos",
+    "slug": "cosmos",
+    "file": null,
+    "live": false,
+    "plate": "dark",
+    "source": "https://cosmos.network/trademark",
+    "rules": "Only use ICF Trademarks with the express written permission of ICF.",
+    "sha256": null
+  },
+  {
+    "name": "Starknet",
+    "slug": "starknet",
+    "file": "/brand/networks/starknet.svg",
+    "live": false,
+    "plate": "dark",
+    "source": "https://www.starknet.io/media-kit/",
+    "rules": "no published rules on the media-kit page",
+    "sha256": "8d3c92ae"
+  },
+  {
+    "name": "ZKsync",
+    "slug": "zksync",
+    "file": "/brand/networks/zksync.svg",
+    "live": false,
+    "plate": "dark",
+    "source": "https://www.zksync.io/brand",
+    "rules": "no published rules",
+    "sha256": "95dd5cb9"
+  },
+  {
+    "name": "Linea",
+    "slug": "linea",
+    "file": "/brand/networks/linea.svg",
+    "live": false,
+    "plate": "dark",
+    "source": "https://linea.build/assets",
+    "rules": "no published rules",
+    "sha256": "8e9eef9d"
+  },
+  {
+    "name": "Scroll",
+    "slug": "scroll",
+    "file": null,
+    "live": false,
+    "plate": "dark",
+    "source": "https://scroll.io/",
+    "rules": "no official brand kit found",
+    "sha256": null
+  }
+]

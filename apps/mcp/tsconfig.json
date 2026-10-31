@@ -1,0 +1,10 @@
+{
+  // Editor/lint/test view: worker sources plus the Node-side tests and tooling.
+  // The worker itself is checked strictly (Workers globals only) by tsconfig.worker.json.
+  "extends": "@zyropay/config/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node", "@cloudflare/workers-types"]
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]
+}

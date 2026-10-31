@@ -1,0 +1,195 @@
+# Masumi Payment Service (Masumi Node) for Cardano Address Intelligence, on Cardano Preprod.
+#
+# Adapted from the official quickstart, masumi-network/masumi-services-dev-quickstart at commit
+# 9b48523fd30fe51005dcee5280edfc50ace5d4be (Payment Service 0.29.0, Registry Service 0.26.0,
+# PostgreSQL 15). Changes, all for running it beside other projects on one laptop:
+#   - own project, container and volume names (zyropay-masumi-*), so it never shares a database
+#     or wallets with another Masumi install;
+#   - the Payment Service listens on 127.0.0.1 only and Postgres has no host port;
+#   - images pinned by digest;
+#   - the Registry Service is optional (`--profile registry`): registration and Sokosumi use the
+#     public Masumi registry, so the default start builds one setup image instead of two;
+#   - a small gateway plus a Cloudflare quick tunnel publish ONLY the three payment routes the
+#     MIP-003 Worker needs (README "Why a gateway"). The admin UI and every admin route stay local.
+#
+# Start:  docker compose up -d        (first start builds payment-setup from source: ~5-10 min)
+# Status: docker compose ps -a        (payment-setup must show "Exited (0)")
+name: zyropay-masumi
+
+services:
+  # The 0.29.0 image cannot seed (it lacks the workspace packages the seed imports), so this
+  # one-shot service builds the same release from source, migrates, seeds, and exits.
+  payment-setup:
+    build:
+      context: https://github.com/masumi-network/masumi-payment-service.git#0.29.0
+      dockerfile_inline: |
+        FROM node:20-slim
+        RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+        RUN corepack enable && corepack prepare pnpm@10.30.2 --activate
+        WORKDIR /usr/src/app
+        COPY . .
+        RUN pnpm install --frozen-lockfile
+    image: zyropay-masumi-payment-setup:0.29.0
+    container_name: zyropay-masumi-payment-setup
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres-payment:5432/postgres?schema=public
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:?set ENCRYPTION_KEY in .env}
+      - ADMIN_KEY=${ADMIN_KEY:?set ADMIN_KEY in .env}
+      - BLOCKFROST_API_KEY_PREPROD=${BLOCKFROST_API_KEY_PREPROD:?set BLOCKFROST_API_KEY_PREPROD in .env}
+      - PURCHASE_WALLET_PREPROD_MNEMONIC=${PURCHASE_WALLET_PREPROD_MNEMONIC:-}
+      - SELLING_WALLET_PREPROD_MNEMONIC=${SELLING_WALLET_PREPROD_MNEMONIC:-}
+      # Keep blank: with a collection address the node signs a sellerReturnAddress, which the
+      # Sokosumi Coworker payment event cannot carry (apps/sokosumi-agent/paid-task.mjs).
+      - COLLECTION_WALLET_PREPROD_ADDRESS=${COLLECTION_WALLET_PREPROD_ADDRESS:-}
+      - SEED_ONLY_IF_EMPTY=TRUE
+    depends_on:
+      postgres-payment:
+        condition: service_healthy
+    command: sh -c "pnpm run prisma:migrate && pnpm run prisma:seed"
+    networks: [payment]
+    restart: "no"
+
+  payment-service:
+    # 0.29.0 is published for linux/amd64 only; Docker Desktop on Apple silicon emulates it.
+    image: ghcr.io/masumi-network/masumi-payment-service:0.29.0@sha256:c7408906637858f121667e8e7fd973f2bda26c183eefc67eecacf9c09bf36ed9
+    platform: linux/amd64
+    container_name: zyropay-masumi-payment-service
+    ports:
+      - "127.0.0.1:${MPS_PORT:-3001}:3001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres-payment:5432/postgres?schema=public
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - BLOCK_CONFIRMATIONS_THRESHOLD=${BLOCK_CONFIRMATIONS_THRESHOLD:-0}
+      - CHECK_TX_INTERVAL=${CHECK_TX_INTERVAL:-15}
+    depends_on:
+      payment-setup:
+        condition: service_completed_successfully
+    # The image's default command (pnpm run start) downloads another pnpm and fails.
+    command: ["node", "./dist/index.js"]
+    networks: [payment]
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3001/api/v1/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  postgres-payment:
+    image: postgres:15.19-bookworm
+    container_name: zyropay-masumi-postgres-payment
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_payment:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [payment]
+    restart: unless-stopped
+
+  # Allow-list proxy: the only door from the internet to the Payment Service (gateway/gateway.mjs).
+  gateway:
+    image: node:24.21.0-alpine
+    container_name: zyropay-masumi-gateway
+    command: ["node", "/gateway/gateway.mjs"]
+    environment:
+      - UPSTREAM=http://payment-service:3001
+      - PORT=3002
+    volumes:
+      - ./gateway:/gateway:ro
+    depends_on:
+      payment-service:
+        condition: service_healthy
+    networks: [payment]
+    restart: unless-stopped
+
+  # Cloudflare quick tunnel to the gateway: no Cloudflare login, new https://*.trycloudflare.com
+  # URL on every start. `register-agent secrets` reads it from this container's log.
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.0
+    container_name: zyropay-masumi-tunnel
+    command: ["tunnel", "--no-autoupdate", "--url", "http://gateway:3002"]
+    depends_on: [gateway]
+    networks: [payment]
+    restart: unless-stopped
+
+  # ---- Optional local Registry Service (docker compose --profile registry up -d) ----
+  registry-setup:
+    profiles: [registry]
+    build:
+      context: https://github.com/masumi-network/masumi-registry-service.git#0.26.0
+      dockerfile_inline: |
+        FROM node:20-slim
+        RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+        RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+        WORKDIR /usr/src/app
+        COPY . .
+        RUN pnpm install --frozen-lockfile && pnpm run prisma:generate
+    image: zyropay-masumi-registry-setup:0.26.0
+    container_name: zyropay-masumi-registry-setup
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres-registry:5432/postgres?schema=public
+      - ADMIN_KEY=${ADMIN_KEY}
+      - BLOCKFROST_API_KEY_PREPROD=${BLOCKFROST_API_KEY_PREPROD}
+      - SEED_ONLY_IF_EMPTY=TRUE
+    depends_on:
+      postgres-registry:
+        condition: service_healthy
+    command: >
+      sh -c "test -n \"$$BLOCKFROST_API_KEY_PREPROD\" || { echo 'BLOCKFROST_API_KEY_PREPROD is not set in .env'; exit 1; } &&
+      pnpm run prisma:migrate && pnpm run prisma:seed"
+    networks: [registry]
+    restart: "no"
+
+  registry-service:
+    profiles: [registry]
+    image: ghcr.io/masumi-network/masumi-registry-service:0.26.0
+    container_name: zyropay-masumi-registry-service
+    ports:
+      - "127.0.0.1:${REGISTRY_PORT:-3000}:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres-registry:5432/postgres?schema=public
+      - UPDATE_CARDANO_REGISTRY_INTERVAL=${UPDATE_CARDANO_REGISTRY_INTERVAL:-20}
+    depends_on:
+      registry-setup:
+        condition: service_completed_successfully
+    networks: [registry]
+    restart: unless-stopped
+
+  postgres-registry:
+    profiles: [registry]
+    image: postgres:15.19-bookworm
+    container_name: zyropay-masumi-postgres-registry
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_registry:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [registry]
+    restart: unless-stopped
+
+networks:
+  payment:
+  registry:
+
+volumes:
+  # Holds the encrypted wallet mnemonics. `docker compose down -v` deletes the wallets.
+  postgres_payment:
+    name: zyropay_masumi_postgres_payment
+  postgres_registry:
+    name: zyropay_masumi_postgres_registry

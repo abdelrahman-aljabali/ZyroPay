@@ -1,0 +1,81 @@
+packages:
+  - apps/*
+  - packages/*
+  - infrastructure/*
+  - tests/integration/*
+
+# Single place for dependency versions. Packages reference these with "catalog:"
+# so the four workstreams cannot drift onto different versions.
+catalog:
+  # tooling
+  typescript: 6.0.3
+  eslint: 10.12.0
+  "@eslint/js": 10.0.1
+  typescript-eslint: 8.71.2
+  globals: 17.13.0
+  prettier: 3.9.10
+  turbo: 2.11.8
+  vitest: 5.0.5
+  "@types/node": 26.6.5
+  tsx: 4.23.15
+  knip: 5.88.1
+  # shared runtime
+  zod: 4.6.7
+  "@noble/hashes": 2.4.0
+  # Cardano: Ed25519 witness verification (blockchain) and the dev mock signer (wallet)
+  "@noble/curves": 2.4.0
+  # BIP-39 phrase validation (shared: refuse key material at the API; mobile: wallet import)
+  "@scure/bip39": 2.4.0
+  # mobile wallet import: local BIP-32 (EVM) derivation and base58 (Solana) for address preview
+  "@scure/bip32": 2.4.0
+  "@scure/base": 2.4.0
+  # backend
+  hono: 4.13.13
+  drizzle-orm: 0.45.4
+  drizzle-kit: 0.31.11
+  # in-process Postgres for API integration tests (apps/api)
+  "@electric-sql/pglite": 0.5.8
+  # real-Postgres concurrency test (apps/api, runs when TEST_DATABASE_URL is set)
+  pg: 8.23.0
+  "@types/pg": 8.23.1
+  "@neondatabase/serverless": 1.2.0
+  wrangler: 4.151.0
+  "@cloudflare/workers-types": 5.20261015.1
+  "@modelcontextprotocol/sdk": 1.32.1
+  # error monitoring (docs/MONITORING.md): workers and the web app; native uses @sentry/react-native
+  "@sentry/cloudflare": 11.8.0
+  # same version @sentry/react-native 7.11 bundles, so web and native share one @sentry/core
+  "@sentry/react": 10.37.0
+  "@cloudflare/workers-oauth-provider": 1.2.3
+  "@turnkey/sdk-server": 8.6.0
+  # web Turnkey (apps/mobile on the web): the same versions @turnkey/react-native-wallet-kit 2.3.9 pins
+  "@turnkey/core": 2.12.2
+  "@turnkey/crypto": 2.13.2
+  # chains
+  "@solana/kit": 8.5.0
+  viem: 2.57.7
+  "@solana-program/system": 0.15.0
+  "@solana-program/token": 0.17.0
+  "@solana-program/compute-budget": 0.19.0
+  # apps/seller (x402 seller on Cardano preprod). 2.29.0 exactly: 2.26 re-encoded the tx
+  # CBOR in the facilitator and broke the body hash (x402-foundation/x402#3674).
+  "@x402/core": 2.29.0
+  "@x402/hono": 2.29.0
+  "@x402/cardano": 2.29.0
+  "@x402/fetch": 2.29.0
+  # the version @x402/cardano 2.29.0 (^0.5.9) resolves to; used directly by the wallet script
+  "@evolution-sdk/evolution": 0.5.19
+  # react for apps/landing (apps/mobile and packages/ui pin the version Expo SDK 57 needs)
+  react: 19.2.3
+
+onlyBuiltDependencies:
+  - esbuild
+  - workerd
+  - sharp
+  # mobile: copies prebuilt Skia xcframeworks/AARs into place (local file copy only)
+  - "@shopify/react-native-skia"
+
+ignoredBuiltDependencies:
+  - core-js-pure
+  # mobile: opencollective banner only
+  - react-native-inappbrowser-reborn

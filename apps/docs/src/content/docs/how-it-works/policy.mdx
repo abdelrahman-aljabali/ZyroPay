@@ -1,0 +1,87 @@
+---
+title: "2. Policy decides"
+description: "The rules ZyroPay checks for every agent request, in order, before anything reaches your phone or a signer. Deny, ask you, or allow within limits, and why concurrent requests cannot add up past a limit."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+
+Every agent request goes through one pure function, `evaluatePolicy` in `@zyropay/shared`, inside a
+database transaction that holds a row lock on the agent's policy. It returns one of three decisions
+and every reason that applied: **deny**, **require approval** (ask you), or **allow** (autonomous,
+within limits). Read-only tools are allowed once the agent, tool, wallet and network checks pass;
+approval applies to value only.
+
+<Diagram
+  name="policy"
+  alt="Decision chart: revoked, expired or tool, wallet or network not allowed leads to deny; read-only tools are allowed; spending off, protocol or recipient not allowed or seller not registered leads to deny; over a limit, no valuation or a direct x402 above the escrow threshold leads to deny or ask you depending on the over-limit setting; Always Ask, swaps and Cardano ask you; otherwise allow."
+  caption="evaluatePolicy, in the order it applies its rules."
+/>
+
+## The rules, in order
+
+1. **Who and where.** Deny if the agent is revoked or its session expired, or if the tool, the
+   wallet or the network is not in the agent's allowed lists.
+2. **What and to whom.** For a value-moving tool, deny if spending is off; if the protocol is
+   missing or not allowed (`pay_x402` must name `x402`); or if recipients are restricted and the
+   recipient is not on the allowlist. For an x402 payment the recipient is the seller, also for an
+   escrow payment where the money goes to a script first. With **only pay registered Masumi
+   agents** on, deny a seller without an on-chain identity ZyroPay verified (`AGENT_NOT_REGISTERED`)
+   or, if you keep a trusted list, one not on it (`AGENT_NOT_TRUSTED`).
+3. **How much.** The request is valued in USD cents, rounded up. If the value plus what was already
+   spent **and reserved** today or this month exceeds a limit, or there is no valuation, the request
+   is over the limit. So is a direct (non-escrow) x402 payment above your escrow threshold
+   (`ESCROW_REQUIRED`). Over the limit means deny or ask you, as you choose (`overLimitBehavior`).
+4. **Who signs.** In Always Ask mode, for a swap, and for any Cardano payment, ask you. Otherwise
+   allow: the payment runs autonomously within the limits.
+
+A request that is allowed or sent to you for approval reserves its USD value at once; the
+reservation becomes a ledger entry when the chain confirms the payment, and is released if it is
+rejected, expires or fails.
+
+## Why it fails closed
+
+- **No price, no autonomy.** USD values come from Jupiter (Solana) and CoinGecko (Ethereum, Base,
+  ADA). A quote older than 120 s is dropped. A missing valuation counts as exceeding every limit, so
+  the request is denied or comes to you; it is never allowed.
+- **Test networks are valued at mainnet prices** and labelled `mainnet_proxy`, so limits mean the
+  same thing on preprod as they would on mainnet.
+- **A throw is a deny.** Malformed amounts throw, and the caller treats a throw as a denial.
+- **Concurrency.** Each agent's requests are serialized by `SELECT … FOR UPDATE` on its policy row,
+  and limits count spent plus reserved. Ten requests fired at once cannot jointly pass a daily limit
+  that one of them alone would fit. This is tested on an in-process Postgres and on real Postgres.
+
+## What a new agent may do
+
+Nothing that moves value. `defaultAgentPolicy()` is Always Ask, spending off, zero limits, recipients
+restricted to an empty allowlist, no wallets, no protocols. Connecting the agent adds only the
+wallets and networks you picked; everything else you switch on yourself in the policy editor. Every
+field is in the [policy reference](/reference/policy/), every reason code in
+[States and codes](/reference/codes/#policy-reason-codes).
+
+## A worked example
+
+The live x402 payment was 2 tADA from ChatGPT to the demo seller. For it to get past rules 1 to 3,
+the agent's policy had spending on, the `x402` protocol allowed and the seller's address on the
+allowlist (the setup in the [user guide](/guides/users/#set-the-agents-policy)). Rule 4 then asked
+for approval, as it does for every Cardano payment, and the request came back `PENDING_APPROVAL`.
+The same agent asking to pay an address that is not on the allowlist gets `REJECTED` with
+`RECIPIENT_NOT_ALLOWED`, and nothing reaches the app or the chain. That ran live on 2026-10-31:
+ChatGPT asked to send 1 tADA to an address outside the allowlist, and ZyroPay rejected the request
+and a retry before either reached the phone. After the user added the address to the allowlist in
+the app, the same request went to the phone, was approved with the passkey and was broadcast
+(<TxRef id="policy-allowlist" />).
+
+## Proven
+
+- The rules, their order, the reasons and the fail-closed paths: unit tests in
+  `packages/shared/src/policy.test.ts` <Status kind="offline" />.
+- Concurrent requests against limits: `apps/api/test/security/concurrency.test.ts` and
+  `apps/api/test/postgres/concurrency.test.ts` <Status kind="offline" />.
+- A live denial by the recipient allowlist, then the same send allowed once the user changed the
+  policy <Status kind="live" /> (<TxRef id="policy-allowlist" />; the denials are off chain).
+- The live payments on the [Evidence](/evidence/) page each passed this engine.
+
+**Code:** `packages/shared/src/policy.ts`, `packages/shared/src/domain/agents.ts`,
+`apps/api/src/services/requests.ts`.

@@ -1,0 +1,46 @@
+{
+  "name": "@zyropay/seller",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cardano Address Intelligence: a paid data API on Cloudflare Workers, paid per request via x402 on Cardano preprod.",
+  "exports": {
+    "./app": "./src/app.ts",
+    "./blockfrost": "./src/blockfrost.ts",
+    "./config": "./src/config.ts",
+    "./facilitator": "./src/facilitator.ts",
+    "./receipt": "./src/receipt.ts"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit -p tsconfig.worker.json && tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "wallet": "tsx scripts/wallet.ts",
+    "buy": "tsx scripts/buy.ts",
+    "receipt-key": "tsx scripts/receipt-key.ts"
+  },
+  "dependencies": {
+    "@evolution-sdk/evolution": "catalog:",
+    "@x402/cardano": "catalog:",
+    "@x402/core": "catalog:",
+    "@x402/fetch": "catalog:",
+    "@x402/hono": "catalog:",
+    "hono": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@types/node": "catalog:",
+    "@zyropay/blockchain": "workspace:*",
+    "@zyropay/config": "workspace:*",
+    "@zyropay/integrations": "workspace:*",
+    "@zyropay/shared": "workspace:*",
+    "eslint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

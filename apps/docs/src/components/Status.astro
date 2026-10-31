@@ -1,0 +1,20 @@
+---
+/**
+ * How far a claim is proven. live: run on Cardano preprod (see Evidence); offline: covered by
+ * tests without a network; designed: specified, not built; notbuilt: not started; pending:
+ * built, waiting for its live run.
+ */
+interface Props {
+  kind: "live" | "offline" | "designed" | "notbuilt" | "pending";
+}
+const LABEL = {
+  live: "Live on preprod",
+  offline: "Tested offline",
+  designed: "Designed, not built",
+  notbuilt: "Not built",
+  pending: "Awaiting live run",
+} as const;
+const { kind } = Astro.props;
+---
+
+<span class={`zp-status zp-status--${kind}`}>{LABEL[kind]}</span>

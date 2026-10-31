@@ -1,0 +1,22 @@
+flowchart TB
+  CR[CREATED] --> PC[POLICY_CHECK]
+  PC -- "needs you" --> PA[PENDING_APPROVAL]
+  PC -- allowed --> AP[APPROVED]
+  PC -- denied --> RJ[REJECTED]
+  PA -- "your passkey" --> AP
+  PA -- "you said no" --> RJ
+  AP --> SG[SIGNING]
+  SG --> BC[BROADCAST]
+  BC --> CF[CONFIRMED]
+  SG --> FL[FAILED]
+  BC --> FL
+  PA -. "deadline passed" .-> EX[EXPIRED]
+  AP -. "deadline passed" .-> EX
+  PA -. withdrawn .-> CA[CANCELLED]
+  AP -. withdrawn .-> CA
+  classDef ok fill:{{okBg}},stroke:{{ok}},color:{{text}},stroke-width:1.5px
+  classDef deny fill:{{denyBg}},stroke:{{deny}},color:{{text}},stroke-width:1.5px
+  classDef ask fill:{{accentBg}},stroke:{{accent}},color:{{text}},stroke-width:1.5px
+  class CF ok
+  class RJ,FL deny
+  class PA ask

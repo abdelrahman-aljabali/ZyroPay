@@ -1,0 +1,7 @@
+{
+  // Workers compatibility harness for @zyropay/blockchain + @zyropay/integrations.
+  // Deliberately WITHOUT nodejs_compat: the packages must run on plain Workers APIs.
+  "name": "zyropay-chain-smoke",
+  "main": "src/__workers__/smoke.ts",
+  "compatibility_date": "2026-10-01",
+}

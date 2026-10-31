@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="%LANG_ISO_CODE%">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>%WEB_TITLE%</title>
+    <!-- PWA: installable, standalone, phone-first. Icons: scripts/generate-icons.mjs. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script src="/theme-boot.js"></script>
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!--
+      Web fonts: Latin subsets of Inter (scripts/subset-fonts.mjs), preloaded so they download in
+      parallel with the JS instead of after it. The family names are the ones the theme uses
+      (packages/ui tokens); the web build does not load the TTFs through expo-font.
+    -->
+    <link
+      rel="preload"
+      href="/fonts/inter-0.4.2-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/inter-0.4.2-500.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/inter-0.4.2-600.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/inter-0.4.2-700.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <style id="zyropay-inputs">
+      /*
+       * iOS Safari zooms the page into any text field under 16px when it gains focus and
+       * does not zoom back out. On phones and touch screens every text field is 16px.
+       */
+      @media (pointer: coarse), (max-width: 600px) {
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+        textarea,
+        select {
+          font-size: 16px !important;
+        }
+      }
+    </style>
+    <style id="zyropay-fonts">
+      @font-face {
+        font-family: Inter_400Regular;
+        src: url(/fonts/inter-0.4.2-400.woff2) format("woff2");
+        font-display: block;
+      }
+      @font-face {
+        font-family: Inter_500Medium;
+        src: url(/fonts/inter-0.4.2-500.woff2) format("woff2");
+        font-display: block;
+      }
+      @font-face {
+        font-family: Inter_600SemiBold;
+        src: url(/fonts/inter-0.4.2-600.woff2) format("woff2");
+        font-display: block;
+      }
+      @font-face {
+        font-family: Inter_700Bold;
+        src: url(/fonts/inter-0.4.2-700.woff2) format("woff2");
+        font-display: block;
+      }
+    </style>
+    <!-- Light by default (not the OS setting); theme-boot.js switches these for a stored Dark. -->
+    <meta name="theme-color" content="#FFFFFF" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="ZyroPay" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="referrer" content="no-referrer" />
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #ffffff;
+      }
+      html[data-theme="dark"],
+      html[data-theme="dark"] body {
+        background: #000000;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run ZyroPay.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

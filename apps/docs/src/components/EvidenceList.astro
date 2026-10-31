@@ -1,0 +1,77 @@
+---
+/**
+ * The evidence cards: every live transaction with its explorer link, block, fee, latency and
+ * "What to check on the explorer", then the runs still to come.
+ */
+import Status from "./Status.astro";
+import { ada, blockUrl, explorerUrl, isLive, items } from "../lib/evidence";
+
+interface Props {
+  /** "live" (default) or "pending". */
+  show?: "live" | "pending";
+}
+const show = Astro.props.show ?? "live";
+const list = items.filter((i) => (show === "live" ? isLive(i) : !isLive(i)));
+---
+
+<div class="zp-evidence">
+  {
+    list.map((item) => {
+      const url = explorerUrl(item);
+      return (
+        <section class="zp-tx" aria-labelledby={`tx-${item.id}`}>
+          <div class="zp-tx__head">
+            <h3 class="zp-tx__title" id={`tx-${item.id}`}>
+              {item.title}
+            </h3>
+            <Status kind={url ? "live" : item.id === "allowance" ? "offline" : "pending"} />
+          </div>
+          {url && item.txHash && (
+            <a class="zp-hash zp-tx__hash" href={url}>
+              {item.txHash}
+            </a>
+          )}
+          {url && (
+            <dl>
+              {item.block !== undefined && (
+                <div>
+                  <dt>Block</dt>
+                  <dd>
+                    <a href={blockUrl(item.block)}>{item.block}</a>
+                  </dd>
+                </div>
+              )}
+              {item.time && (
+                <div>
+                  <dt>Time (UTC)</dt>
+                  <dd>{item.time.replace("T", " ").replace("Z", "")}</dd>
+                </div>
+              )}
+              {item.amount && (
+                <div>
+                  <dt>Amount</dt>
+                  <dd>{item.amount}</dd>
+                </div>
+              )}
+              {item.feeLovelace && (
+                <div>
+                  <dt>Fee</dt>
+                  <dd>{ada(item.feeLovelace)}</dd>
+                </div>
+              )}
+              {item.latency && (
+                <div class="zp-tx__wide">
+                  <dt>Latency</dt>
+                  <dd>{item.latency}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+          <p class="zp-tx__what">
+            {item.what} <a href={item.page}>How this works</a>
+          </p>
+        </section>
+      );
+    })
+  }
+</div>

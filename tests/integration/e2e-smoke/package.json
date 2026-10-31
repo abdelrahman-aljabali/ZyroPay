@@ -1,0 +1,26 @@
+{
+  "name": "@zyropay/e2e-smoke",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "End-to-end local smoke test: API + MCP under wrangler dev, local Postgres, Mock adapters, MCP OAuth with the MCP SDK client, approval with the mock passkey.",
+  "scripts": {
+    "smoke": "tsx src/run.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "catalog:",
+    "@zyropay/shared": "workspace:*",
+    "@zyropay/wallet": "workspace:*",
+    "pg": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

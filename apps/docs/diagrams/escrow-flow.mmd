@@ -1,0 +1,24 @@
+sequenceDiagram
+  autonumber
+  participant C as AI client
+  participant M as ZyroPay MCP
+  participant S as Seller
+  participant A as ZyroPay API
+  participant U as You
+  participant E as Masumi escrow
+  C->>M: pay_x402 with escrow true
+  M->>S: GET the escrow route
+  S-->>M: 402: payTo is the escrow, seller-signed terms, deadlines
+  M->>A: create the request with the requirements
+  A->>A: verify the seller's signature, input hash, escrow address, deadlines, registry claim
+  A->>A: build the datum, bind terms and datum bytes into payloadHash
+  U->>A: approve with your passkey
+  C->>M: get_approval_status
+  M->>S: retry with PAYMENT-SIGNATURE (the signed lock)
+  S->>E: facilitator verifies and submits the lock (inline datum)
+  S-->>M: 200, report, X-Escrow-Result-Hash, X-Delivery-Receipt
+  S->>E: SubmitResult: result_hash = SHA-256 of the body
+  M->>A: delivery report: receipt and its own SHA-256 of the body
+  A->>E: read the escrow datum
+  A->>A: compare received hash and on-chain result_hash
+  Note over A,E: Equal: proof verified, the seller can withdraw after unlock_time. Different or missing: you can refund.

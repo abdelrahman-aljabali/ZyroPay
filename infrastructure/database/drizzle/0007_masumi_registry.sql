@@ -1,0 +1,2 @@
+ALTER TABLE "agent_policies" ADD COLUMN "require_registered_agent" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "agent_policies" ADD COLUMN "trusted_agent_identifiers" jsonb DEFAULT '[]'::jsonb NOT NULL;

@@ -1,0 +1,30 @@
+---
+/** Inline proof for a claim: the explorer link, block, fee, or "Awaiting live run". */
+import Status from "./Status.astro";
+import { ada, blockUrl, evidence, explorerUrl, shortHash } from "../lib/evidence";
+
+interface Props {
+  id: string;
+}
+const item = evidence(Astro.props.id);
+const url = explorerUrl(item);
+---
+
+{
+  item.txHash !== null && url !== null ? (
+    <span>
+      <a class="zp-hash" href={url}>
+        {shortHash(item.txHash)}
+      </a>
+      {item.block !== undefined && (
+        <>
+          {" "}
+          (block <a href={blockUrl(item.block)}>{item.block}</a>
+          {item.feeLovelace !== undefined && <>, fee {ada(item.feeLovelace)}</>})
+        </>
+      )}
+    </span>
+  ) : (
+    <Status kind="pending" />
+  )
+}

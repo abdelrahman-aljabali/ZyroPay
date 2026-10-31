@@ -1,0 +1,94 @@
+---
+title: "3. Your passkey signs"
+description: "Your keys live in your own Turnkey sub-organization behind your passkey. How ZyroPay binds an approval to the exact payment, what the server checks before and after your passkey signs, and how this works on Cardano."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Status from "../../../components/Status.astro";
+import ExplorerChecks from "../../../components/ExplorerChecks.astro";
+
+## Your keys, your sub-organization
+
+At sign-up the app creates a passkey and, through Turnkey's Auth Proxy, your own Turnkey
+**sub-organization** with a wallet holding one Solana, one EVM and one Cardano account. No ZyroPay
+server takes part. The keys are generated and used inside Turnkey's secure enclaves.
+
+Your passkey is the **only root user** of that sub-org. On your first login the API reads the
+sub-org with ZyroPay's read-only parent-organization key and refuses to activate the account unless
+the root quorum is exactly you, with threshold 1. ZyroPay holds no root credential, so in Always Ask
+mode no ZyroPay system can sign anything for you. The cost: ZyroPay cannot recover your account
+either; add a second passkey as your own backup.
+
+## What you see is what you sign
+
+Before you are asked, the API builds the unsigned transaction and the **canonical payload**: network,
+from, to, asset, amount, fee cap, plugin, tool, plugin data (for x402: the seller's terms and, for
+escrow, the exact datum bytes), a random nonce, the expiry and the idempotency key. The
+`payloadHash` is the SHA-256 of that payload's canonical JSON. Your approval binds to it: any change
+to a material term produces a different hash, and the old approval no longer applies.
+
+<Diagram
+  name="passkey"
+  alt="Sequence diagram of a passkey approval on Cardano, steps 1 to 11, as described in the list below."
+  caption="Approving a Cardano payment. Numbers match the list below."
+/>
+
+1. The API builds the unsigned transaction and its payload hash and stores both.
+2. You open the approval in the app.
+3. The review shows the recipient, amount and fiat value, the fee cap, which agent asked, warnings
+   (a first-time recipient, an unverified token, testnet), for x402 the seller's description and
+   host. It also carries the body hash the passkey will sign.
+4. You confirm, and the app asks your passkey to stamp a Turnkey `SIGN_RAW_PAYLOAD_V2` request over
+   that body hash (on Solana and EVM: `SIGN_TRANSACTION_V2` over the exact unsigned bytes).
+5. Your device returns the WebAuthn stamp (`X-Stamp-Webauthn`), which covers the exact request body.
+6. The app sends the stamped request with the `payloadHash` it approved.
+7. The API checks: the stamp is a passkey stamp, not a session key; the request names your sub-org
+   and the stored signing key, whose hash is the sender's payment credential; the payload is the body
+   hash the API **recomputes** from the stored bytes; the `payloadHash` matches; the request has not
+   expired; and an independent decoder (`verifyMatchesPayload`, no network) agrees that the bytes
+   pay exactly what the payload says.
+8. The request moves to `SIGNING` before Turnkey is called, so a second approve of the same request
+   cannot sign twice.
+9. The API forwards your stamped request to Turnkey unchanged. It cannot alter it: the stamp would
+   no longer verify.
+10. Turnkey returns the Ed25519 signature.
+11. The API verifies that signature over the body hash, attaches the witness, and checks the signed
+    transaction against the reviewed bytes once more. A plain send is then broadcast through
+    Blockfrost; an x402 payment waits for [hand-off](/how-it-works/x402/).
+
+## Cardano specifics
+
+- **Turnkey has no Cardano transaction type.** It signs a raw 32-byte payload with an Ed25519 key
+  (`ADDRESS_FORMAT_COMPRESSED`, `CURVE_ED25519`, path `m/1852'/1815'/0'/0'/0'`). ZyroPay builds and
+  decodes Cardano transactions with its own CBOR codec, cross-checked against EMURGO's
+  serialization library in tests.
+- **Your address is an enterprise address** (`addr_test1v…` on preprod): the Blake2b-224 hash of
+  your public key, with no stake part. It does not earn staking rewards, and importing your
+  recovery phrase into Yoroi, Eternl or Daedalus will **not** show these funds; they use a different
+  derivation and address type. Recover through Turnkey.
+- **A Cardano signature cannot be bounded by a Turnkey policy**, because Turnkey cannot parse what it
+  signs. So Cardano is never autonomous through Turnkey: every Cardano payment needs your passkey,
+  except one from an [auto-pay allowance](/how-it-works/autonomous/)
+  you created with your passkey, whose limits the ledger enforces.
+
+## Proven live
+
+The first Cardano transaction ZyroPay ever submitted was a passkey-signed send of 1 ADA from the web
+app to the demo seller.
+
+<ExplorerChecks id="first-send" />
+
+The same path signed the x402 payment and the escrow lock on the [Evidence](/evidence/) page. The
+checks in step 7 (forged stamp, other bytes, other body hash, other key) are refused and audited in
+tests <Status kind="offline" />.
+
+## What this does not protect against
+
+The server-side checks protect you against the agent, the MCP worker and a tampered app. Against a
+compromised ZyroPay API that describes one payment and builds another, the app decodes the Cardano
+transaction on the device and refuses to sign when the outputs, fee, validity window or escrow datum
+differ from the review (`packages/shared/src/cardano-tx-check.ts`). It cannot check the inputs or the
+`script_data_hash`. See [Who you trust](/security/trust/).
+
+**Code:** `packages/shared/src/payload.ts`, `apps/api/src/services/approvals.ts`,
+`packages/wallet` (stamp verification), `packages/blockchain/src/cardano/`.

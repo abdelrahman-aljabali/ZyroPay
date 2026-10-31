@@ -1,0 +1,28 @@
+{
+  "name": "@zyropay/sokosumi-agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sokosumi Coworker and Masumi MIP-003 agent for Cardano Address Intelligence: fulfils Tasks and paid jobs with the seller's deterministic address report.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --import tsx start.mjs",
+    "doctor": "node --env-file-if-exists=.env --import tsx doctor.mjs",
+    "worker": "node --env-file-if-exists=.env --import tsx worker.mjs",
+    "report": "node --env-file-if-exists=.env --import tsx report-cli.mjs",
+    "api": "node --env-file-if-exists=.env --env-file-if-exists=.local/mps-runtime.env --import tsx agent-api.mjs",
+    "payment": "node --env-file-if-exists=.env --env-file-if-exists=.local/mps.env payment-registration.mjs",
+    "masumi:register": "node --env-file=../../infrastructure/masumi/.env --import tsx ../../infrastructure/masumi/scripts/register-agent.ts",
+    "masumi:status": "node --env-file-if-exists=../../infrastructure/masumi/.env --import tsx ../../infrastructure/masumi/scripts/status.ts",
+    "mip003:dev": "pnpm --filter @zyropay/seller exec wrangler dev --config ../sokosumi-agent/mip003/wrangler.jsonc",
+    "mip003:build": "pnpm --filter @zyropay/seller exec wrangler deploy --dry-run --config ../sokosumi-agent/mip003/wrangler.jsonc --outdir dist",
+    "mip003:deploy": "pnpm --filter @zyropay/seller exec wrangler deploy --config ../sokosumi-agent/mip003/wrangler.jsonc",
+    "mip003:secrets": "pnpm --filter @zyropay/seller exec wrangler secret bulk ../../infrastructure/masumi/.local/mip003.secrets.json --config ../sokosumi-agent/mip003/wrangler.jsonc",
+    "test": "node --import tsx --test *.test.mjs *.test.ts mip003/*.test.mjs"
+  },
+  "dependencies": {
+    "tsx": "catalog:"
+  }
+}

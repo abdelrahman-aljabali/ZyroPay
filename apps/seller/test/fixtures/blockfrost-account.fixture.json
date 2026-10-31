@@ -1,0 +1,19 @@
+{
+  "_fixture": "FIXTURE (synthetic test data in the documented Blockfrost response shape; not real chain data)",
+  "_endpoint": "GET /accounts/{stake_address}",
+  "_shape": "account_content",
+  "body": {
+    "stake_address": "stake_test1uq3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsw4fsh7",
+    "active": true,
+    "registered": true,
+    "active_epoch": 250,
+    "controlled_amount": "1520000000",
+    "rewards_sum": "0",
+    "withdrawals_sum": "0",
+    "reserves_sum": "0",
+    "treasury_sum": "0",
+    "withdrawable_amount": "0",
+    "pool_id": "pool1fixture0notarealpool0000000000000000000000000000",
+    "drep_id": null
+  }
+}

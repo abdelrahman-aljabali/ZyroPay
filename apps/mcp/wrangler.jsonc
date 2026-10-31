@@ -1,0 +1,107 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "zyropay-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  // global_fetch_strictly_public: required by @cloudflare/workers-oauth-provider for
+  // Client ID Metadata Documents (SSRF protection for the CIMD and x402 fetches).
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": { "enabled": true },
+  "vars": {
+    "ZYROPAY_MODE": "development",
+    "MCP_PUBLIC_URL": "http://localhost:8788",
+    "MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS": "900",
+    "MCP_AUDIT_SINK": "log",
+  },
+  // OAuth state (clients, grants, hashed tokens, encrypted props). Replace the id with the
+  // namespace created by `wrangler kv namespace create OAUTH_KV` before deploying.
+  "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "00000000000000000000000000000000" }],
+  // The only path to ZyroPay: the API worker's /internal/v1/* endpoints.
+  "services": [{ "binding": "API", "service": "zyropay-api" }],
+  "ratelimits": [
+    {
+      "name": "MCP_RATE_LIMITER",
+      "namespace_id": "4101",
+      "simple": { "limit": 120, "period": 60 },
+    },
+    {
+      "name": "AUTH_RATE_LIMITER",
+      "namespace_id": "4102",
+      "simple": { "limit": 60, "period": 60 },
+    },
+    {
+      "name": "OAUTH_ENDPOINT_RATE_LIMITER",
+      "namespace_id": "4103",
+      "simple": { "limit": 600, "period": 60 },
+    },
+  ],
+  "dev": { "port": 8788 },
+  // Deployed environments (docs/DEPLOY.md). The top level above is LOCAL DEVELOPMENT only;
+  // always deploy with --env. Replace every *.example host with your own domain.
+  "env": {
+    "staging": {
+      // Testnet deployment on zyropay.online. Secrets: INTERNAL_SERVICE_TOKEN (same value as
+      // the API's), MCP_OAUTH_COOKIE_SECRET: `wrangler secret put <NAME> --env staging`.
+      "name": "zyropay-online-mcp",
+      "vars": {
+        "ZYROPAY_MODE": "development",
+        "MCP_PUBLIC_URL": "https://mcp.zyropay.online",
+        "MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS": "900",
+        "MCP_AUDIT_SINK": "log",
+      },
+      // `wrangler kv namespace create zyropay-online-oauth` (2026-10-30).
+      "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "794bed5db991452287ba76cf6e335242" }],
+      "services": [{ "binding": "API", "service": "zyropay-online-api" }],
+      "ratelimits": [
+        {
+          "name": "MCP_RATE_LIMITER",
+          "namespace_id": "4401",
+          "simple": { "limit": 120, "period": 60 },
+        },
+        {
+          "name": "AUTH_RATE_LIMITER",
+          "namespace_id": "4402",
+          "simple": { "limit": 60, "period": 60 },
+        },
+        {
+          "name": "OAUTH_ENDPOINT_RATE_LIMITER",
+          "namespace_id": "4403",
+          "simple": { "limit": 600, "period": 60 },
+        },
+      ],
+      "workers_dev": false,
+      "routes": [{ "pattern": "mcp.zyropay.online", "custom_domain": true }],
+    },
+    "production": {
+      // Worker "zyropay-mcp-production". Secrets: INTERNAL_SERVICE_TOKEN (same value as the API's),
+      // MCP_OAUTH_COOKIE_SECRET: `wrangler secret put <NAME> --env production`.
+      "vars": {
+        "ZYROPAY_MODE": "production",
+        "MCP_PUBLIC_URL": "https://mcp.zyropay.example",
+        "MCP_OAUTH_ACCESS_TOKEN_TTL_SECONDS": "900",
+        "MCP_AUDIT_SINK": "log",
+      },
+      // `wrangler kv namespace create OAUTH_KV --env production` prints the id to paste here.
+      "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "REPLACE_WITH_OAUTH_KV_ID_PRODUCTION" }],
+      "services": [{ "binding": "API", "service": "zyropay-api-production" }],
+      "ratelimits": [
+        {
+          "name": "MCP_RATE_LIMITER",
+          "namespace_id": "4301",
+          "simple": { "limit": 120, "period": 60 },
+        },
+        {
+          "name": "AUTH_RATE_LIMITER",
+          "namespace_id": "4302",
+          "simple": { "limit": 60, "period": 60 },
+        },
+        {
+          "name": "OAUTH_ENDPOINT_RATE_LIMITER",
+          "namespace_id": "4303",
+          "simple": { "limit": 600, "period": 60 },
+        },
+      ],
+      // "routes": [{ "pattern": "mcp.zyropay.example", "custom_domain": true }],
+    },
+  },
+}

@@ -1,0 +1,65 @@
+---
+title: "9. Agents hiring agents"
+description: "A seller that pays another seller over x402 while it works, and embeds that seller's signed receipt in its own. How the receipt chain works and how the seller bounds what it can spend."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+
+The demo seller, **Cardano Address Intelligence**, can hire a second paid service while it builds a
+report: **Cardano Token Intelligence**, which sells a report on one Cardano native token for 1.5 tADA.
+If the address holds tokens, Address Intelligence pays Token Intelligence for a report on the top
+token over x402, checks that seller's receipt, and embeds the token report, its receipt and the
+sub-payment transaction in its own answer. Its own receipt then signs a body that contains the
+specialist's receipt: a **receipt chain**, your AI to Address Intelligence to Token Intelligence,
+with both payments on chain.
+
+<Diagram
+  name="subhire"
+  alt="Sequence diagram of a sub-hire, steps 1 to 8, as described in the list below."
+  caption="A paid report that pays for another report. Numbers match the list below."
+/>
+
+1. Your AI, through ZyroPay, pays for an address report ([steps 1 to 4](/how-it-works/x402/)).
+2. Address Intelligence verifies the buyer's payment and starts the report.
+3. It requests a token report for the address's largest token holding.
+4. Token Intelligence answers `402` for 1.5 tADA.
+5. Address Intelligence pays from its **own small budget wallet** (not its `payTo` wallet), with the
+   reference x402 client: lovelace only, the `exact` default transfer only, on `cardano:preprod`, at
+   most `SUBHIRE_MAX_LOVELACE` (3 tADA), once per job, and only to a pinned `payTo` when one is set.
+6. Token Intelligence answers `200` with the token report and its `X-Delivery-Receipt`.
+7. Address Intelligence verifies that receipt with the same rules ZyroPay uses: the key hashes to the
+   `payTo` it paid, the receipt names the URL, `payTo` and transaction it paid, and `contentSha256` is
+   the hash of the bytes it received.
+8. Its answer carries `subcontracted[]` with the status, the token report as delivered, the receipt,
+   whether it verified and the sub-payment transaction id.
+
+Because the embedded report re-serializes to exactly the bytes that were signed, anyone can re-check
+the inner link of the chain from the delivered data alone; a test does exactly that.
+
+## Fail-soft, and the known risk
+
+If the specialist times out (25 s for the whole sub-hire), is unreachable, errors, sends a 402 it will
+not pay or returns bad JSON, the main report is still delivered with `{status: "failed", reason}`.
+
+The sub-payment happens after the buyer's payment is **verified** but before it is **settled**. If
+the main settlement then fails, the seller has spent up to the cap for nothing. The cap and the small
+budget wallet bound that loss; the buyer is never charged for it.
+
+## Proven
+
+The chain is tested end to end with both real apps and real receipts, including a tampered receipt,
+the cap and the pin <Status kind="offline" /> (`apps/seller/test/subhire.test.ts`,
+`apps/specialist/test/chain.test.ts`).
+
+It ran live on preprod on 2026-10-31 <Status kind="live" />. The user's ZyroPay passkey wallet
+paid the direct x402 route of Address Intelligence 2 tADA for a report
+(<TxRef id="sub-hire-buyer" />), and the delivery receipt verified. While building that report,
+Address Intelligence paid Token Intelligence 1.5 tADA from its budget wallet
+(<TxRef id="sub-hire" />) and embedded the token report, the specialist's verified receipt and that
+transaction id under `subcontracted`. The sub-payment is one block before the buyer's payment, as
+the order above says: the seller works after verifying the buyer's payment and settles it after the
+work.
+
+**Code:** `apps/seller/src/subhire.ts`, `apps/seller/src/receipt.ts`, `apps/specialist`.

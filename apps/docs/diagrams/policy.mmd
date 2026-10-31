@@ -1,0 +1,19 @@
+flowchart TD
+  R([Agent request, valued in USD]) --> G1("Revoked or expired?<br/>Tool, wallet or network<br/>not allowed?")
+  G1 -- yes --> D1[DENY]
+  G1 -- no --> RO("Read-only tool?")
+  RO -- yes --> A1[ALLOW]
+  RO -- no --> G2("Spending off? Protocol not allowed?<br/>Recipient not on the allowlist?<br/>Seller not registered or not trusted?")
+  G2 -- yes --> D2[DENY]
+  G2 -- no --> L("Over a per-payment, daily or monthly limit?<br/>No valuation?<br/>Direct x402 above the escrow threshold?")
+  L -- "yes, over-limit = deny" --> D3[DENY]
+  L -- "yes, over-limit = ask" --> P1[ASK YOU]
+  L -- no --> M("Always Ask mode?<br/>A swap? A Cardano payment?")
+  M -- yes --> P2[ASK YOU]
+  M -- no --> A2["ALLOW, autonomous within limits"]
+  classDef deny fill:{{denyBg}},stroke:{{deny}},color:{{text}},stroke-width:1.5px
+  classDef ok fill:{{okBg}},stroke:{{ok}},color:{{text}},stroke-width:1.5px
+  classDef ask fill:{{accentBg}},stroke:{{accent}},color:{{text}},stroke-width:1.5px
+  class D1,D2,D3 deny
+  class A1,A2 ok
+  class P1,P2 ask

@@ -1,0 +1,27 @@
+# View wallet: Wallets tab -> wallet detail -> copy address -> receive QR.
+appId: ${APP_ID}
+name: View wallet
+---
+- runFlow: subflows/onboard-simulated.yaml
+- tapOn: "Wallets"
+- assertVisible:
+    id: "wallets-screen"
+- tapOn:
+    id: "wallet-card-Main wallet"
+- assertVisible:
+    id: "wallet-detail"
+- tapOn:
+    id: "copy-address-solana"
+- assertVisible: "Copied|Copy Solana address"
+- tapOn:
+    id: "wallet-receive"
+- assertVisible:
+    id: "receive-screen"
+- extendedWaitUntil:
+    visible:
+      id: "receive-address"
+    timeout: 10000
+- assertVisible: "Only send .* assets here"
+- tapOn:
+    id: "receive-copy"
+- assertVisible: "Copied"

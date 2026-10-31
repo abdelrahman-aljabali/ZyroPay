@@ -1,0 +1,526 @@
+{
+  "network": "cardano-mainnet",
+  "source": "Blockfrost mainnet (read-only), project id redacted",
+  "genesis": {
+    "active_slots_coefficient": 0.05,
+    "update_quorum": 5,
+    "max_lovelace_supply": "45000000000000000",
+    "network_magic": 764824073,
+    "epoch_length": 432000,
+    "system_start": 1506203091,
+    "slots_per_kes_period": 129600,
+    "slot_length": 1,
+    "max_kes_evolutions": 62,
+    "security_param": 2160
+  },
+  "parameters": {
+    "epoch": 662,
+    "min_fee_a": 44,
+    "min_fee_b": 155381,
+    "max_block_size": 90112,
+    "max_tx_size": 16384,
+    "max_block_header_size": 1100,
+    "key_deposit": "2000000",
+    "pool_deposit": "500000000",
+    "e_max": 18,
+    "n_opt": 500,
+    "a0": 0.3,
+    "rho": 0.003,
+    "tau": 0.2,
+    "decentralisation_param": 0,
+    "extra_entropy": null,
+    "protocol_major_ver": 11,
+    "protocol_minor_ver": 0,
+    "min_utxo": "4310",
+    "min_pool_cost": "170000000",
+    "nonce": "7f92b00981874e26af8c0d19895f5fc9dcdc8bd804506305bc89b27930ff6790",
+    "price_mem": 0.0577,
+    "price_step": 0.0000721,
+    "max_tx_ex_mem": "16500000",
+    "max_tx_ex_steps": "10000000000",
+    "max_block_ex_mem": "72000000",
+    "max_block_ex_steps": "20000000000",
+    "max_val_size": "5000",
+    "collateral_percent": 150,
+    "max_collateral_inputs": 3,
+    "coins_per_utxo_size": "4310",
+    "coins_per_utxo_word": "4310",
+    "pvt_motion_no_confidence": 0.51,
+    "pvt_committee_normal": 0.51,
+    "pvt_committee_no_confidence": 0.51,
+    "pvt_hard_fork_initiation": 0.51,
+    "dvt_motion_no_confidence": 0.67,
+    "dvt_committee_normal": 0.67,
+    "dvt_committee_no_confidence": 0.6,
+    "dvt_update_to_constitution": 0.75,
+    "dvt_hard_fork_initiation": 0.6,
+    "dvt_p_p_network_group": 0.67,
+    "dvt_p_p_economic_group": 0.67,
+    "dvt_p_p_technical_group": 0.67,
+    "dvt_p_p_gov_group": 0.75,
+    "dvt_treasury_withdrawal": 0.67,
+    "committee_min_size": "5",
+    "committee_max_term_length": "146",
+    "gov_action_lifetime": "6",
+    "gov_action_deposit": "100000000000",
+    "drep_deposit": "500000000",
+    "drep_activity": "20",
+    "pvtpp_security_group": 0.51,
+    "pvt_p_p_security_group": 0.51,
+    "min_fee_ref_script_cost_per_byte": 15
+  },
+  "latestBlock": {
+    "time": 1792264035,
+    "height": 14081272,
+    "hash": "8bb7865603c8f20e840b54857edc5899185a31d5b9494eb0f96f0b60ee9764ef",
+    "slot": 200697744,
+    "epoch": 662,
+    "epoch_slot": 76944,
+    "slot_leader": "pool1ea568m9q882n0tx5d4vxff2dmz2n7rq5h62hx5ystq625m4tcfu",
+    "size": 812,
+    "tx_count": 1,
+    "output": "11622990",
+    "fees": "326251",
+    "block_vrf": "vrf_vk1ngghyylmk529sf6unkf3v7qq2l9flr4yqpz99gnv25spm9xwyymsslfy77",
+    "op_cert": "739b8e8a175472d1dc1b2c4479f3c0026501f04d8e61be60c9581d553ef05c9b",
+    "op_cert_counter": "25",
+    "previous_block": "31acefb0cfe88c1d979f75cc06e4373480ac3ec99868e4f5eb3b74ddff25609f",
+    "next_block": null,
+    "confirmations": 0
+  },
+  "address": {
+    "address": "addr1q84vs052fv3efuqaw2sqcjkq3mxgsk2emmmpxsrfz2rxnls4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334q22hzls",
+    "amount": [
+      {
+        "unit": "lovelace",
+        "quantity": "9959330"
+      },
+      {
+        "unit": "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa4e49474854",
+        "quantity": "112454621"
+      }
+    ],
+    "stake_address": "stake1uy24j227knssqhve5fmp46kqd4ycgcmrs7m7vnzsdl4gc6svwd2ax",
+    "type": "shelley",
+    "script": false
+  },
+  "addressUtxos": [
+    {
+      "address": "addr1q84vs052fv3efuqaw2sqcjkq3mxgsk2emmmpxsrfz2rxnls4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334q22hzls",
+      "tx_hash": "8f8689088ce218ac960f6edce8d85043dc6b2323daf072632006b839dc151ebd",
+      "tx_index": 0,
+      "output_index": 0,
+      "amount": [
+        {
+          "unit": "lovelace",
+          "quantity": "1159390"
+        },
+        {
+          "unit": "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa4e49474854",
+          "quantity": "112454621"
+        }
+      ],
+      "block": "8bb7865603c8f20e840b54857edc5899185a31d5b9494eb0f96f0b60ee9764ef",
+      "data_hash": null,
+      "inline_datum": null,
+      "reference_script_hash": null
+    },
+    {
+      "address": "addr1q84vs052fv3efuqaw2sqcjkq3mxgsk2emmmpxsrfz2rxnls4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334q22hzls",
+      "tx_hash": "8f8689088ce218ac960f6edce8d85043dc6b2323daf072632006b839dc151ebd",
+      "tx_index": 2,
+      "output_index": 2,
+      "amount": [
+        {
+          "unit": "lovelace",
+          "quantity": "8799940"
+        }
+      ],
+      "block": "8bb7865603c8f20e840b54857edc5899185a31d5b9494eb0f96f0b60ee9764ef",
+      "data_hash": null,
+      "inline_datum": null,
+      "reference_script_hash": null
+    }
+  ],
+  "addressTransactions": [
+    {
+      "tx_hash": "8f8689088ce218ac960f6edce8d85043dc6b2323daf072632006b839dc151ebd",
+      "tx_index": 0,
+      "block_height": 14081272,
+      "block_time": 1792264035
+    },
+    {
+      "tx_hash": "745ed6e91cb4d24eab5c44ef1428ef47580521e913df97a73915ecf0f66562b4",
+      "tx_index": 6,
+      "block_height": 14081264,
+      "block_time": 1792263846
+    },
+    {
+      "tx_hash": "513bbffc0d748eb9c5e2f053cd5c8b76fc723a13d7820161d5c787be87efa71b",
+      "tx_index": 31,
+      "block_height": 13451415,
+      "block_time": 1779461091
+    },
+    {
+      "tx_hash": "4d595ed97ba31708ef29cc8081daed3a1516b32f49b185eab2c7ff2a434784e4",
+      "tx_index": 12,
+      "block_height": 13450862,
+      "block_time": 1779449587
+    },
+    {
+      "tx_hash": "ca9ed817addd7a0008ea86d9fcba90c6ea360a3dd44df92bd4be5086d26d3574",
+      "tx_index": 0,
+      "block_height": 13450857,
+      "block_time": 1779449416
+    }
+  ],
+  "txs": {
+    "8f8689088ce218ac960f6edce8d85043dc6b2323daf072632006b839dc151ebd": {
+      "tx": {
+        "hash": "8f8689088ce218ac960f6edce8d85043dc6b2323daf072632006b839dc151ebd",
+        "block": "8bb7865603c8f20e840b54857edc5899185a31d5b9494eb0f96f0b60ee9764ef",
+        "block_height": 14081272,
+        "block_time": 1792264035,
+        "slot": 200697744,
+        "index": 0,
+        "output_amount": [
+          {
+            "unit": "lovelace",
+            "quantity": "11622990"
+          },
+          {
+            "unit": "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa4e49474854",
+            "quantity": "112454621"
+          },
+          {
+            "unit": "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa4e49474854",
+            "quantity": "112454623"
+          }
+        ],
+        "fees": "326251",
+        "deposit": "0",
+        "size": 810,
+        "invalid_before": "200697666",
+        "invalid_hereafter": null,
+        "utxo_count": 5,
+        "withdrawal_count": 0,
+        "mir_cert_count": 0,
+        "delegation_count": 0,
+        "stake_cert_count": 0,
+        "pool_update_count": 0,
+        "pool_retire_count": 0,
+        "asset_mint_or_burn_count": 0,
+        "redeemer_count": 1,
+        "valid_contract": true,
+        "treasury_donation": "0"
+      },
+      "utxos": {
+        "hash": "8f8689088ce218ac960f6edce8d85043dc6b2323daf072632006b839dc151ebd",
+        "inputs": [
+          {
+            "address": "addr1w9fdc02rkmfyvh5kzzwwwk4kr2l9a8qa3g7feehl3ga022qz2249g",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "18248540"
+              }
+            ],
+            "tx_hash": "80a146507156745632e5e4b7ae72944fd67a9cc57cb850e826c30151e825be56",
+            "output_index": 0,
+            "data_hash": null,
+            "inline_datum": null,
+            "reference_script_hash": "5986bfcc0cbfc60dec8df87715cc95d03817aac386b0e9d33da03b39",
+            "collateral": false,
+            "reference": true
+          },
+          {
+            "address": "addr1q84vs052fv3efuqaw2sqcjkq3mxgsk2emmmpxsrfz2rxnls4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334q22hzls",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "10285581"
+              }
+            ],
+            "tx_hash": "745ed6e91cb4d24eab5c44ef1428ef47580521e913df97a73915ecf0f66562b4",
+            "output_index": 0,
+            "data_hash": null,
+            "inline_datum": null,
+            "reference_script_hash": null,
+            "collateral": false,
+            "reference": false
+          },
+          {
+            "address": "addr1z9vcd07vpjluvr0v3hu8w9wvjhgrs9a2cwrtp6wn8ksrkwg4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334qlrl2p8",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "1663660"
+              },
+              {
+                "unit": "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa4e49474854",
+                "quantity": "224909244"
+              }
+            ],
+            "tx_hash": "8f67ee6e45cff52ce2ee262cdc58cb3951a01f4f81d6b5230be47b21b80fb24c",
+            "output_index": 1,
+            "data_hash": "d8c3d20ba3b24098801fcc663c5be48a942b610b2d38b6c57a748fc66bc73dea",
+            "inline_datum": "d8799fd8799fd8799f581ceac83e8a4b2394f01d72a00c4ac08ecc885959def6134069128669feffd8799fd8799fd8799f581c1559295eb4e1005d99a2761aeac06d4984636387b7e64c506fea8c6affffffff1a06b3ebdd1b000001a01c77ac00021b00000001cf7c5800ff",
+            "reference_script_hash": null,
+            "collateral": false,
+            "reference": false
+          },
+          {
+            "address": "addr1q84vs052fv3efuqaw2sqcjkq3mxgsk2emmmpxsrfz2rxnls4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334q22hzls",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "10285581"
+              }
+            ],
+            "tx_hash": "745ed6e91cb4d24eab5c44ef1428ef47580521e913df97a73915ecf0f66562b4",
+            "output_index": 0,
+            "data_hash": null,
+            "inline_datum": null,
+            "reference_script_hash": null,
+            "collateral": true,
+            "reference": false
+          }
+        ],
+        "outputs": [
+          {
+            "address": "addr1q84vs052fv3efuqaw2sqcjkq3mxgsk2emmmpxsrfz2rxnls4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334q22hzls",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "1159390"
+              },
+              {
+                "unit": "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa4e49474854",
+                "quantity": "112454621"
+              }
+            ],
+            "output_index": 0,
+            "data_hash": null,
+            "inline_datum": null,
+            "collateral": false,
+            "reference_script_hash": null,
+            "consumed_by_tx": null
+          },
+          {
+            "address": "addr1z9vcd07vpjluvr0v3hu8w9wvjhgrs9a2cwrtp6wn8ksrkwg4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334qlrl2p8",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "1663660"
+              },
+              {
+                "unit": "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa4e49474854",
+                "quantity": "112454623"
+              }
+            ],
+            "output_index": 1,
+            "data_hash": "8b6bfdde570c86100c7b3776dffadcc91f8a6aeafe3b0cc365c86ce237294a1f",
+            "inline_datum": "d8799fd8799fd8799f581ceac83e8a4b2394f01d72a00c4ac08ecc885959def6134069128669feffd8799fd8799fd8799f581c1559295eb4e1005d99a2761aeac06d4984636387b7e64c506fea8c6affffffff1a06b3ebdd1b000001a1ebf40400011b00000001cf7c5800ff",
+            "collateral": false,
+            "reference_script_hash": null,
+            "consumed_by_tx": null
+          },
+          {
+            "address": "addr1q84vs052fv3efuqaw2sqcjkq3mxgsk2emmmpxsrfz2rxnls4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334q22hzls",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "8799940"
+              }
+            ],
+            "output_index": 2,
+            "data_hash": null,
+            "inline_datum": null,
+            "collateral": false,
+            "reference_script_hash": null,
+            "consumed_by_tx": null
+          },
+          {
+            "address": "addr1q84vs052fv3efuqaw2sqcjkq3mxgsk2emmmpxsrfz2rxnls4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334q22hzls",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "9796204"
+              }
+            ],
+            "output_index": 3,
+            "data_hash": null,
+            "inline_datum": null,
+            "collateral": true,
+            "reference_script_hash": null,
+            "consumed_by_tx": null
+          }
+        ]
+      },
+      "cbor": {
+        "cbor": "84a900d9010282825820745ed6e91cb4d24eab5c44ef1428ef47580521e913df97a73915ecf0f66562b4008258208f67ee6e45cff52ce2ee262cdc58cb3951a01f4f81d6b5230be47b21b80fb24c01018382583901eac83e8a4b2394f01d72a00c4ac08ecc885959def6134069128669fe1559295eb4e1005d99a2761aeac06d4984636387b7e64c506fea8c6a821a0011b0dea1581c0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1faa1454e494748541a06b3ebdda3005839115986bfcc0cbfc60dec8df87715cc95d03817aac386b0e9d33da03b391559295eb4e1005d99a2761aeac06d4984636387b7e64c506fea8c6a01821a001962aca1581c0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1faa1454e494748541a06b3ebdf028201d818586cd8799fd8799fd8799f581ceac83e8a4b2394f01d72a00c4ac08ecc885959def6134069128669feffd8799fd8799fd8799f581c1559295eb4e1005d99a2761aeac06d4984636387b7e64c506fea8c6affffffff1a06b3ebdd1b000001a1ebf40400011b00000001cf7c5800ff82583901eac83e8a4b2394f01d72a00c4ac08ecc885959def6134069128669fe1559295eb4e1005d99a2761aeac06d4984636387b7e64c506fea8c6a1a008646c4021a0004fa6b081a0bf667420b5820a7ee17493f79761094823fbaa45ea43a7ec13a855e9601e37516500cfa6a0c450dd9010281825820745ed6e91cb4d24eab5c44ef1428ef47580521e913df97a73915ecf0f66562b4001082583901eac83e8a4b2394f01d72a00c4ac08ecc885959def6134069128669fe1559295eb4e1005d99a2761aeac06d4984636387b7e64c506fea8c6a1a00957a6c111a000777a112d901028182582080a146507156745632e5e4b7ae72944fd67a9cc57cb850e826c30151e825be5600a200d9010281825820e5baf9ab68261368e7473781d4de597e138a63d014ed33b91db314d53a961ad55840faa8e1c7c242d6b1e841c6f9abb59d92896c0146905de4b8372fff63a6813b2011bd6b42955376ca770aa97848ee9368939558f182352ffad5684e15ebf8610805a182000182d87980821a000d53f51a0cbcb3e6f5f6"
+      }
+    },
+    "745ed6e91cb4d24eab5c44ef1428ef47580521e913df97a73915ecf0f66562b4": {
+      "tx": {
+        "hash": "745ed6e91cb4d24eab5c44ef1428ef47580521e913df97a73915ecf0f66562b4",
+        "block": "999e0a892fd2ebf1a80c55b5961361c020720f29c524f505183ffb6ba1d0846f",
+        "block_height": 14081264,
+        "block_time": 1792263846,
+        "slot": 200697555,
+        "index": 6,
+        "output_amount": [
+          {
+            "unit": "lovelace",
+            "quantity": "12099882"
+          },
+          {
+            "unit": "1bb16ccfb676aa9313b9a6294ed44fdfbbc1bcb3b8d13260e54ffdb44c65676163792050617373203934",
+            "quantity": "1"
+          },
+          {
+            "unit": "2e706b97654fa40a2472eeef12b8c7b27cc1b54d38fe7dbed21a689074686567686f737473706173733535",
+            "quantity": "1"
+          },
+          {
+            "unit": "96e855da11637839236d734902111e7682ba0ca7b03e96c7a02830924b65795472616e706f72746174696f6e5061737330303530",
+            "quantity": "1"
+          }
+        ],
+        "fees": "176501",
+        "deposit": "0",
+        "size": 480,
+        "invalid_before": null,
+        "invalid_hereafter": "200701118",
+        "utxo_count": 4,
+        "withdrawal_count": 0,
+        "mir_cert_count": 0,
+        "delegation_count": 0,
+        "stake_cert_count": 0,
+        "pool_update_count": 0,
+        "pool_retire_count": 0,
+        "asset_mint_or_burn_count": 0,
+        "redeemer_count": 0,
+        "valid_contract": true,
+        "treasury_donation": "0"
+      },
+      "utxos": {
+        "hash": "745ed6e91cb4d24eab5c44ef1428ef47580521e913df97a73915ecf0f66562b4",
+        "inputs": [
+          {
+            "address": "addr1qx3fal54hcn5e46y5nd2f8qmzp5vp37dhgksar9z0764cfultfrapzasl9egrfc6a3vepqxn9urjddrdtg5upzhyquqq25da3t",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "1814301"
+              },
+              {
+                "unit": "1bb16ccfb676aa9313b9a6294ed44fdfbbc1bcb3b8d13260e54ffdb44c65676163792050617373203934",
+                "quantity": "1"
+              },
+              {
+                "unit": "2e706b97654fa40a2472eeef12b8c7b27cc1b54d38fe7dbed21a689074686567686f737473706173733535",
+                "quantity": "1"
+              },
+              {
+                "unit": "96e855da11637839236d734902111e7682ba0ca7b03e96c7a02830924b65795472616e706f72746174696f6e5061737330303530",
+                "quantity": "1"
+              }
+            ],
+            "tx_hash": "7e0be4b5ced8d0f00fb4cfa274110b5b31f6a5f8dca758033e8dad441251c904",
+            "output_index": 1,
+            "data_hash": null,
+            "inline_datum": null,
+            "reference_script_hash": null,
+            "collateral": false,
+            "reference": false
+          },
+          {
+            "address": "addr1qx3fal54hcn5e46y5nd2f8qmzp5vp37dhgksar9z0764cfultfrapzasl9egrfc6a3vepqxn9urjddrdtg5upzhyquqq25da3t",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "10462082"
+              }
+            ],
+            "tx_hash": "e3888f4af46407e6626c57adce5f5efb43d8c70c68f3ed6dae2f333f5da80216",
+            "output_index": 0,
+            "data_hash": null,
+            "inline_datum": null,
+            "reference_script_hash": null,
+            "collateral": false,
+            "reference": false
+          }
+        ],
+        "outputs": [
+          {
+            "address": "addr1q84vs052fv3efuqaw2sqcjkq3mxgsk2emmmpxsrfz2rxnls4ty54ad8pqpwengnkrt4vqm2fs33k8pahuex9qml2334q22hzls",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "10285581"
+              }
+            ],
+            "output_index": 0,
+            "data_hash": null,
+            "inline_datum": null,
+            "collateral": false,
+            "reference_script_hash": null,
+            "consumed_by_tx": "8f8689088ce218ac960f6edce8d85043dc6b2323daf072632006b839dc151ebd"
+          },
+          {
+            "address": "addr1qx3fal54hcn5e46y5nd2f8qmzp5vp37dhgksar9z0764cfultfrapzasl9egrfc6a3vepqxn9urjddrdtg5upzhyquqq25da3t",
+            "amount": [
+              {
+                "unit": "lovelace",
+                "quantity": "1814301"
+              },
+              {
+                "unit": "1bb16ccfb676aa9313b9a6294ed44fdfbbc1bcb3b8d13260e54ffdb44c65676163792050617373203934",
+                "quantity": "1"
+              },
+              {
+                "unit": "2e706b97654fa40a2472eeef12b8c7b27cc1b54d38fe7dbed21a689074686567686f737473706173733535",
+                "quantity": "1"
+              },
+              {
+                "unit": "96e855da11637839236d734902111e7682ba0ca7b03e96c7a02830924b65795472616e706f72746174696f6e5061737330303530",
+                "quantity": "1"
+              }
+            ],
+            "output_index": 1,
+            "data_hash": null,
+            "inline_datum": null,
+            "collateral": false,
+            "reference_script_hash": null,
+            "consumed_by_tx": null
+          }
+        ]
+      },
+      "cbor": {
+        "cbor": "84a40082825820e3888f4af46407e6626c57adce5f5efb43d8c70c68f3ed6dae2f333f5da80216008258207e0be4b5ced8d0f00fb4cfa274110b5b31f6a5f8dca758033e8dad441251c90401018282583901eac83e8a4b2394f01d72a00c4ac08ecc885959def6134069128669fe1559295eb4e1005d99a2761aeac06d4984636387b7e64c506fea8c6a1a009cf20d82583901a29efe95be274cd744a4daa49c1b1068c0c7cdba2d0e8ca27fb55c279f5a47d08bb0f97281a71aec599080d32f0726b46d5a29c08ae40700821a001baf1da3581c1bb16ccfb676aa9313b9a6294ed44fdfbbc1bcb3b8d13260e54ffdb4a14e4c6567616379205061737320393401581c2e706b97654fa40a2472eeef12b8c7b27cc1b54d38fe7dbed21a6890a14f74686567686f73747370617373353501581c96e855da11637839236d734902111e7682ba0ca7b03e96c7a0283092a158184b65795472616e706f72746174696f6e506173733030353001021a0002b175031a0bf674bea100818258206f4ad9974cd6b4fb63f910f91a734d164a4c2bf666b3630b07206c76db04fa1858404da427c2fff7510587cefd414f03a5cd5c79c11e3dc31f9e9cfd499938f4775e66fb86dcfd31e22d58584cbfcfe9e91c48189c6d09467cd1f98ee8c5b7ffa403f5f6"
+      }
+    }
+  },
+  "assets": {
+    "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa4e49474854": {
+      "asset": "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa4e49474854",
+      "policy_id": "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa",
+      "asset_name": "4e49474854",
+      "fingerprint": "asset1wd3llgkhsw6etxf2yca6cgk9ssrpva3wf0pq9a",
+      "quantity": "24000000000000000",
+      "initial_mint_tx_hash": "ce75b0e1e203c66d5dbce3b37865114163f577a58d3d12b0ae2593f8d3a64eb2",
+      "mint_or_burn_count": 1,
+      "onchain_metadata": null,
+      "metadata": {
+        "name": "NIGHT",
+        "description": "NIGHT is Midnight’s utility token whose main function is to generate DUST, the resource used to execute transactions on the Midnight network. It is intended that NIGHT will also be used for block production rewards, ecosystem growth incentives, and on-chain governance in relation to the Midnight network. One unit of NIGHT is further divided into one million subunits called STARs.",
+        "ticker": "NIGHT",
+        "url": "https://midnight.network",
+        "decimals": 6
+      },
+      "onchain_metadata_standard": null,
+      "onchain_metadata_extra": null
+    }
+  }
+}

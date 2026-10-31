@@ -1,0 +1,113 @@
+---
+title: "For users"
+description: "Sign up with a passkey, fund a Cardano preprod address, connect Claude or ChatGPT, set the agent's policy, approve a payment and get a refund. Test networks only."
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+:::caution[Test networks only]
+The app at https://app.zyropay.online runs on test networks. Use test funds only; nothing you hold
+there has value.
+:::
+
+## Sign up
+
+<Steps>
+
+1. Open https://app.zyropay.online and create an account with a passkey (Face ID, Touch ID or your
+   device PIN). There is no password and no seed phrase on screen.
+2. Your wallet is created inside your own Turnkey sub-organization, with one Solana, one EVM and one
+   Cardano account. Add a second passkey as a backup: ZyroPay cannot recover your account.
+
+</Steps>
+
+## Fund your Cardano preprod address
+
+<Steps>
+
+1. Open **Wallets**, then **Receive**, then **Cardano Preprod**, and copy the address
+   (`addr_test1v…`, an enterprise address).
+2. Request test ADA from the public faucet: https://docs.cardano.org/cardano-testnets/tools/faucet
+   (choose Preprod). At least 10 tADA covers a few payments; an escrow refund also needs a pure-ADA
+   output for Plutus collateral.
+
+</Steps>
+
+This address is not the one Yoroi, Eternl or Daedalus would show for the same recovery phrase; see
+[Cardano specifics](/how-it-works/passkey/#cardano-specifics).
+
+## Turn on x402 payments
+
+Open **Plugins** and enable **x402 payments**. An agent can then use the `x402` protocol if its policy
+allows it.
+
+## Connect your AI
+
+The MCP server URL is:
+
+```text
+https://mcp.zyropay.online/mcp
+```
+
+- **Claude** (claude.ai, Desktop, mobile): Settings → Connectors → Add custom connector, paste the
+  URL, leave the OAuth fields empty. Claude Code:
+  `claude mcp add --transport http zyropay https://mcp.zyropay.online/mcp`.
+- **ChatGPT**: in a plan or workspace that allows developer mode, add a custom MCP connector with the
+  URL.
+
+A page opens with a code such as `ABCD-1234`. In the ZyroPay app, open **Agents**, enter the code,
+check the client's name and redirect address, choose the wallets and networks (include Cardano
+Preprod) and approve. Nothing is approved on the browser page itself.
+
+## Set the agent's policy
+
+A new agent can read but cannot spend. In **Agents → (your agent) → Policy**:
+
+<Steps>
+
+1. Turn **spending** on.
+2. Allow the **x402** protocol.
+3. Add the seller's address to the **recipient allowlist** (for an escrow payment the allowlist names
+   the seller, not the escrow script).
+4. Set USD limits per payment, per day and per month, and choose what happens above them: ask you, or
+   refuse.
+5. Optional: **Require Escrow for x402 payments**, optionally only above an amount; **Only pay
+   registered Masumi agents**, optionally only some of them.
+
+</Steps>
+
+Cardano payments always ask you, whatever the mode. Every field is described in
+[Agent policy](/reference/policy/).
+
+## Approve a payment
+
+Ask your AI to buy something, for example: "Buy the address report for addr_test1… from the Cardano
+Address Intelligence service." It calls `pay_x402` and tells you approval is pending.
+
+<Steps>
+
+1. Open **Approvals** in the app (it refreshes every 15 s; push notifications are not set up on
+   staging).
+2. Check the seller's description and host, the amount and the agent that asked.
+3. Approve with your passkey. Your AI's next status check delivers the payment and gets the answer.
+4. The approval moves to submitted, then paid, with a Cardanoscan link, and shows
+   **Delivery verified · signed by the seller you paid** when the receipt checks out.
+
+</Steps>
+
+## Get a refund (escrow payments)
+
+An escrow payment shows its state from the chain, the deadlines (**Deliver by**, **Released after**),
+the proof and the refund action open to you.
+
+- **Request refund**: possible while the money is in escrow. After the seller authorizes it, or after
+  the delivery deadline passes without a result, the next action appears.
+- **Withdraw refund**: returns the money to your address.
+
+Both are signed with your passkey (**Sign with passkey**). If the proof says `mismatch` or
+`not_delivered`, the app recommends the refund to take. See [Escrow with Masumi](/how-it-works/escrow/#getting-a-refund).
+
+## Disconnect an agent
+
+Revoke it in **Agents**. Its tokens stop working at once, its pending requests are cancelled and its
+reservations released.

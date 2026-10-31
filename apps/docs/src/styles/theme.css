@@ -1,0 +1,642 @@
+/*
+ * ZyroPay docs: the landing page's identity applied to Starlight.
+ * Near-black room, Inter set like the landing (weight 500 headings, tight tracking), monospace
+ * for hashes and addresses, restrained green and red for outcomes only. No hue for the accent:
+ * white in the dark theme (the landing's light), ink in the light theme.
+ */
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-var-opsz.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Metric-matched fallback so the swap to Inter does not move the layout (as on the landing). */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica");
+  ascent-override: 90.49%;
+  descent-override: 22.56%;
+  line-gap-override: 0%;
+  size-adjust: 107.06%;
+}
+
+/* Dark (default) */
+:root {
+  --sl-font: "Inter", "Inter Fallback", system-ui, sans-serif;
+  --sl-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* White: the accent is light itself, as on the landing page. */
+  --sl-color-accent-low: #1d1f25;
+  --sl-color-accent: #ffffff;
+  --sl-color-accent-high: #ffffff;
+  --sl-color-white: #f3f4f6;
+  --sl-color-gray-1: #e4e5e8;
+  --sl-color-gray-2: #c9ccd2;
+  --sl-color-gray-3: #a9adb6;
+  --sl-color-gray-4: #6f737d;
+  --sl-color-gray-5: #2a2d34;
+  --sl-color-gray-6: #15171c;
+  --sl-color-black: #0b0c10;
+
+  --zp-ok: #5fd68a;
+  --zp-ok-bg: rgb(95 214 138 / 0.1);
+  --zp-deny: #ff7a6e;
+  --zp-deny-bg: rgb(255 107 94 / 0.1);
+  --zp-warn: #ffc56b;
+  --zp-warn-bg: rgb(255 197 107 / 0.1);
+  --zp-line: rgb(255 255 255 / 0.09);
+  --zp-panel: #101216;
+}
+
+/* Light */
+:root[data-theme="light"] {
+  /* On paper the light becomes ink. */
+  --sl-color-accent-low: #e9ebef;
+  --sl-color-accent: #111318;
+  --sl-color-accent-high: #000000;
+  --sl-color-white: #111318;
+  --sl-color-gray-1: #1f2228;
+  --sl-color-gray-2: #353941;
+  --sl-color-gray-3: #50555f;
+  --sl-color-gray-4: #6f747e;
+  --sl-color-gray-5: #c9ccd3;
+  --sl-color-gray-6: #eef0f3;
+  --sl-color-gray-7: #f6f7f9;
+  --sl-color-black: #ffffff;
+
+  --zp-ok: #146c3b;
+  --zp-ok-bg: #e9f6ee;
+  --zp-deny: #a8201a;
+  --zp-deny-bg: #fdecea;
+  --zp-warn: #7a4f00;
+  --zp-warn-bg: #fff4dc;
+  --zp-line: rgb(17 19 24 / 0.1);
+  --zp-panel: #f6f7f9;
+}
+
+:root {
+  --sl-text-h1: 2.25rem;
+  --sl-text-h2: 1.6rem;
+  --sl-text-h3: 1.25rem;
+  --sl-content-width: 50rem;
+}
+
+body {
+  background-color: var(--sl-color-black);
+  font-feature-settings: "cv11", "ss01";
+}
+
+.site-title {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+h1#_top {
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.sl-markdown-content code:not(pre code) {
+  overflow-wrap: anywhere;
+}
+
+/* Tables: scroll inside themselves on a phone, never the page. */
+.sl-markdown-content table {
+  display: block;
+  overflow-x: auto;
+  font-size: 0.9rem;
+}
+
+.sl-markdown-content table code {
+  font-size: 0.85em;
+}
+
+/* --- Diagrams: one <img> per scheme, the other hidden ------------------------------------ */
+/*
+ * Each diagram sits on a drafting sheet: a dot grid, a numbered "FIG. 01" tab and a "Full
+ * size" hint (the image links to its own file). The diagrams' text halo is the sheet colour,
+ * so labels knock the grid out cleanly.
+ */
+.sl-markdown-content {
+  counter-reset: zp-fig;
+}
+
+.zp-diagram {
+  counter-increment: zp-fig;
+  margin-block: 1.75rem;
+}
+
+.zp-diagram a {
+  --zp-dot: rgb(255 255 255 / 0.06);
+
+  position: relative;
+  display: block;
+  padding: 2.6rem 1.25rem 1.25rem;
+  border: 1px solid var(--zp-line);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 1px 1px, var(--zp-dot) 1px, transparent 0) 0 0 / 18px 18px,
+    var(--sl-color-black);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  text-decoration: none;
+  transition: border-color 200ms ease;
+}
+
+:root[data-theme="light"] .zp-diagram a {
+  --zp-dot: rgb(17 19 24 / 0.08);
+
+  box-shadow: none;
+}
+
+.zp-diagram a::before,
+.zp-diagram a::after {
+  position: absolute;
+  top: 0.85rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.zp-diagram a::before {
+  content: "Fig. " counter(zp-fig, decimal-leading-zero);
+  left: 1.1rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--zp-line);
+  border-radius: 999px;
+  background: var(--sl-color-black);
+  color: var(--sl-color-accent);
+}
+
+.zp-diagram a::after {
+  content: "Full size ↗";
+  right: 1.1rem;
+  padding-top: 0.3rem;
+  color: var(--sl-color-gray-4);
+  opacity: 0.7;
+  transition: opacity 200ms ease;
+}
+
+.zp-diagram a:hover {
+  border-color: color-mix(in srgb, var(--sl-color-accent) 45%, transparent);
+}
+
+.zp-diagram a:hover::after {
+  opacity: 1;
+}
+
+.zp-diagram img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+}
+
+.zp-diagram figcaption {
+  margin-top: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid color-mix(in srgb, var(--sl-color-accent) 55%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--sl-color-gray-3);
+}
+
+:root[data-theme="light"] .zp-only-dark,
+:root:not([data-theme="light"]) .zp-only-light {
+  display: none !important;
+}
+
+/* --- Status badges ------------------------------------------------------------------------ */
+.zp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.1em 0.6em;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.zp-status::before {
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.zp-status--live {
+  color: var(--zp-ok);
+  background: var(--zp-ok-bg);
+}
+
+.zp-status--offline {
+  color: var(--sl-color-gray-2);
+}
+
+.zp-status--designed {
+  color: var(--zp-warn);
+  background: var(--zp-warn-bg);
+}
+
+.zp-status--notbuilt,
+.zp-status--pending {
+  color: var(--sl-color-gray-3);
+  border-style: dashed;
+}
+
+/* --- Hashes and evidence ------------------------------------------------------------------ */
+.zp-hash {
+  font-family: var(--sl-font-mono);
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+}
+
+.zp-evidence {
+  display: grid;
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.sl-markdown-content .zp-evidence > * {
+  margin: 0;
+}
+
+.zp-tx {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--zp-line);
+  border-radius: 0.75rem;
+  background: var(--zp-panel);
+}
+
+.sl-markdown-content .zp-tx * + * {
+  margin-top: 0;
+}
+
+.zp-tx__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.zp-tx__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+
+.zp-tx__hash {
+  display: block;
+  margin-top: 0.5rem !important;
+}
+
+.zp-tx dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0.75rem 0 0 !important;
+}
+
+.zp-tx dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sl-color-gray-3);
+}
+
+.zp-tx dd {
+  margin: 0 !important;
+  font-size: 0.92rem;
+  color: var(--sl-color-gray-1);
+}
+
+.zp-tx__what {
+  margin-top: 0.6rem !important;
+  font-size: 0.92rem;
+  color: var(--sl-color-gray-2);
+}
+
+/* --- Five lines and the stack strip -------------------------------------------------------- */
+.zp-five {
+  counter-reset: five;
+  padding: 0 !important;
+  list-style: none;
+  border-top: 1px solid var(--zp-line);
+}
+
+.sl-markdown-content .zp-five li {
+  counter-increment: five;
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--zp-line);
+}
+
+.zp-five li::before {
+  content: counter(five);
+  font-family: var(--sl-font-mono);
+  color: var(--sl-color-gray-3);
+}
+
+.zp-stack {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-block: 1.5rem;
+  padding: 0 !important;
+  list-style: none;
+}
+
+.sl-markdown-content .zp-stack li {
+  margin: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--zp-line);
+  border-radius: 0.75rem;
+  background: var(--zp-panel);
+}
+
+.zp-stack__role {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sl-color-gray-3);
+}
+
+.zp-stack__tech {
+  display: block;
+  margin-top: 0.15rem;
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+
+.zp-stack__note {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--sl-color-gray-2);
+}
+
+.zp-stack li.zp-stack--ours {
+  border-color: var(--sl-color-accent);
+}
+
+@media (max-width: 50rem) {
+  .zp-stack {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Showcase ----------------------------------------------------------------------------- */
+.zp-showcase {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-block: 1.5rem;
+}
+
+.sl-markdown-content .zp-showcase > * {
+  margin: 0;
+}
+
+.zp-showcase__item {
+  display: block;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--zp-line);
+  border-radius: 0.75rem;
+  background: var(--zp-panel);
+  color: var(--sl-color-gray-2);
+  text-decoration: none;
+}
+
+a.zp-showcase__item:hover {
+  border-color: var(--sl-color-accent);
+}
+
+.zp-showcase__label {
+  display: block;
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+
+.zp-showcase__note {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 40rem) {
+  .zp-showcase {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Component catalog -------------------------------------------------------------------- */
+.zp-catalog {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sl-markdown-content .zp-catalog > * {
+  margin: 0;
+}
+
+.zp-node {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--zp-line);
+  border-radius: 0.75rem;
+  background: var(--zp-panel);
+}
+
+.sl-markdown-content .zp-node * + * {
+  margin-top: 0.35rem;
+}
+
+.zp-node__name {
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+
+.zp-node__label {
+  font-weight: 600;
+  color: var(--sl-color-gray-1);
+}
+
+.zp-node__tech,
+.zp-node__refs {
+  font-size: 0.82rem;
+  color: var(--sl-color-gray-3);
+}
+
+/* --- Footer ------------------------------------------------------------------------------- */
+.zp-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--zp-line);
+  font-size: 0.8rem;
+  color: var(--sl-color-gray-3);
+}
+
+.zp-footer p + p {
+  margin-top: 0.35rem;
+}
+
+.sl-markdown-content .zp-five li > p {
+  margin: 0;
+}
+
+.sl-markdown-content .zp-tx dd {
+  padding: 0;
+  margin-inline-start: 0 !important;
+}
+
+.site-title {
+  color: var(--sl-color-white);
+}
+
+.zp-tx__wide {
+  grid-column: 1 / -1;
+}
+
+/* --- Flows: each list as a timeline -------------------------------------------------------- */
+/* Numbered nodes on a hairline rail; the hop ("App → API.") reads as a small route tag. */
+.sl-markdown-content ol.zp-flow {
+  counter-reset: zp-step;
+  position: relative;
+  padding-left: 0;
+  list-style: none;
+}
+
+.sl-markdown-content ol.zp-flow > li {
+  counter-increment: zp-step;
+  position: relative;
+  margin: 0;
+  padding: 0 0 1.1rem 2.75rem;
+}
+
+/* The rail, from this node to the next. */
+.sl-markdown-content ol.zp-flow > li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 1.75rem;
+  bottom: 0.2rem;
+  left: calc(0.875rem - 0.5px);
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--sl-color-accent) 55%, transparent),
+    var(--zp-line)
+  );
+}
+
+.sl-markdown-content ol.zp-flow > li::before {
+  content: counter(zp-step);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid color-mix(in srgb, var(--sl-color-accent) 50%, transparent);
+  border-radius: 50%;
+  background: var(--sl-color-accent-low);
+  color: var(--sl-color-accent);
+  font-family: var(--sl-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sl-markdown-content ol.zp-flow > li + li {
+  margin-top: 0;
+}
+
+.zp-flow__hop {
+  display: inline-block;
+  margin-right: 0.35rem;
+  padding: 0.05rem 0.5rem;
+  border: 1px solid var(--zp-line);
+  border-radius: 0.4rem;
+  background: var(--zp-panel, var(--sl-color-gray-6));
+  font-family: var(--sl-font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* --- Type, as on the landing page -------------------------------------------------------- */
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.sl-markdown-content :is(h1, h2, h3, h4),
+h1#_top {
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+h1#_top {
+  letter-spacing: -0.04em;
+}
+
+.sl-markdown-content p,
+.sl-markdown-content li {
+  line-height: 1.65;
+}
+
+/* --- White, used as light (dark theme) ------------------------------------------------------ */
+/* Titles: bright white settling into silver toward the baseline. */
+:root:not([data-theme="light"]) h1#_top,
+:root:not([data-theme="light"]) .sl-markdown-content h2 {
+  background: linear-gradient(180deg, #ffffff 35%, #b9bdc6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* One soft key light from above, the landing hero's lamp. */
+:root:not([data-theme="light"]) .main-frame {
+  background:
+    radial-gradient(70% 420px at 50% -120px, rgb(255 255 255 / 0.055), transparent 70%),
+    var(--sl-color-black);
+}
+
+/* Links: white text over a hairline that brightens on hover. */
+:root:not([data-theme="light"]) .sl-markdown-content a:not(.zp-diagram a) {
+  color: #ffffff;
+  text-decoration-color: rgb(255 255 255 / 0.35);
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 160ms ease;
+}
+
+:root:not([data-theme="light"]) .sl-markdown-content a:not(.zp-diagram a):hover {
+  text-decoration-color: #ffffff;
+}
+
+/* The current page: a white pill with a glow, like the landing's primary button. */
+:root:not([data-theme="light"]) .sidebar-content a[aria-current="page"] {
+  box-shadow: 0 6px 24px -10px rgb(255 255 255 / 0.55);
+}

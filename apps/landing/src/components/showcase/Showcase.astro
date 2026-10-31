@@ -1,0 +1,162 @@
+---
+/*
+ * "Watch the demo · Read the code": a 16:9 player and a source-code button, driven by
+ * config/showcase.json (the docs site reads the same file). How to fill it: src/lib/showcase.ts.
+ *
+ * Self-contained so it can move to another page or site without a redesign: one root class
+ * (.zp-showcase), its own stylesheet (showcase.css) whose colours come from --sc-* custom
+ * properties with dark defaults, and one small script for the click-to-load player.
+ *
+ * States
+ *   video: embed → poster + play button; the iframe (and any request to the video host) loads
+ *          only on click. file → native <video preload="none">. link → poster that opens the
+ *          watch page. placeholder → "Demo video coming soon" with the planned length.
+ *   repository: url → a button; null → "Source code · publishing soon" (not a link).
+ */
+import { SHOWCASE } from "../../lib/showcase";
+import "./showcase.css";
+
+interface Props {
+  /** Heading id, for aria-labelledby and in-page links. */
+  id?: string;
+  title?: string;
+  sub?: string;
+  /** Extra links next to the repository button (e.g. the docs). */
+  links?: readonly { href: string; label: string }[];
+  headingLevel?: 2 | 3;
+}
+
+const { video, repository } = SHOWCASE;
+const {
+  id = "showcase",
+  title = "Watch the demo. Read the code.",
+  sub = `${video.durationWords ? `${video.durationWords[0]?.toUpperCase()}${video.durationWords.slice(1)}` : "One run"}, start to finish on Cardano preprod: an AI asks, a passkey decides, the escrow and the seller’s result land on chain.`,
+  links = [],
+  headingLevel = 2,
+} = Astro.props;
+const external = (href: string) => /^https?:/.test(href);
+---
+
+<div class="zp-showcase" data-mode={video.mode}>
+  <div class="zp-showcase__head">
+    {
+      headingLevel === 3 ? (
+        <h3 class="zp-showcase__title" id={`${id}-title`}>{title}</h3>
+      ) : (
+        <h2 class="zp-showcase__title" id={`${id}-title`}>{title}</h2>
+      )
+    }
+    {sub ? <p class="zp-showcase__sub">{sub}</p> : null}
+  </div>
+
+  <div class="zp-showcase__frame">
+    {
+      video.mode === "file" && video.src ? (
+        <video
+          class="zp-showcase__video"
+          src={video.src}
+          poster={video.poster ?? undefined}
+          controls
+          preload="none"
+          playsinline
+          title={video.title}
+        />
+      ) : (
+        <div class="zp-showcase__poster">
+          {video.poster ? (
+            <img src={video.poster} alt="" loading="lazy" decoding="async" width="1600" height="900" />
+          ) : (
+            <span class="zp-showcase__art" aria-hidden="true">
+              <span class="zp-showcase__art-line">Your AI asks.</span>
+              <span class="zp-showcase__art-line">Your passkey decides.</span>
+              <span class="zp-showcase__art-line">Cardano proves it.</span>
+            </span>
+          )}
+          {video.mode === "embed" && video.src ? (
+            <button
+              type="button"
+              class="zp-showcase__play"
+              data-embed={video.src}
+              data-title={video.title}
+              aria-label={`Play: ${video.title}${video.duration ? ` (${video.duration})` : ""}. Loads the video player.`}
+            >
+              <span class="zp-showcase__playicon" aria-hidden="true" />
+              <span class="zp-showcase__playtext">
+                Play the demo{video.duration ? <span> · {video.duration}</span> : null}
+              </span>
+            </button>
+          ) : video.mode === "link" && video.src ? (
+            <a class="zp-showcase__play" href={video.src} target="_blank" rel="noopener noreferrer">
+              <span class="zp-showcase__playicon" aria-hidden="true" />
+              <span class="zp-showcase__playtext">
+                Watch the demo{video.duration ? <span> · {video.duration}</span> : null}
+                <span class="sr-only"> (opens in a new tab)</span>
+              </span>
+            </a>
+          ) : (
+            <p class="zp-showcase__soon">
+              <span class="zp-showcase__chip">Demo video coming soon</span>
+              <span class="zp-showcase__meta">
+                {video.title}
+                {video.duration ? ` · ${video.duration}` : ""}
+              </span>
+            </p>
+          )}
+        </div>
+      )
+    }
+  </div>
+
+  <div class="zp-showcase__actions">
+    {
+      repository.url ? (
+        <a class="zp-showcase__btn zp-showcase__btn--primary" href={repository.url} target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7 3 12l5 5M16 7l5 5-5 5M14 4l-4 16" /></svg>
+          {repository.label}
+          <span class="sr-only"> (opens in a new tab)</span>
+        </a>
+      ) : (
+        <p class="zp-showcase__btn zp-showcase__btn--soon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7 3 12l5 5M16 7l5 5-5 5M14 4l-4 16" /></svg>
+          Source code · publishing soon
+        </p>
+      )
+    }
+    {
+      links.map((l) => (
+        <a
+          class="zp-showcase__btn"
+          href={l.href}
+          {...(external(l.href) ? { target: "_blank", rel: "noopener" } : {})}
+        >
+          {l.label}
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+        </a>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  // Click-to-load: no request reaches the video host until the visitor asks for the video.
+  for (const btn of document.querySelectorAll<HTMLButtonElement>(".zp-showcase__play[data-embed]")) {
+    btn.addEventListener(
+      "click",
+      () => {
+        const src = new URL(btn.dataset.embed ?? "");
+        src.searchParams.set("autoplay", "1");
+        const frame = document.createElement("iframe");
+        frame.className = "zp-showcase__iframe";
+        frame.src = src.href;
+        frame.title = btn.dataset.title ?? "Demo video";
+        frame.allow = "autoplay; fullscreen; picture-in-picture; encrypted-media";
+        frame.allowFullscreen = true;
+        frame.referrerPolicy = "strict-origin-when-cross-origin";
+        const poster = btn.closest(".zp-showcase__poster");
+        poster?.replaceWith(frame);
+        frame.focus();
+      },
+      { once: true },
+    );
+  }
+</script>

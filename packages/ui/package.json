@@ -1,0 +1,48 @@
+{
+  "name": "@zyropay/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared React Native components, design tokens and brand marks. Owner: Mobile.",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens": "./src/tokens/index.ts",
+    "./format": "./src/format/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node scripts/brand-svgs.mjs --check && vitest run"
+  },
+  "dependencies": {
+    "@zyropay/shared": "workspace:*"
+  },
+  "peerDependencies": {
+    "expo-haptics": "*",
+    "react": ">=19.2.0",
+    "react-native": ">=0.86.0",
+    "react-native-gesture-handler": ">=2.30.0",
+    "react-native-qrcode-svg": ">=6.3.0",
+    "react-native-reanimated": ">=4.0.0",
+    "react-native-safe-area-context": ">=5.0.0",
+    "react-native-svg": ">=15.0.0",
+    "react-native-worklets": ">=0.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "expo-haptics": "~57.0.3",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-qrcode-svg": "^6.3.26",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-svg": "15.15.4",
+    "react-native-worklets": "0.10.1",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

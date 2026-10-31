@@ -1,0 +1,62 @@
+---
+title: "Live vs tested offline"
+description: "For each capability, whether it has run live on a test network, is covered by offline tests only, or is designed or not built."
+---
+
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+
+Three levels of proof, never mixed up:
+
+- <Status kind="live" /> ran on a public test network; the transaction is on [Evidence](/evidence/).
+- <Status kind="offline" /> covered by tests that need no network (mock chain, recorded provider
+  responses, the real workers in workerd). Built, but a live run could still find a problem.
+- <Status kind="notbuilt" /> or <Status kind="designed" />: not in the code.
+
+## Cardano agent payments
+
+| Capability                                                       | Status                    | Evidence or tests                                                                        |
+| ---------------------------------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------- |
+| Passkey-signed Cardano send (own CBOR, Turnkey raw Ed25519)      | <Status kind="live" />    | <TxRef id="first-send" />                                                                |
+| AI client connects over OAuth, calls `pay_x402`                  | <Status kind="live" />    | ChatGPT: <TxRef id="x402-direct" />                                                      |
+| x402 exact payment, hand-off through the MCP worker, `CONFIRMED` | <Status kind="live" />    | <TxRef id="x402-direct" />                                                               |
+| Delivery receipt verified                                        | <Status kind="live" />    | <TxRef id="x402-direct" />; failures in `x402-cardano.test.ts`                           |
+| Facilitator compatibility (`@x402/cardano` 2.29.0)               | <Status kind="live" />    | The facilitator accepted both live payments; `facilitator-compat.test.ts`                |
+| Masumi escrow lock with seller-signed terms                      | <Status kind="live" />    | <TxRef id="escrow-lock" />                                                               |
+| Seller's SubmitResult (Plutus V3 spend)                          | <Status kind="live" />    | <TxRef id="escrow-result" />                                                             |
+| Proof before release: `verified`                                 | <Status kind="live" />    | <TxRef id="escrow-result" />                                                             |
+| Proof `mismatch` (dishonest seller, ChatGPT, passkey)            | <Status kind="live" />    | <TxRef id="proof-mismatch" />                                                            |
+| Proof `not_delivered`                                            | <Status kind="offline" /> | `apps/seller/test/escrow-app.test.ts`, `apps/api/test/integration/x402-masumi.test.ts`   |
+| Refund: SetRefundRequested, WithdrawRefund (passkey, Plutus)     | <Status kind="live" />    | <TxRef id="refund" />, <TxRef id="refund-withdraw" />                                    |
+| Seller's AuthorizeRefund (worker, after a refund request)        | <Status kind="live" />    | <TxRef id="refund-authorize" />                                                          |
+| Seller withdrawal after unlock (cron sweeper, Withdraw)          | <Status kind="live" />    | <TxRef id="seller-collect" />                                                            |
+| Registry discovery and identity check                            | <Status kind="live" />    | ChatGPT: `find_agents` found both agents, `verify_agent` ok; `masumi-registry.test.ts`   |
+| Seller registered on the Masumi registry (own Payment Service)   | <Status kind="live" />    | <TxRef id="registry" />                                                                  |
+| MIP-003 endpoint (`masumi-agent.zyropay.online`)                 | <Status kind="live" />    | `/availability` and `/start_job` answer                                                  |
+| Demo seller claims a registry identity in its x402 escrow terms  | <Status kind="live" />    | NFT held by the `payTo` key: <TxRef id="registry-x402" />; ZyroPay's check passes        |
+| Sokosumi paid Task (1 tUSDM, Payment Service, collected)         | <Status kind="live" />    | <TxRef id="sokosumi" />, <TxRef id="sokosumi-result" />, <TxRef id="sokosumi-collect" /> |
+| Sokosumi free Task and follow-up comment                         | <Status kind="live" />    | Off chain: Task `01a18f1e…bbce18f` `COMPLETED`, comment answered                         |
+| Sub-hire receipt chain (agent hires agent)                       | <Status kind="live" />    | <TxRef id="sub-hire-buyer" />, <TxRef id="sub-hire" />; `chain.test.ts`                  |
+| Policy deny (recipient allowlist), allowed after a policy change | <Status kind="live" />    | Denials off chain, nothing reached the phone; then <TxRef id="policy-allowlist" />       |
+| Allowance contract: agent pays without the owner (scripted)      | <Status kind="live" />    | <TxRef id="allowance" />; 3 refusals evaluated, not submitted                            |
+| Auto-pay on Cardano in the app: create, x402 paid with no tap    | <Status kind="live" />    | <TxRef id="autopay-create" />, ChatGPT: <TxRef id="autopay" />; `autopay.test.ts`        |
+| Auto-pay on Cardano in the app: top-up, revoke, fallbacks        | <Status kind="offline" /> | `autopay.test.ts`, `allowance-x402.test.ts`                                              |
+
+## The wallet and the platform
+
+| Capability                                               | Status                     | Notes                                                           |
+| -------------------------------------------------------- | -------------------------- | --------------------------------------------------------------- |
+| Passkey sign-up and login, root-quorum check             | <Status kind="live" />     | Staging web app with a real Turnkey org                         |
+| Sends on Solana devnet and Sepolia                       | <Status kind="offline" />  | Builder, signing and broadcast tests; no live run in this set   |
+| Autonomous mode, Turnkey envelope, delegated SOL payment | <Status kind="offline" />  | `delegated-policy.test.ts`, `autonomous.test.ts`                |
+| Policy engine, reservations under concurrency            | <Status kind="offline" />  | PGlite and real Postgres                                        |
+| MCP OAuth (PKCE, CIMD, DCR), revocation, sanitizing      | <Status kind="offline" />  | workerd with the official MCP SDK client; ChatGPT live as above |
+| Wallet import (ADR-003)                                  | <Status kind="offline" />  | Not run against a real Turnkey org or on a device               |
+| x402 on EVM and Solana                                   | <Status kind="offline" />  | Signed, not handed off (`x402.status: unsupported`)             |
+| Jupiter swaps                                            | <Status kind="offline" />  | Solana mainnet only; checked against a recorded mainnet swap    |
+| Push notifications                                       | <Status kind="offline" />  | Not configured on staging; the app polls                        |
+| Native iOS and Android apps                              | <Status kind="offline" />  | Web app live; not run on a device                               |
+| Production deployment, mainnet                           | <Status kind="notbuilt" /> | Not deployed                                                    |
+
+The engineering status table with every item and its owner is `docs/IMPLEMENTATION_STATUS.md` in the
+repository.

@@ -1,0 +1,487 @@
+---
+import Base from "../layouts/Base.astro";
+import Mark from "../components/Mark.astro";
+import Hero from "../components/hero/Hero.tsx";
+import Beats from "../components/beats/Beats.tsx";
+import HackIt from "../components/hack/HackIt.tsx";
+import Networks from "../components/Networks.astro";
+import Showcase from "../components/showcase/Showcase.astro";
+import AnyAgent from "../components/flow/AnyAgent.tsx";
+import { SHOWCASE } from "../lib/showcase";
+import {
+  APP_CTA,
+  APP_URL,
+  AUDIENCES,
+  COMPARE,
+  DOCS_HOW_URL,
+  DOCS_URL,
+  MCP_URL,
+  STACK_STRIP,
+} from "../lib/content";
+import { CARDANO_LIVE, CARDANO_PENDING } from "../lib/evidence";
+import "../styles/app-screen.css";
+import "../styles/phone.css";
+import "../styles/site.css";
+import "../styles/story.css";
+import "../styles/any.css";
+
+const NAV = [
+  { href: "#product", label: "Product" },
+  { href: DOCS_HOW_URL, label: "How it works" },
+  { href: "#proof", label: "Evidence" },
+  { href: DOCS_URL, label: "Docs" },
+];
+const arrow = "M7 17L17 7M9 7h8v8";
+---
+
+<Base
+  title="ZyroPay · Your AI asks. Your passkey decides. Cardano proves it."
+  description="The permission layer for Cardano's agent economy. Your AI agent asks, your passkey approves, Masumi escrow holds the money and the seller's result on chain proves delivery. Live on Cardano preprod."
+  bodyClass="s"
+  themeColor="#060709"
+  colorScheme="dark"
+>
+  <header class="s-top" id="top">
+    <a class="s-brand" href="/" aria-label="ZyroPay home">
+      <Mark />
+      <span>ZyroPay</span>
+    </a>
+    <nav class="s-nav" aria-label="Main">
+      {NAV.map((n) => <a href={n.href}>{n.label}</a>)}
+    </nav>
+    <details class="s-menu">
+      <summary aria-label="Menu">
+        <span class="s-menu__icon" aria-hidden="true"><i></i><i></i></span>
+        <span class="s-menu__label">Menu</span>
+      </summary>
+      <nav class="s-menu__panel" aria-label="Main">
+        {NAV.map((n) => <a href={n.href}>{n.label}</a>)}
+      </nav>
+    </details>
+    <div class="s-top__actions">
+      {
+        SHOWCASE.repository.url ? (
+          <a
+            class="s-gh"
+            href={SHOWCASE.repository.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="ZyroPay source code on GitHub"
+            title="Source code on GitHub"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 1C5.923 1 1 5.923 1 12c0 4.867 3.149 8.979 7.521 10.436.55.096.756-.233.756-.522 0-.262-.013-1.128-.013-2.049-2.764.509-3.479-.674-3.699-1.292-.124-.317-.66-1.293-1.127-1.554-.385-.207-.936-.715-.014-.729.866-.014 1.485.797 1.691 1.128.99 1.663 2.571 1.196 3.204.907.096-.715.385-1.196.701-1.471-2.448-.275-5.005-1.224-5.005-5.432 0-1.196.426-2.186 1.128-2.956-.111-.275-.496-1.402.11-2.915 0 0 .921-.288 3.024 1.128a10.193 10.193 0 0 1 2.75-.371c.936 0 1.871.123 2.75.371 2.104-1.43 3.025-1.128 3.025-1.128.605 1.513.221 2.64.111 2.915.701.77 1.127 1.747 1.127 2.956 0 4.222-2.571 5.157-5.019 5.432.399.344.743 1.004.743 2.035 0 1.471-.014 2.654-.014 3.025 0 .289.206.632.756.522C19.851 20.979 23 16.854 23 12c0-6.077-4.922-11-11-11Z" />
+            </svg>
+          </a>
+        ) : null
+      }
+      <a class="s-btn" href={APP_URL} data-open-app>{APP_CTA}</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <Hero client:load />
+
+    <!-- Any agent, any chain: who asks, what decides, where it settles (src/lib/flow.ts) -->
+    <section class="s-sec s-anysec" id="product" aria-labelledby="product-title">
+      <div class="s-sec__head" data-reveal>
+        <p class="s-kicker" data-reveal-item>Product</p>
+        <h2 class="s-h2" id="product-title" data-reveal-item>
+          Any agent. Any chain.<br />One decision.
+        </h2>
+        <p class="s-sub" data-reveal-item>
+          Agents ask from anywhere. Your rules decide. The chain settles.
+        </p>
+      </div>
+      <AnyAgent client:visible />
+      <p class="s-fine">
+        Live = real preprod transactions in the evidence; Tested = covered by tests, not yet run
+        live in this evidence set. On-chain auto-pay is ADA for now; tokens go through escrow or
+        your passkey. Agents are shown by name only, with no partnership implied.
+      </p>
+    </section>
+
+    <!-- Ask, Decide, Prove -->
+    <section class="s-sec s-beats" id="how" aria-labelledby="how-title">
+      <div class="s-sec__head" data-reveal>
+        <p class="s-kicker" data-reveal-item>How it works</p>
+        <h2 class="s-h2" id="how-title" data-reveal-item>Ask. Decide. Prove.</h2>
+        <p class="s-sub" data-reveal-item>
+          Three steps, one thing to look at in each. Only one of them can say yes, and that is you.
+        </p>
+      </div>
+      <Beats client:visible />
+      <p class="s-fine">
+        The chat and the hold are a simulation. The receipt is real: a Masumi escrow payment and the
+        seller’s result, recorded on Cardano preprod. <a href={DOCS_HOW_URL}>The full flow, in the docs</a>
+      </p>
+    </section>
+
+    <!-- Who it is for -->
+    <section class="s-sec s-for" id="for" aria-labelledby="for-title">
+      <div class="s-sec__head" data-reveal>
+        <p class="s-kicker" data-reveal-item>Who it’s for</p>
+        <h2 class="s-h2" id="for-title" data-reveal-item>Agents should spend. Not on their own.</h2>
+      </div>
+      <ul class="s-for__grid" data-reveal>
+        {
+          AUDIENCES.map((a, i) => (
+            <li class="s-for__card" data-reveal-item>
+              <span class="s-for__n" aria-hidden="true">{`0${String(i + 1)}`}</span>
+              <h3>{a.who}</h3>
+              <p>{a.what}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- The stack, as a strip -->
+    <section class="s-sec s-strip" aria-labelledby="strip-title">
+      <div class="s-sec__head" data-reveal>
+        <p class="s-kicker" data-reveal-item>Where it fits</p>
+        <h2 class="s-h2" id="strip-title" data-reveal-item>One layer was missing.</h2>
+        <p class="s-sub" data-reveal-item>
+          Masumi is trust. x402 is payment. ZyroPay is permission: the layer where a person says
+          yes, or sets the rules that say it for them.
+        </p>
+      </div>
+      <ol class="s-strip__row" data-reveal>
+        {
+          STACK_STRIP.map((l) => (
+            <li
+              class:list={[
+                "s-strip__cell",
+                { "is-ours": "ours" in l, "is-net": "network" in l },
+              ]}
+              data-reveal-item
+            >
+              <p class="s-strip__role">{l.role}</p>
+              <p class="s-strip__tech">{l.tech}</p>
+              <p class="s-strip__note">{l.note}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="s-fine">
+        MCP, x402, Masumi and Cardano are open technologies ZyroPay builds on. They are named here
+        only to describe how the parts fit.
+      </p>
+    </section>
+
+    <!-- Comparison -->
+    <section class="s-sec s-vs" aria-labelledby="vs-title">
+      <div class="s-sec__head" data-reveal>
+        <p class="s-kicker" data-reveal-item>Why it matters</p>
+        <h2 class="s-h2" id="vs-title" data-reveal-item>Same agent. Different wallet.</h2>
+        <p class="s-sub" data-reveal-item>
+          Most agents that pay today hold their own key. Here is what changes when they don’t.
+        </p>
+      </div>
+      <div class="s-vs__wrap" data-reveal>
+        <table class="s-vs__table">
+          <caption class="sr-only">An agent with a hot wallet compared with an agent on ZyroPay</caption>
+          <thead>
+            <tr>
+              <td></td>
+              <th scope="col">Agent with a hot wallet <span>seed in .env</span></th>
+              <th scope="col" class="is-ours">Agent with ZyroPay <span>no key</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              COMPARE.map((r) => (
+                <tr>
+                  <th scope="row">{r.row}</th>
+                  <td>{r.hot}</td>
+                  <td class="is-ours">{r.zp}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Try to hack it -->
+    <section class="s-sec s-hacksec" id="hack" aria-labelledby="hack-title">
+      <div class="s-sec__head" data-reveal>
+        <p class="s-kicker" data-reveal-item>Security</p>
+        <h2 class="s-h2" id="hack-title" data-reveal-item>Try to hack it.</h2>
+        <p class="s-sub" data-reveal-item>
+          Three attacks, and what stops each one. Pick one.
+        </p>
+      </div>
+      <HackIt client:visible />
+    </section>
+
+    <!-- Proof -->
+    <section class="s-sec s-proof" id="proof" aria-labelledby="proof-title">
+      <div class="s-sec__head" data-reveal>
+        <p class="s-kicker" data-reveal-item>Evidence</p>
+        <h2 class="s-h2" id="proof-title" data-reveal-item>Proof, not promises.</h2>
+        <p class="s-sub" data-reveal-item>
+          Don’t take our word for it. Every claim on this page ends in something you can check.
+        </p>
+      </div>
+      <div class="s-proof__grid" data-reveal>
+        <figure class="s-artifact s-artifact--ledger" data-reveal-item>
+          <figcaption>
+            <h3>On chain, on Cardano preprod</h3>
+            <p>
+              {
+                CARDANO_LIVE.length > 0
+                  ? `${String(CARDANO_LIVE.length)} real transactions from our live runs. Open any of them on Cardanoscan.`
+                  : "Each slot fills with a real transaction as soon as its live run lands. Until then it says so."
+              }
+            </p>
+          </figcaption>
+          <ol class="s-ledger">
+            {
+              CARDANO_LIVE.map((e) => (
+                <li data-state="live">
+                  <span class="s-ledger__label">
+                    <span class="s-ledger__dot" aria-hidden="true" />
+                    <span>
+                      {e.label}
+                      {e.when ? <span class="s-ledger__when">{e.when}</span> : null}
+                    </span>
+                  </span>
+                  {e.tx ? (
+                    <a class="s-ledger__tx" href={e.tx.url} target="_blank" rel="noopener noreferrer">
+                      <code>{e.tx.short}</code>
+                      <span aria-hidden="true">↗</span>
+                      <span class="sr-only">(opens Cardanoscan)</span>
+                    </a>
+                  ) : null}
+                </li>
+              ))
+            }
+          </ol>
+          {
+            CARDANO_PENDING.length > 0 ? (
+              <div class="s-next">
+                <h4 class="s-next__title">Next live runs</h4>
+                <ul class="s-next__list">
+                  {CARDANO_PENDING.map((e) => (
+                    <li>
+                      <span>{e.label}</span>
+                      <span class="s-ledger__pending">Awaiting live run</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null
+          }
+        </figure>
+
+        <figure class="s-artifact s-artifact--hash" data-reveal-item>
+          <figcaption>
+            <h3>What you saw is what gets signed</h3>
+            <p>
+              Every approval is bound to the hash of the exact transaction you reviewed, escrow
+              terms included. A signature over anything else is refused.
+            </p>
+          </figcaption>
+          <div class="s-hash">
+            <p><span>Reviewed</span><code>7c1e 94b2 0a6f … 51f7 a90b</code></p>
+            <p><span>Signed</span><code>7c1e 94b2 0a6f … 51f7 a90b</code></p>
+            <p class="s-hash__ok"><span aria-hidden="true">✓</span> Match <em>· example</em></p>
+          </div>
+        </figure>
+
+        <figure class="s-artifact s-artifact--policy" data-reveal-item>
+          <figcaption>
+            <h3>Your rules, in plain numbers</h3>
+            <p>Checked on our servers before your phone buzzes. Example policy.</p>
+          </figcaption>
+          <dl class="s-policy">
+            <div><dt>Mode</dt><dd>Always ask</dd></div>
+            <div><dt>Per payment</dt><dd>$5</dd></div>
+            <div><dt>Escrow</dt><dd>Required above $1</dd></div>
+            <div><dt>Protocols</dt><dd>x402</dd></div>
+            <div><dt>Recipients</dt><dd>1 seller allowed</dd></div>
+          </dl>
+        </figure>
+      </div>
+    </section>
+
+    <Networks />
+
+    <!-- Watch the demo, read the code (config/showcase.json) -->
+    <section class="s-sec s-show" id="demo" aria-labelledby="demo-title" data-reveal>
+      <Showcase id="demo" links={[{ href: DOCS_URL, label: "Read the docs" }]} />
+    </section>
+
+    <!-- Final CTA: how to try it -->
+    <section class="s-sec s-final" id="start" aria-labelledby="final-title">
+      <span class="s-final__glow" aria-hidden="true"></span>
+      <div class="s-final__head" data-reveal>
+        <h2 class="s-final__title" id="final-title" data-reveal-item>
+          Give your agent a budget.<br />Not a key.
+        </h2>
+        <p class="s-sub" data-reveal-item>
+          Try it on Cardano preprod in three steps. Test networks only during the preview.
+        </p>
+      </div>
+      <ol class="s-try" data-reveal>
+        <li class="s-try__step" data-reveal-item>
+          <span class="s-try__n">01</span>
+          <h3>Open the app</h3>
+          <p>Create a wallet with your passkey. No seed phrase, no password.</p>
+          <a class="s-btn s-btn--lg" href={APP_URL} data-open-app>
+            {APP_CTA}
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={arrow}></path></svg>
+          </a>
+        </li>
+        <li class="s-try__step" data-reveal-item>
+          <span class="s-try__n">02</span>
+          <h3>Connect your AI</h3>
+          <p>Add ZyroPay as an MCP server in Claude or ChatGPT, then sign in once.</p>
+          <div class="s-copy">
+            <code class="s-copy__url" id="mcp-url"><span class="s-copy__scheme">https://</span>{MCP_URL.replace(/^https:\/\//, "")}</code>
+            <button type="button" class="s-copy__btn" data-copy={MCP_URL} aria-describedby="mcp-url">
+              <svg viewBox="0 0 24 24" aria-hidden="true"
+                ><rect x="9" y="9" width="11" height="11" rx="2.5"></rect><path d="M5 15V6.5A1.5 1.5 0 0 1 6.5 5H15"></path></svg
+              >
+              <span data-copy-label>Copy</span>
+            </button>
+          </div>
+          <p class="sr-only" aria-live="polite" data-copy-status></p>
+        </li>
+        <li class="s-try__step" data-reveal-item>
+          <span class="s-try__n">03</span>
+          <h3>Read the docs</h3>
+          <p>How policies, escrow and proofs work, with the API and MCP reference.</p>
+          <a class="s-btn s-btn--ghost s-btn--lg" href={DOCS_URL}>
+            Read the docs
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={arrow}></path></svg>
+          </a>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="s-foot" data-foot>
+    <div class="s-foot__top">
+      <div class="s-foot__id">
+        <a class="s-foot__brand" href="/" aria-label="ZyroPay home"><Mark /><span>ZyroPay</span></a>
+        <p class="s-foot__note">Self-custody wallet for AI agents. Test networks only during the preview.</p>
+      </div>
+      <nav class="s-foot__nav" aria-label="Footer">
+        <a href={DOCS_URL}>Docs</a>
+        <a href={DOCS_HOW_URL}>How it works</a>
+        <a href="#proof">Evidence</a>
+        <a href={APP_URL}>Open the app</a>
+        <a href="/legal">Legal notice</a>
+      </nav>
+    </div>
+    <div class="s-foot__bar">
+      <span class="s-foot__copy">© 2026 ZyroPay</span>
+      <p class="s-foot__tm">
+        Cardano™ and the Cardano Logo™ are trademarks of Cardano Foundation. Claude is a trademark
+        of Anthropic. ChatGPT is a trademark of OpenAI. Grok is a trademark of xAI. Cursor is a
+        trademark of Anysphere. Masumi, Sokosumi, x402 and network names
+        belong to their owners and are used only to say what ZyroPay works with. No partnership,
+        sponsorship or endorsement is implied.
+      </p>
+    </div>
+    <!-- The wordmark, cut by the page edge: an engraved outline, and the same letters lit by
+         the page's warm key light where the pointer is (a slow drift without one). -->
+    <div class="s-word" aria-hidden="true">
+      <span class="s-word__ghost">{[..."ZyroPay"].map((c) => <span>{c}</span>)}</span>
+      <span class="s-word__lit">{[..."ZyroPay"].map((c) => <span>{c}</span>)}</span>
+    </div>
+  </footer>
+</Base>
+
+<script>
+  import { initMotion } from "../lib/motion";
+
+  initMotion({ lerp: 0.1 });
+
+  // The small-screen menu closes when a link in it is followed (in-page anchors included).
+  const menu = document.querySelector<HTMLDetailsElement>(".s-menu");
+  menu?.addEventListener("click", (e) => {
+    if ((e.target as Element).closest("a")) menu.open = false;
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && menu?.open) {
+      menu.open = false;
+      menu.querySelector("summary")?.focus();
+    }
+  });
+
+  // Light follows the pointer: the footer wordmark and the glass cards (--lx/--ly, in px).
+  const lights = document.querySelectorAll<HTMLElement>(
+    ".s-word, .s-for__card, .s-try__step, .s-artifact, .s-strip__cell",
+  );
+  if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    for (const el of lights) {
+      el.addEventListener("pointermove", (e) => {
+        const r = el.getBoundingClientRect();
+        el.style.setProperty("--lx", `${String(Math.round(e.clientX - r.left))}px`);
+        el.style.setProperty("--ly", `${String(Math.round(e.clientY - r.top))}px`);
+        el.dataset.lit = "";
+      });
+      el.addEventListener("pointerleave", () => {
+        delete el.dataset.lit;
+      });
+    }
+  }
+
+  // The wordmark's letters rise once, when the footer comes into view.
+  const foot = document.querySelector<HTMLElement>("[data-foot]");
+  if (foot) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          foot.dataset.in = "";
+          io.disconnect();
+        }
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(foot);
+  }
+
+  // Copy the MCP URL.
+  for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+    const label = btn.querySelector<HTMLElement>("[data-copy-label]");
+    const status = btn.closest("li")?.querySelector<HTMLElement>("[data-copy-status]");
+    let timer = 0;
+    btn.addEventListener("click", () => {
+      const text = btn.dataset.copy ?? "";
+      const done = (ok: boolean) => {
+        if (label) label.textContent = ok ? "Copied" : "Select";
+        if (status) status.textContent = ok ? "MCP URL copied to the clipboard." : "";
+        btn.dataset.state = ok ? "copied" : "failed";
+        if (!ok) {
+          const code = btn.parentElement?.querySelector("code");
+          const range = document.createRange();
+          if (code) {
+            range.selectNodeContents(code);
+            const sel = window.getSelection();
+            sel?.removeAllRanges();
+            sel?.addRange(range);
+          }
+        }
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          if (label) label.textContent = "Copy";
+          delete btn.dataset.state;
+        }, 2000);
+      };
+      Promise.resolve()
+        .then(() => navigator.clipboard.writeText(text))
+        .then(
+        () => {
+          done(true);
+        },
+        () => {
+          done(false);
+        },
+      );
+    });
+  }
+</script>

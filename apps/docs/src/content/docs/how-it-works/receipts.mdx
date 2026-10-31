@@ -1,0 +1,80 @@
+---
+title: "7. Delivery receipts"
+description: "The seller signs the exact bytes it delivered with the key behind the address you paid. How ZyroPay verifies an X-Delivery-Receipt, and every reason a receipt can fail."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+
+A paid HTTP response proves nothing by itself: anyone on the path could have produced it. A
+**delivery receipt** ties the bytes to the party that was paid. The seller signs, with the Ed25519
+key behind its `payTo` address, a message naming the paid URL, `payTo`, the payment transaction and
+the SHA-256 of the exact response body. Only the holder of that key can make a receipt that verifies.
+
+## The format (v1)
+
+Header `X-Delivery-Receipt`: base64 of
+`{v:1, resourceUrl, payTo, paymentTx, contentSha256, signedAt, publicKey, signature}`.
+
+- `contentSha256`: hex SHA-256 of the exact response body bytes.
+- `paymentTx`: the settled transaction id from `PAYMENT-RESPONSE` (or `null`).
+- `publicKey`: the 32-byte Ed25519 verification key of `payTo`'s payment credential.
+- `signature`: Ed25519 (64 bytes, hex) over the UTF-8 message
+
+```text
+"zyropay-x402-receipt-v1\n" + resourceUrl + "\n" + payTo + "\n" + (paymentTx ?? "") + "\n"
+  + contentSha256 + "\n" + signedAt
+```
+
+## Verification
+
+<Diagram
+  name="receipt"
+  alt="Receipt verification: the seller's header, the MCP worker's own hash of the body and the stored payment terms go into the API verifier, which checks the key hashes to the paid address, the receipt names the paid URL, payTo and transaction, the content hash equals the buyer's hash, and the signature is valid; all four give Delivery verified."
+  caption="Three independent inputs, four checks."
+/>
+
+The MCP worker forwards the header verbatim (it never parses it; above 4 KiB it is dropped) together
+with its own SHA-256 of the body it read. The API then checks, independently of both:
+
+1. Blake2b-224 of `publicKey` is the payment key hash of the address that was paid. For an escrow
+   payment, that is the seller's address in the signed terms, not the script.
+2. The receipt names the bound resource URL, that `payTo` and the signed transaction.
+3. `contentSha256` equals the MCP worker's hash. The seller's own hash is never trusted alone.
+4. The signature is valid.
+
+The app then shows **Delivery verified · signed by the seller you paid**, or a warning with the reason;
+the agent gets the verdict in `resource.receipt` (`verified`, `contentSha256`, `signedBy`, `signedAt`,
+`reason`). A failed receipt is audited as `security.x402_receipt_invalid`. A receipt problem never
+fails the paid request itself: you paid, and the response is delivered either way.
+
+| Reason                | Means                                                          |
+| --------------------- | -------------------------------------------------------------- |
+| `missing`             | The resource sent no receipt                                   |
+| `malformed`           | The header is not a v1 receipt                                 |
+| `body_unavailable`    | The buyer could not hash the full body (truncated or not text) |
+| `unsupported_network` | Receipts are verified for Cardano payments only                |
+| `wrong_signer`        | The signing key or `payTo` is not the address that was paid    |
+| `wrong_resource`      | Signed for another resource URL                                |
+| `wrong_payment`       | Signed for another payment transaction                         |
+| `content_mismatch`    | The delivered bytes are not the ones the seller signed         |
+| `bad_signature`       | The signature does not verify                                  |
+
+## Receipts and escrow
+
+For an escrow payment, the result hash on chain is `SHA-256(body)`, the same value the receipt signs
+as `contentSha256`. The receipt, the chain and the buyer's own measurement can therefore be compared
+three ways; that comparison is [proof before release](/how-it-works/proof/). For a direct payment
+nothing is recorded on chain and the receipt is the only evidence (proof state `receipt_only`).
+
+## Proven
+
+Live: the direct x402 payment's receipt verified <TxRef id="x402-direct" />. Offline
+
+<Status kind="offline" />: valid receipts verify; a wrong key, other bytes, another URL, another
+payment, a malformed header and a forged signature each fail with the reason above
+(`apps/api/test/integration/x402-cardano.test.ts`, `packages/shared/src/x402-receipt.test.ts`,
+`apps/seller/test/receipt.test.ts`).
+
+**Code:** `packages/shared/src/x402-receipt.ts`, `apps/seller/src/receipt.ts`.

@@ -1,0 +1,61 @@
+---
+title: "How it works"
+description: "The ten steps of an agent payment on ZyroPay, in reading order, from the agent's first tool call to the on-chain proof of delivery."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+
+Read these pages in order. Each one is short, has a numbered sequence diagram whose numbers match
+its prose, and ends with what is proven live and where the code is.
+
+1. [The agent asks](/how-it-works/agent-asks/): the AI connects over OAuth and calls MCP tools. It
+   can create requests, never signatures.
+2. [Policy decides](/how-it-works/policy/): your rules for that agent, evaluated before your phone
+   rings: deny, ask you, or (outside Cardano) allow within limits.
+3. [Your passkey signs](/how-it-works/passkey/): you review the payment, your passkey signs the
+   exact bytes, and the server checks that nothing changed.
+4. [Paying with x402](/how-it-works/x402/): the seller quotes in an HTTP 402; ZyroPay builds the
+   Cardano transfer and hands it back through the agent.
+5. [Escrow with Masumi](/how-it-works/escrow/): the payment waits in a Plutus script until the
+   seller delivers, and can be refunded.
+6. [Proof before release](/how-it-works/proof/): the seller's on-chain result hash against what
+   your agent received.
+7. [Delivery receipts](/how-it-works/receipts/): the seller's signature over the exact bytes it
+   sent.
+8. [Discover and identify](/how-it-works/discover/): finding sellers in the Masumi registry and
+   checking a claimed identity on chain.
+9. [Agents hiring agents](/how-it-works/sub-hire/): a seller pays another seller, and the receipts
+   chain.
+10. [Autonomous mode](/how-it-works/autonomous/): payments without you, what bounds them, and why
+    Cardano is excluded.
+
+## The life of one request
+
+Every payment, from an agent or from you in the app, is one transaction request that moves through
+a fixed state machine. An illegal transition throws, and each change is checked against a version
+number, so a step can never be skipped and two approvals can never both sign.
+
+<Diagram
+  name="request-states"
+  alt="Request states: CREATED, POLICY_CHECK, then PENDING_APPROVAL or APPROVED or REJECTED; APPROVED, SIGNING, BROADCAST, CONFIRMED; SIGNING and BROADCAST can end in FAILED; PENDING_APPROVAL and APPROVED can end in EXPIRED or CANCELLED."
+  caption="The transaction request state machine (TX_REQUEST_TRANSITIONS in packages/shared/src/state-machine.ts)."
+/>
+
+| End state   | Means                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------- |
+| `CONFIRMED` | The chain confirmed it; the reserved amount moved to the spending ledger              |
+| `REJECTED`  | You said no, or a policy rule denied it                                               |
+| `EXPIRED`   | Nobody decided in time; a one-minute cron sweep moves it and releases the reservation |
+| `FAILED`    | The chain or a check refused it after signing started                                 |
+| `CANCELLED` | Withdrawn before signing began                                                        |
+
+Once a request reaches `SIGNING`, only the chain decides the outcome: it cannot expire or be
+cancelled any more, because a signature may exist.
+
+An x402 payment on Cardano is the one variation: after you approve, the API does not broadcast. It
+attaches your signature and waits for the agent's next status call to hand the payment to the
+seller, whose facilitator submits it ([step 4](/how-it-works/x402/)). The transaction id (the
+body hash) is known before submission, so the request moves to `BROADCAST` at hand-off and the
+confirmation tracker follows that id to `CONFIRMED`, exactly as for a send it broadcast itself. If
+the validity window passes and the transaction never lands, it ends `FAILED` and the reservation is
+released. Handing the same signed bytes over twice cannot pay twice: their inputs can be spent once.

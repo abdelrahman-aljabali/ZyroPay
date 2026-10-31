@@ -1,0 +1,27 @@
+# Approve: Approvals tab -> pending request -> hold to approve (simulated passkey) -> done.
+appId: ${APP_ID}
+name: Approve request
+---
+- runFlow: subflows/onboard-simulated.yaml
+- tapOn: "Approvals"
+- assertVisible:
+    id: "approvals-screen"
+- extendedWaitUntil:
+    visible: "2 waiting"
+    timeout: 10000
+- tapOn:
+    id: "pending-approval-0192f3a1-0007-7000-8000-000000000001"
+- assertVisible:
+    id: "approval-detail"
+- assertVisible: "Simulated"
+- longPressOn:
+    id: "approval-hold-to-approve"
+- extendedWaitUntil:
+    visible:
+      id: "approval-approved"
+    timeout: 10000
+- assertVisible: "Approved and signed"
+- assertVisible: "Simulated: nothing was signed or broadcast."
+- tapOn:
+    id: "approval-done"
+- assertVisible: "1 waiting"

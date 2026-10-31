@@ -1,0 +1,867 @@
+/*
+ * Recreation of the ZyroPay app's approval flow (apps/mobile, packages/ui tokens).
+ * 1 app point = var(--u) = 100cqw / 393, so the whole screen scales with the phone that holds it.
+ * The nearest ancestor with `container-type: inline-size` is `.zp-screen` (components/phone/Phone.tsx).
+ */
+
+.zp-app {
+  --u: calc(100cqw / 393);
+  --bg: #ffffff;
+  --surface: #f2f2f2;
+  --raised: #ffffff;
+  --text: #111111;
+  --text-2: #6e6e73;
+  --sep: #dedee2;
+  --primary: #111111;
+  --on-primary: #ffffff;
+  --success: #127548;
+  --success-soft: #e7f4ee;
+  --danger: #d93025;
+  --danger-soft: #fcebe9;
+  --scrim: rgb(0 0 0 / 0.32);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "Inter Fallback", system-ui, sans-serif;
+  font-size: calc(var(--u) * 16);
+  line-height: 1.3;
+  letter-spacing: -0.006em;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.zp-app[data-scheme="dark"] {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --raised: #2c2c2e;
+  --text: #ffffff;
+  --text-2: #8e8e93;
+  --sep: #323235;
+  --primary: #ffffff;
+  --on-primary: #000000;
+  --success: #30d158;
+  --success-soft: #0f2a1a;
+  --danger: #ff453a;
+  --danger-soft: #33110f;
+  --scrim: rgb(0 0 0 / 0.6);
+}
+
+:where(.zp-app p) {
+  margin: 0;
+}
+
+:where(.zp-app svg) {
+  display: block;
+}
+
+.zp-tabular,
+.zp-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status bar ---------------------------------------------------------------------------- */
+.zp-status {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(var(--u) * 56);
+  padding: calc(var(--u) * 6) calc(var(--u) * 34) 0 calc(var(--u) * 46);
+  font-size: calc(var(--u) * 17);
+  font-weight: 600;
+}
+
+.zp-status__icons {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+}
+
+.zp-status__icons svg {
+  height: calc(var(--u) * 12);
+  width: auto;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.zp-status__icons svg:first-child,
+.zp-status__icons svg:nth-child(2) {
+  stroke: none;
+}
+
+/* Home (behind the request) ------------------------------------------------------------- */
+.zp-home {
+  padding: calc(var(--u) * 8) calc(var(--u) * 20) 0;
+}
+
+.zp-home__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zp-mark {
+  width: calc(var(--u) * 44);
+  height: calc(var(--u) * 44);
+}
+
+/* The ZyroPay mark: black petals in a white tile, outlined so it reads on white. */
+.zp-mark rect {
+  fill: #ffffff;
+  stroke: var(--sep);
+  stroke-width: 2;
+}
+
+.zp-mark path {
+  fill: #000000;
+}
+
+.zp-mark--sm {
+  width: calc(var(--u) * 38);
+  height: calc(var(--u) * 38);
+  flex: none;
+}
+
+.zp-round {
+  display: grid;
+  place-items: center;
+  width: calc(var(--u) * 48);
+  height: calc(var(--u) * 48);
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.zp-round svg,
+.zp-pill svg {
+  width: calc(var(--u) * 22);
+  height: calc(var(--u) * 22);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.zp-home__label {
+  margin-top: calc(var(--u) * 30);
+  color: var(--text-2);
+  font-size: calc(var(--u) * 17);
+}
+
+.zp-home__balance {
+  margin-top: calc(var(--u) * 2);
+  font-size: calc(var(--u) * 58);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.zp-home__balance span {
+  color: var(--text-2);
+  font-size: 0.62em;
+}
+
+.zp-home__delta {
+  margin-top: calc(var(--u) * 8);
+  color: var(--success);
+  font-size: calc(var(--u) * 15);
+  font-weight: 600;
+}
+
+.zp-home__actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(var(--u) * 8);
+  margin-top: calc(var(--u) * 22);
+}
+
+.zp-btn {
+  display: grid;
+  place-items: center;
+  height: calc(var(--u) * 50);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: calc(var(--u) * 15);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.zp-btn--primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.zp-list {
+  margin-top: calc(var(--u) * 24);
+  border-radius: calc(var(--u) * 24);
+  background: var(--surface);
+  padding: calc(var(--u) * 4) 0;
+}
+
+.zp-list__row {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 12);
+  height: calc(var(--u) * 64);
+  padding: 0 calc(var(--u) * 18);
+}
+
+.zp-list__row + .zp-list__row {
+  box-shadow: inset 0 1px 0 var(--sep);
+}
+
+.zp-plate {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(var(--u) * 40);
+  height: calc(var(--u) * 40);
+  border-radius: 50%;
+  background: var(--raised);
+}
+
+.zp-app[data-scheme="light"] .zp-plate {
+  background: #ffffff;
+  box-shadow: 0 0 0 1px var(--sep);
+}
+
+/* Base: the blue Square always sits on a white plate (docs/BRAND_ASSETS.md). */
+.zp-app .zp-plate--white {
+  background: #ffffff;
+}
+
+.zp-plate img {
+  width: 50%;
+  height: 50%;
+}
+
+.zp-plate--sm {
+  width: calc(var(--u) * 24);
+  height: calc(var(--u) * 24);
+  margin-right: calc(var(--u) * 8);
+}
+
+.zp-list__name {
+  flex: 1;
+  font-size: calc(var(--u) * 17);
+  font-weight: 600;
+}
+
+.zp-list__val {
+  display: grid;
+  justify-items: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.zp-list__val b {
+  font-size: calc(var(--u) * 16);
+  font-weight: 600;
+}
+
+.zp-list__val i {
+  font-style: normal;
+  color: var(--text-2);
+  font-size: calc(var(--u) * 14);
+}
+
+/* Push banner --------------------------------------------------------------------------- */
+.zp-banner {
+  position: absolute;
+  z-index: 5;
+  top: calc(var(--u) * 54);
+  left: calc(var(--u) * 10);
+  right: calc(var(--u) * 10);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 12);
+  padding: calc(var(--u) * 14);
+  border-radius: calc(var(--u) * 26);
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  box-shadow:
+    0 calc(var(--u) * 8) calc(var(--u) * 30) rgb(0 0 0 / 0.16),
+    0 0 0 1px rgb(0 0 0 / 0.04);
+  /* Fully above the screen edge, whatever the banner height. */
+  transform: translateY(calc(-100% - var(--u) * 70));
+  opacity: 0;
+  transition:
+    transform 520ms var(--ease-drawer),
+    opacity 300ms ease;
+}
+
+.zp-app[data-scheme="dark"] .zp-banner {
+  background: color-mix(in oklab, var(--raised) 94%, transparent);
+  box-shadow: 0 calc(var(--u) * 8) calc(var(--u) * 30) rgb(0 0 0 / 0.5);
+}
+
+.zp-banner[data-on="true"] {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.zp-banner__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  font-size: calc(var(--u) * 15);
+}
+
+.zp-banner__text b {
+  font-weight: 600;
+}
+
+.zp-banner__now {
+  align-self: flex-start;
+  color: var(--text-2);
+  font-size: calc(var(--u) * 13);
+}
+
+/* Review sheet -------------------------------------------------------------------------- */
+/* The app's floating tab bar (iOS 26 style), under the sheet and the scrim. */
+.zp-tabs {
+  position: absolute;
+  z-index: 2;
+  left: calc(var(--u) * 14);
+  right: calc(var(--u) * 14);
+  bottom: calc(var(--u) * 24);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: calc(var(--u) * 6);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border: calc(var(--u) * 0.5) solid var(--sep);
+  box-shadow: 0 calc(var(--u) * 6) calc(var(--u) * 24) rgb(0 0 0 / 0.12);
+  backdrop-filter: blur(calc(var(--u) * 18)) saturate(1.6);
+  -webkit-backdrop-filter: blur(calc(var(--u) * 18)) saturate(1.6);
+}
+
+.zp-tabs__tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--u) * 2);
+  padding: calc(var(--u) * 6) 0 calc(var(--u) * 5);
+  border-radius: 999px;
+  color: var(--text-2);
+  font-size: calc(var(--u) * 10);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.zp-tabs__tab[data-on="true"] {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  font-weight: 600;
+}
+
+.zp-tabs__tab svg {
+  width: calc(var(--u) * 24);
+  height: calc(var(--u) * 24);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.zp-tabs__badge {
+  position: absolute;
+  top: calc(var(--u) * 1);
+  left: calc(50% + var(--u) * 6);
+  min-width: calc(var(--u) * 17);
+  height: calc(var(--u) * 17);
+  padding: 0 calc(var(--u) * 4);
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: calc(var(--u) * 11);
+  font-style: normal;
+  font-weight: 700;
+  line-height: calc(var(--u) * 17);
+  text-align: center;
+}
+
+.zp-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: var(--scrim);
+  opacity: 0;
+  transition: opacity 400ms ease;
+  pointer-events: none;
+}
+
+.zp-scrim[data-on="true"] {
+  opacity: 1;
+}
+
+.zp-sheet {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: calc(var(--u) * 62);
+  padding: calc(var(--u) * 26) calc(var(--u) * 18) 0;
+  border-radius: calc(var(--u) * 34) calc(var(--u) * 34) 0 0;
+  background: var(--bg);
+  transform: translateY(102%);
+  transition: transform 640ms var(--ease-drawer);
+}
+
+.zp-sheet[data-on="true"] {
+  transform: translateY(0);
+}
+
+.zp-sheet__title {
+  padding: 0 calc(var(--u) * 6);
+  font-size: calc(var(--u) * 30);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.zp-sheet__sub {
+  margin-top: calc(var(--u) * 26);
+  padding: 0 calc(var(--u) * 6);
+  font-size: calc(var(--u) * 24);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.zp-details {
+  gap: calc(var(--u) * 16);
+  margin-top: calc(var(--u) * 12);
+  font-size: calc(var(--u) * 17);
+}
+
+.zp-details b {
+  font-weight: 650;
+}
+
+.zp-card {
+  touch-action: pan-y;
+  margin-top: calc(var(--u) * 18);
+  padding: calc(var(--u) * 22) calc(var(--u) * 20) calc(var(--u) * 16);
+  border-radius: calc(var(--u) * 28);
+  background: var(--surface);
+}
+
+.zp-card__head {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 12);
+}
+
+.zp-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: calc(var(--u) * 44);
+  height: calc(var(--u) * 44);
+  border-radius: calc(var(--u) * 12);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: calc(var(--u) * 19);
+  font-weight: 700;
+}
+
+.zp-card__who {
+  display: grid;
+  flex: 1;
+}
+
+.zp-card__who b {
+  font-size: calc(var(--u) * 17);
+  font-weight: 600;
+}
+
+.zp-card__who span {
+  color: var(--text-2);
+  font-size: calc(var(--u) * 15);
+}
+
+.zp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  padding: calc(var(--u) * 7) calc(var(--u) * 12);
+  border-radius: 999px;
+  background: var(--raised);
+  font-size: calc(var(--u) * 16);
+  font-weight: 600;
+}
+
+.zp-pill svg {
+  width: calc(var(--u) * 17);
+  height: calc(var(--u) * 17);
+  color: var(--text-2);
+}
+
+.zp-amount {
+  margin-top: calc(var(--u) * 18);
+  font-size: calc(var(--u) * 50);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.zp-fiat {
+  margin-top: calc(var(--u) * 4);
+  color: var(--text-2);
+  font-size: calc(var(--u) * 18);
+}
+
+.zp-card hr {
+  margin: calc(var(--u) * 18) 0 calc(var(--u) * 14);
+  border: 0;
+  border-top: 1px solid var(--sep);
+}
+
+.zp-rows {
+  display: grid;
+  gap: calc(var(--u) * 12);
+  margin: 0;
+}
+
+.zp-rows div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zp-rows dt {
+  color: var(--text-2);
+}
+
+.zp-rows dd {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-weight: 500;
+}
+
+.zp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--u) * 8);
+  margin-top: calc(var(--u) * 16);
+}
+
+.zp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+  padding: calc(var(--u) * 7) calc(var(--u) * 12);
+  border-radius: 999px;
+  background: var(--raised);
+  font-size: calc(var(--u) * 14);
+  font-weight: 500;
+}
+
+.zp-chip--ok {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.zp-chip--danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.zp-chip svg {
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 16);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Hold to approve ------------------------------------------------------------------------ */
+.zp-hold {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 10);
+  width: 100%;
+  height: calc(var(--u) * 64);
+  /* Never below a 44px touch target, even on the smallest phones. */
+  min-height: 44px;
+  margin-top: calc(var(--u) * 20);
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  background: var(--primary);
+  color: var(--on-primary);
+  font: inherit;
+  font-size: calc(var(--u) * 19);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  touch-action: none;
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 300ms ease;
+}
+
+.zp-hold:active {
+  transform: scale(0.98);
+}
+
+.zp-hold:focus-visible {
+  outline: 3px solid var(--focus, #2f6bff);
+  outline-offset: 3px;
+}
+
+.zp-hold[aria-disabled="true"] {
+  cursor: default;
+}
+
+.zp-hold[data-done="true"] {
+  background: var(--success);
+  color: #ffffff;
+  transform: none;
+}
+
+.zp-hold__fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in oklab, var(--on-primary) 16%, transparent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.zp-hold[data-done="true"] .zp-hold__fill {
+  opacity: 0;
+}
+
+.zp-hold__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(var(--u) * 34);
+  height: calc(var(--u) * 34);
+}
+
+.zp-hold__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  fill: none;
+  stroke-width: 2.4;
+}
+
+.zp-hold__track {
+  stroke: color-mix(in oklab, currentColor 22%, transparent);
+}
+
+.zp-hold__progress {
+  stroke: currentColor;
+  stroke-linecap: round;
+}
+
+.zp-hold[data-done="true"] .zp-hold__track,
+.zp-hold[data-done="true"] .zp-hold__progress {
+  stroke: transparent;
+}
+
+.zp-hold__glyph {
+  width: calc(var(--u) * 20);
+  height: calc(var(--u) * 20);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.zp-reject {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  margin-top: calc(var(--u) * 6);
+  padding: calc(var(--u) * 8) 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: calc(var(--u) * 15);
+  text-align: center;
+  cursor: pointer;
+}
+
+.zp-reject:focus-visible {
+  outline: 3px solid var(--focus, #2f6bff);
+  outline-offset: 2px;
+}
+
+.zp-reject:disabled {
+  cursor: default;
+}
+
+.zp-app[data-scenario="attack"] .zp-reject:not(:disabled) {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* End state: paid or blocked ------------------------------------------------------------ */
+.zp-end {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 10);
+  padding: 0 calc(var(--u) * 28);
+  background: var(--bg);
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.97);
+  transition:
+    opacity 360ms ease,
+    transform 520ms var(--ease-out);
+  pointer-events: none;
+}
+
+.zp-end[data-on="true"] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.zp-end__icon {
+  display: grid;
+  place-items: center;
+  width: calc(var(--u) * 88);
+  height: calc(var(--u) * 88);
+  margin-bottom: calc(var(--u) * 10);
+  border-radius: 50%;
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.zp-end[data-tone="danger"] .zp-end__icon {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.zp-end__icon svg {
+  width: 46%;
+  height: 46%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  transition: stroke-dashoffset 500ms 180ms var(--ease-out);
+}
+
+.zp-end[data-on="true"] .zp-end__icon svg {
+  stroke-dashoffset: 0;
+}
+
+.zp-end__title {
+  font-size: calc(var(--u) * 32);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.zp-end[data-tone="danger"] .zp-end__title {
+  color: var(--danger);
+}
+
+.zp-end__detail {
+  color: var(--text-2);
+  font-size: calc(var(--u) * 16);
+}
+
+.zp-end__actions {
+  display: flex;
+  gap: calc(var(--u) * 10);
+  margin-top: calc(var(--u) * 22);
+}
+
+.zp-replay {
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  padding: calc(var(--u) * 12) calc(var(--u) * 22);
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: calc(var(--u) * 16);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out);
+}
+
+.zp-replay--strong {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.zp-replay:active {
+  transform: scale(0.97);
+}
+
+.zp-replay:focus-visible {
+  outline: 3px solid var(--focus, #2f6bff);
+  outline-offset: 3px;
+}
+
+.zp-homebar {
+  position: absolute;
+  z-index: 7;
+  left: 50%;
+  bottom: calc(var(--u) * 8);
+  width: calc(var(--u) * 136);
+  height: calc(var(--u) * 5);
+  margin-left: calc(var(--u) * -68);
+  border-radius: 999px;
+  background: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zp-banner,
+  .zp-sheet {
+    transition-property: opacity, transform;
+    transition-duration: 1ms;
+  }
+
+  .zp-sheet:not([data-on="true"]) {
+    opacity: 0;
+  }
+
+  .zp-sheet[data-on="true"] {
+    transition: opacity 240ms ease;
+  }
+
+  .zp-end {
+    transform: none;
+  }
+}

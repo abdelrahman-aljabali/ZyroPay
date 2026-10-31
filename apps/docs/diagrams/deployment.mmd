@@ -1,0 +1,17 @@
+flowchart TB
+  subgraph Z["zyropay.online zone (Cloudflare)"]
+    L["zyropay.online<br/>landing, static"]
+    D["docs.zyropay.online<br/>this site, static"]
+    W["app.zyropay.online<br/>web app, static"]
+    A["api.zyropay.online<br/>API worker, cron"]
+    M["mcp.zyropay.online<br/>MCP worker"]
+  end
+  Q[["Queue zyropay-online-jobs<br/>+ dead letters"]]
+  KV[("KV: OAuth grants,<br/>hashed tokens")]
+  N[("Neon Postgres<br/>project zyropay-online")]
+  S["Demo sellers (separate workers)<br/>address-intel, token-intel, masumi-agent"]
+  M <-- "service bindings" --> A
+  A --> Q --> A
+  M --> KV
+  A --> N
+  M -. "x402 retry" .-> S

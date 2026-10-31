@@ -1,0 +1,18 @@
+[
+  {
+    "name": "SOL/BTC Market",
+    "isPrimary": true,
+    "description": "SOL/BTC Pool",
+    "lendingMarket": "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF",
+    "lookupTable": "FGMSBiyVE8TvZcdQnZETAAKw28tkQJ2ccZy6pyp95URb",
+    "isCurated": false
+  },
+  {
+    "name": "JLP Market",
+    "isPrimary": false,
+    "description": "JLP Pool",
+    "lendingMarket": "DxXdAyU3kCjnyggvHmY5nAwg5cRbbmdyX3npfDMjjMek",
+    "lookupTable": "GprZNyWk67655JhX6Rq9KoebQ6WkQYRhATWzkx2P2LNc",
+    "isCurated": false
+  }
+]

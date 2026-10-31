@@ -1,0 +1,26 @@
+[
+  {
+    "reserve": "d4A2prbA2whesmvHaL88BH6Ewn5N4bTSU2Ze8P6Bc4Q",
+    "liquidityToken": "SOL",
+    "liquidityTokenMint": "So11111111111111111111111111111111111111112",
+    "maxLtv": "0.74",
+    "borrowApy": "0.05697851267441978",
+    "supplyApy": "0.04371840445124553",
+    "totalSupply": "2337925.510925444543",
+    "totalBorrow": "2123874.113292961441212292288886255044178",
+    "totalBorrowUsd": "225003117.8570417164913393159488226415113",
+    "totalSupplyUsd": "247679712.26888891613"
+  },
+  {
+    "reserve": "5xXxt9uVHrcT5b1KveAT5ZWgk2f74aDjnLEDDEeAxgpN",
+    "liquidityToken": "USDC",
+    "liquidityTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "maxLtv": "0.8",
+    "borrowApy": "0.11313006672996684",
+    "supplyApy": "0",
+    "totalSupply": "0.1",
+    "totalBorrow": "0",
+    "totalBorrowUsd": "0",
+    "totalSupplyUsd": "0.099985877"
+  }
+]

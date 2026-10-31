@@ -1,0 +1,31 @@
+{
+  "name": "@zyropay/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Single source of truth: Zod schemas, inferred types, pure domain logic and ports. Owner: coordinator.",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.lib.json && tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "docs:generate": "tsx scripts/generate-docs.ts"
+  },
+  "dependencies": {
+    "@noble/curves": "catalog:",
+    "@noble/hashes": "catalog:",
+    "@scure/bip39": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

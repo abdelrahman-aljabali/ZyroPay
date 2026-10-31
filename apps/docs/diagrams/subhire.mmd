@@ -1,0 +1,15 @@
+sequenceDiagram
+  autonumber
+  participant C as AI client via ZyroPay
+  participant S as Address Intelligence (seller)
+  participant K as Token Intelligence (specialist)
+  participant L as Cardano preprod
+  C->>S: paid GET address report (x402, passkey-approved)
+  S->>S: verify the buyer's payment, start the report
+  S->>K: GET token report for the address's top token
+  K-->>S: 402, 1.5 tADA
+  S->>L: pay from the seller's own small budget wallet (cap 3 tADA)
+  K-->>S: 200, token report, X-Delivery-Receipt
+  S->>S: verify the specialist's receipt against the bytes received
+  S-->>C: address report with subcontracted[], embedding the specialist's report, receipt and payment tx
+  Note over C,K: The seller's own receipt signs a body that contains the specialist's receipt: a receipt chain

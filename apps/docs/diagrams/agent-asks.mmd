@@ -1,0 +1,15 @@
+sequenceDiagram
+  autonumber
+  participant C as AI client
+  participant M as ZyroPay MCP
+  participant S as Paid resource
+  participant A as ZyroPay API
+  C->>M: tools/call pay_x402 with a Bearer token
+  Note over M: The token maps to one agentId. The MCP worker holds no key and no database.
+  M->>S: probe the URL once for its 402 (public https, no redirects, 8 s, 64 KiB)
+  S-->>M: 402 with payment requirements
+  M->>A: create a transaction request (internal service token)
+  A->>A: agent still active? validate, build the payload, hash it, evaluate policy
+  A-->>M: PENDING_APPROVAL, or REJECTED with reason codes
+  M-->>C: sanitized result inside an untrusted-data envelope
+  C->>M: get_approval_status, polled until the request settles

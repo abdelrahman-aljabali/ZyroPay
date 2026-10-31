@@ -1,0 +1,7 @@
+{
+  "extends": "@zyropay/config/tsconfig/workers.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types", "node"]
+  },
+  "include": ["**/*.ts", "../vitest.config.ts"]
+}

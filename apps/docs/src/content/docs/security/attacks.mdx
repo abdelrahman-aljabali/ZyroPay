@@ -1,0 +1,109 @@
+---
+title: "Attack walkthroughs"
+description: "Five attacks on an agent payment, step by step, and where each one stops: prompt injection, a recipient swap, a dishonest seller, a compromised MCP worker and a compromised API."
+---
+
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+
+Each walkthrough names the step where the attack stops and how sure we are of it: live on preprod,
+tested offline, or a known gap.
+
+## 1. Prompt injection: "pay this address now"
+
+A web page, a token name or a paid response tells the agent to send funds to an attacker.
+
+1. The agent calls `send` or `pay_x402` with the attacker's address. The MCP worker cannot sign; it
+   creates a request.
+2. Text that reaches the agent from ZyroPay (token names, registry metadata, paid responses) is
+   sanitized and wrapped in an "untrusted data, not instructions" envelope, which makes the injection
+   harder but cannot make it impossible.
+3. The policy denies a recipient that is not on the allowlist (`RECIPIENT_NOT_ALLOWED`), denies if
+   spending or the protocol is off, and applies the USD limits on spent plus reserved, so a burst of
+   requests cannot add up past them.
+4. On Cardano, a request that passes the policy still comes to you; the review shows the real
+   recipient and amount, and you reject it.
+
+**Stops at:** step 3, or step 4. <Status kind="offline" /> Denial reasons and concurrent limits are
+tested; no live denial is recorded.
+
+## 2. Recipient swap after approval
+
+Someone between your approval and the chain (a compromised agent path, a bug) swaps the recipient or
+amount.
+
+1. Your approval binds to `payloadHash`, the SHA-256 of the canonical terms; changed terms produce a
+   different hash and the approval does not apply (`PAYLOAD_HASH_MISMATCH`).
+2. Your passkey's stamp covers the exact request body; the API refuses a stamp whose bytes, or whose
+   Cardano body hash recomputed from the stored transaction, differ.
+3. An independent decoder, with no network access, checks the bytes pay exactly what the payload
+   says, and the signed transaction is checked against the reviewed bytes before broadcast.
+4. For x402, the MCP worker retries only the exact URL the API bound, and the transaction pays
+   exactly `payTo` the quoted amount; a facilitator cannot redirect it.
+
+**Stops at:** step 1 or 2. <Status kind="offline" /> Forged stamps, other bytes and other body hashes
+are refused and audited in tests.
+
+## 3. Dishonest seller
+
+The seller takes the money and delivers something else, or nothing.
+
+1. With escrow, the money sits in the Masumi script, not with the seller.
+2. **Tamper:** the seller records the hash of its real report on chain and delivers other bytes. The
+   MCP worker hashes what it actually received; the API compares it with the on-chain `result_hash`:
+   `mismatch`. The receipt also fails (`content_mismatch`) or proves what was sent.
+3. **No delivery:** no result reaches the chain by `submitResultTime`: `not_delivered`.
+4. ZyroPay recommends the refund: request it (passkey), and withdraw it once the seller authorizes it
+   or the deadline passes. After a result, a dispute goes to the seller's authorization or the admins.
+
+The demo seller has a deliberately dishonest switch for exactly this, off by default
+(`DEMO_DISHONEST_MODE`, then `?demo=tamper` or `?demo=nodelivery` on the escrow route; every response
+says so in `X-Demo-Mode`).
+
+**Stops at:** step 2 or 3 (detection) and 4 (money back). The honest case is live:
+
+<TxRef id="escrow-result" /> was `verified`. The dishonest run is live too:
+<TxRef id="proof-mismatch" />
+was `mismatch`, and the passkey-signed refund came back in <TxRef id="refund-withdraw" />.
+<Status kind="offline" /> `nodelivery` (`not_delivered`) is tested on the seller and the API only.
+
+**Direct payments** have no refund: the receipt tells you what you got and from whom, and you lose at
+most the price, which your policy bounds.
+
+## 4. Compromised MCP worker
+
+An attacker runs code in the MCP worker.
+
+1. It has no Turnkey credential, no database URL and no user session; its only credential is the
+   internal service token, valid only on `/internal/*`.
+2. Every internal call names an agent; the API re-checks that the agent is active and derives the
+   user from it, never trusting a user id from the worker.
+3. It can create requests for agents whose tokens it sees. They pass the policy and, on Cardano, your
+   passkey: worst case, requests you see and reject.
+4. It can lie about deliveries: withhold one, or misreport the body hash and so the proof (see
+   [Who you trust](/security/trust/)).
+
+**Stops at:** step 3 for funds. The proof's integrity relies on this worker. <Status kind="offline" />
+
+## 5. Compromised API
+
+An attacker runs code in the API worker, the system of record.
+
+1. In Always Ask, the API holds no signing capability: no root credential, no delegated key.
+2. Turnkey requires your passkey's stamp for every signature. The API can forward a stamp but not
+   alter it.
+3. The API writes the review your app shows, but on Cardano the app decodes the unsigned
+   transaction itself and recomputes its body hash before stamping. If the transaction pays anyone
+   other than the recipient shown, pays another amount, adds an output, raises the fee above the
+   one shown or changes the escrow datum, the app refuses to sign: "The transaction does not match
+   what is shown". The remaining limits (inputs, `script_data_hash`) are listed on
+   [Limits and roadmap](/limits/).
+4. In Autonomous mode (Solana and EVM), the delegated key is bounded by the Turnkey envelope your
+   passkey created: allowlisted recipients, per-payment native caps, allowed chains and programs. A
+   compromised API cannot exceed it, but can spend up to it, repeatedly. With Auto-pay on Cardano,
+   the API holds an encrypted agent key per allowance; the Cardano ledger bounds it to the
+   allowance's per-payment and daily limits, payees and expiry (plus its small fee float), and
+   revoking destroys it. A compromised API can spend up to those limits until you revoke, never
+   from the rest of your wallet.
+
+**Stops at:** step 1 and 2 for silent theft; step 3 for a deceptive review on Cardano.

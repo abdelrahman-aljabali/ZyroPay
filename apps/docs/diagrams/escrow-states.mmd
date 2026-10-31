@@ -1,0 +1,17 @@
+flowchart TB
+  L([Lock: buyer pays into the escrow, passkey-signed]) --> FL[FundsLocked]
+  FL -- "SubmitResult (seller)" --> RS[ResultSubmitted]
+  FL -- "SetRefundRequested (buyer)" --> RR[RefundRequested]
+  RS -- "SetRefundRequested (buyer)" --> DI[Disputed]
+  RR -- "SubmitResult (seller)" --> DI
+  RS -- "Withdraw after unlock_time (seller)" --> WD([Seller paid])
+  RR -- "AuthorizeRefund (seller)" --> RA[RefundAuthorized]
+  DI -- "AuthorizeRefund (seller)" --> RA
+  RA -- "WithdrawRefund (buyer)" --> RF([Buyer refunded])
+  RR -- "WithdrawRefund after submit_result_time, no result (buyer)" --> RF
+  FL -- "WithdrawRefund after submit_result_time, no result (buyer)" --> RF
+  DI -- "WithdrawDisputed after dispute time (2 of 3 admins)" --> AS([Split set by admins])
+  classDef ok fill:{{okBg}},stroke:{{ok}},color:{{text}},stroke-width:1.5px
+  classDef ask fill:{{accentBg}},stroke:{{accent}},color:{{text}},stroke-width:1.5px
+  class WD,RF ok
+  class AS ask

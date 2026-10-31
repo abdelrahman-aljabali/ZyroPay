@@ -1,0 +1,33 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // Static assets only (no Worker script): the Expo web export in ./dist, built by
+  // `pnpm --filter @zyropay/web-host build:web -- --env <staging|production|local>`.
+  // Workers static assets serve the files, apply dist/_headers (CSP and friends, written by
+  // the build) and answer unknown paths with index.html (client-side routing).
+  "name": "zyropay-web",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "html_handling": "auto-trailing-slash",
+  },
+  // Local preview of a `--env local` build (http://localhost:8085).
+  "dev": { "port": 8085 },
+  // Deployed environments (docs/DEPLOY.md). Replace the *.example hosts with your domain;
+  // the passkey rpId (EXPO_PUBLIC_PASSKEY_RP_ID at build time) must be this host or a
+  // registrable parent of it, and the origin must be in the Turnkey Auth Proxy's
+  // "Allowed Origins".
+  "env": {
+    "staging": {
+      // Testnets (built with --env staging) at https://app.zyropay.online. Passkey rpId:
+      // zyropay.online, so passkeys work on every subdomain.
+      "name": "zyropay-online-web",
+      "workers_dev": false,
+      "routes": [{ "pattern": "app.zyropay.online", "custom_domain": true }],
+    },
+    "production": {
+      // Worker "zyropay-web-production": mainnets (built with --env production).
+      // "routes": [{ "pattern": "app.zyropay.example", "custom_domain": true }],
+    },
+  },
+}

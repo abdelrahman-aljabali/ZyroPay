@@ -1,0 +1,27 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "cardano-token-intel",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  // @x402/hono uses the Buffer global; @x402/core references `process`.
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // Same Evolution shim as apps/seller (precomputed Masumi script application). This worker
+  // sells only `exact` default transfers, but the shim keeps any escrow-address derivation
+  // inside @x402/cardano off the CPU budget.
+  "alias": { "@evolution-sdk/evolution": "../seller/src/evolution.ts" },
+  // Public URL: https://token-intel.zyropay.online (Cloudflare custom domain; no workers.dev).
+  "routes": [{ "pattern": "token-intel.zyropay.online", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false,
+  // Secrets: `wrangler secret put BLOCKFROST_PROJECT_ID`,
+  // optionally `wrangler secret put SELLER_SIGNING_KEY` (delivery receipts; README).
+  "vars": {
+    // payTo (this specialist's OWN preprod wallet, key-hash credential; not the Address
+    // Intelligence seller's): `pnpm --filter @zyropay/seller wallet specialist`.
+    "SELLER_ADDRESS": "addr_test1qzh7pyt3dpfe4a8mtdl03vgtcem259dzg6m7x8sp4kq86lfg4cf5daqs4twh4h6gujv0nhlmhmp65ugesp9wleyf7qvqncwequ",
+    "PRICE_LOVELACE": "1500000",
+    "L1_CONFIRMATIONS": "0",
+  },
+  "dev": { "port": 8791 },
+}

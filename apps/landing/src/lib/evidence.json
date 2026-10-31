@@ -1,0 +1,107 @@
+{
+  "$comment": "Live evidence for 'Proof, not promises' and the live receipt. Fill txHash after each live run on Cardano preprod (64 hex characters, copied from the explorer) and 'at' (UTC, from the explorer). Never invent one: an empty or malformed hash renders as 'Awaiting live run'. 'receipt' is the live escrow run the receipt shows: the lock and result entries it links to, plus values read from those two transactions (the result hash is the escrow datum's result_hash after SubmitResult).",
+  "receipt": {
+    "item": "Address risk report",
+    "lock": "escrow-lock",
+    "result": "seller-result",
+    "amount": "5 ADA",
+    "seller": "addr_test1qr954ww3l08ezv7gqk8kddlckaqupe2fkv6shu6len37cn4t54p3mmj5xp74prvahzg5qljdvff6cxucu2lzug775hcs0dkaen",
+    "resultHash": "d80a4d02d13d08a45d4662e432c5a5a6550ac9c2a093549f5dbbd0c6afbfbfce"
+  },
+  "explorers": {
+    "cardano-preprod": "https://preprod.cardanoscan.io/transaction/"
+  },
+  "items": [
+    {
+      "id": "plain-send",
+      "network": "cardano-preprod",
+      "label": "First ZyroPay send on Cardano, signed with a passkey",
+      "at": "2026-10-30T14:03:30Z",
+      "txHash": "081800083252d4c1a46ebb7afc53ba1dd61c02847b7b219d01c5f2868eef1ace"
+    },
+    {
+      "id": "x402-payment",
+      "network": "cardano-preprod",
+      "label": "An AI agent pays for a report over x402, directly. Seller’s receipt verified",
+      "at": "2026-10-30T15:59:52Z",
+      "txHash": "83ecc5742fafb0a332032c9b11902f54e2dcc71262843e6592103680c79d787b"
+    },
+    {
+      "id": "escrow-lock",
+      "network": "cardano-preprod",
+      "label": "An AI agent pays into Masumi escrow",
+      "at": "2026-10-30T16:25:09Z",
+      "txHash": "630f20122b624f2e7960d8ad5e1c037b299f12bf4cd97d078f91dba41243c653"
+    },
+    {
+      "id": "seller-result",
+      "network": "cardano-preprod",
+      "label": "The seller records its result on chain. Proof verified",
+      "at": "2026-10-30T16:25:30Z",
+      "txHash": "ee7b142e7306e1ecce7fb57f1da3c904f6a1c372eaacf3c471f581f5db865361"
+    },
+    {
+      "id": "refund",
+      "network": "cardano-preprod",
+      "label": "A dishonest seller is caught by the proof check. The buyer gets a refund, signed with a passkey",
+      "at": "2026-10-31T00:10:27Z",
+      "txHash": "bd2fff00f34ed61642d2327e1c541f4e5d89bc26557618b163984899cdde5303"
+    },
+    {
+      "id": "sub-hire",
+      "network": "cardano-preprod",
+      "label": "An agent hires another agent over x402 while serving you, from its own capped budget",
+      "at": "2026-10-31T00:19:10Z",
+      "txHash": "07096aad8afc181c3e813bccc4a777c932ac6477a304165299dad8f66cfb891a"
+    },
+    {
+      "id": "collection",
+      "network": "cardano-preprod",
+      "label": "The seller collects from escrow after the unlock",
+      "at": "2026-10-30T16:54:17Z",
+      "txHash": "c59d85cf3b906342d70adcdf20247c42a01070fadff642d2b4a3d34814b916d3"
+    },
+    {
+      "id": "registry",
+      "network": "cardano-preprod",
+      "label": "An agent registered in the Masumi registry",
+      "at": "2026-10-30T22:06:48Z",
+      "txHash": "11dcdf21c55a4eca0d8bddbd3b823785ae19ef84e218e6f93b304c816f1486e9"
+    },
+    {
+      "id": "allowance-pay",
+      "network": "cardano-preprod",
+      "label": "The allowance contract, scripted with test keys: an agent key pays within on-chain limits",
+      "at": "2026-10-30T23:37:29Z",
+      "txHash": "caea37ca0c0f7b035ccef7a4f71c7d940fc641b4658f507cbcdf6fead8f0f5e7"
+    },
+    {
+      "id": "autopay",
+      "network": "cardano-preprod",
+      "label": "Auto-pay: ChatGPT pays for a report with no tap, from an allowance whose limits Cardano enforces",
+      "at": "2026-10-31T09:16:04Z",
+      "txHash": "987cb74358846030b5b5dde30fd07c19fd06a1a5d69033118bf0448b1ff2e93a"
+    },
+    {
+      "id": "registry-x402",
+      "network": "cardano-preprod",
+      "label": "The x402 seller holds its own Masumi identity. ZyroPay verifies it before paying",
+      "at": "2026-10-30T23:28:16Z",
+      "txHash": "1c3755b9f7a705651a6871267c7a3b20d654e76d0c1ecf3b0d05301abbbd55d9"
+    },
+    {
+      "id": "sokosumi-task",
+      "network": "cardano-preprod",
+      "label": "A Sokosumi task, paid in tUSDM through Masumi escrow and collected by our Payment Service",
+      "at": "2026-10-31T00:10:06Z",
+      "txHash": "a8f4a638393bb5a2793e200291d9abde9f2b7d2ed0ad4ade0c290106b270a22c"
+    },
+    {
+      "id": "policy-allowlist",
+      "network": "cardano-preprod",
+      "label": "ChatGPT is refused a payment to an address not on its allowlist. After you allow it, the next one is approved with a passkey",
+      "at": "2026-10-31T00:39:41Z",
+      "txHash": "abc83827a0e4c710bb07c36f11490b1f50f1aa7e2f0939cabe844da4c399c26a"
+    }
+  ]
+}

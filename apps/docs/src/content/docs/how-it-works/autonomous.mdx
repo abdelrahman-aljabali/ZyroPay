@@ -1,0 +1,135 @@
+---
+title: "10. Autonomous mode"
+description: "Letting an agent pay without asking, within limits. How the delegated signer and its Turnkey policy envelope bound it on Solana and EVM networks, and how Cardano does it differently: auto-pay from an on-chain allowance whose limits the Cardano ledger enforces."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+
+By default every payment waits for your passkey. You can switch an agent to **Autonomous**: then a
+payment the policy allows (an eligible tool, within every USD limit) runs without you. Autonomy is
+bounded twice: by ZyroPay's policy engine, and by a Turnkey policy envelope that your own passkey
+creates and that ZyroPay cannot widen.
+
+## How it is set up (Solana and EVM networks)
+
+<Diagram
+  name="autonomous"
+  alt="Sequence diagram of autonomous setup and an autonomous payment, steps 1 to 10, as described in the list below."
+  caption="Setting up Autonomous (steps 1 to 6) and one autonomous payment (7 to 10)."
+/>
+
+1. You switch an agent to Autonomous in the policy editor.
+2. The API generates a P-256 key pair, stores the private key encrypted (AES-256-GCM) and returns
+   only the public key.
+3. Your passkey creates a **non-root** user in your sub-org holding that public key. The API then
+   checks the sub-org: exactly that key, no authenticators, not in the root quorum.
+4. Your passkey creates the **policy envelope** (`buildDelegatedPolicyEnvelope`, version 1): an EVM
+   rule allowing native transfers on the allowed chains to allowlisted recipients up to a native
+   per-payment cap (derived from your USD limit plus a price margin), a Solana rule allowing only
+   System and ComputeBudget program transfers to allowlisted recipients up to a cap, and a rule that
+   denies any transaction using address lookup tables.
+5. The app saves the policy together with that stamped request.
+6. The API checks that every allow rule names only the delegated user, forwards the request to
+   Turnkey unchanged and records the policy ids.
+7. Later the agent asks to send to an allowlisted recipient.
+8. The [policy engine](/how-it-works/policy/) checks the USD per-payment, daily and monthly limits on
+   spent plus reserved, and reserves the amount.
+9. The API signs with the delegated key. Turnkey signs only inside your envelope, so even a fully
+   compromised API cannot pay a recipient outside it or above its per-payment cap.
+10. The signed bytes are checked against the built ones, broadcast and settled on confirmation.
+
+One delegated user serves all your autonomous agents; the per-agent distinction lives in the API.
+Revoking the last autonomous agent destroys the encrypted key at once, and every other agent falls
+back to Always Ask. The Turnkey user and its policies stay in your sub-org (only your passkey can
+delete them), inert, and the next setup deletes them first.
+
+**Honest framing:** in Autonomous mode you give ZyroPay's server a revocable signing capability.
+Turnkey bounds it per payment; ZyroPay bounds it per agent, per window and in USD. In Always Ask,
+ZyroPay can sign nothing.
+
+## What is never autonomous
+
+- **Swaps.** A router can move any token a transaction touches, and Turnkey cannot constrain what a
+  program does downstream.
+- **Token transfers** are refused by the v1 envelope, which covers native transfers only.
+- **x402 on EVM.** The EIP-3009 authorization is a raw digest a Turnkey policy cannot bound.
+- **Cardano through Turnkey.** Turnkey signs Cardano only as a raw 32-byte payload and cannot parse
+  the transaction, so no Turnkey policy could bound what a delegated key would sign. The policy
+  engine refuses Autonomous mode for the Cardano family (`AUTONOMY_NOT_SUPPORTED`), the autonomous
+  executor refuses it, and the Turnkey client refuses to sign Cardano with a delegated key. Cardano
+  gets bounded autonomy another way: the on-chain allowance below.
+
+## Auto-pay on Cardano: limits enforced by the chain <Status kind="live" />
+
+On Cardano the bound moves **on chain**. With one passkey tap you lock a budget at your own
+allowance address (the Aiken validator in `contracts/allowance`, parameterized by your key). The
+datum holds the limits: a per-payment maximum, a cap per one-day window, the payees allowed, and an
+expiry. An agent key can pay from it without asking you, and the **Cardano ledger refuses any
+payment outside those limits**, whatever ZyroPay's server does. Your passkey can take everything
+back at any time.
+
+How it works in the app:
+
+1. In the agent's **Auto-pay on Cardano** screen you choose a budget, per-payment and per-day
+   limits (in EUR, USD or ADA; fiat is converted to lovelace once, at creation, and both are shown),
+   the payees and an expiry (1 to 90 days).
+2. The API generates a fresh Ed25519 **agent key for this allowance**, encrypts it at rest
+   (AES-256-GCM under `DELEGATED_KEY_ENCRYPTION_KEY`, bound to your user and allowance ids) and
+   builds the create transaction: the allowance output with the exact datum, plus a small ADA
+   "float" (default 5 ADA) to the agent key for network fees and collateral.
+3. Your app decodes that transaction itself (`checkCardanoAllowanceCreateTx`: script address
+   derived on the device, datum compared byte for byte, float to the agent key, change back to you,
+   fee cap) and only then signs its body hash with your passkey. One tap.
+4. When the agent asks to pay a Cardano x402 resource (direct `exact`) or to send ADA, ZyroPay
+   runs your normal policy first. A deny stays a deny. If the policy would only ask you because of
+   Always Ask, ZyroPay reads the allowance **from the chain** and checks it the way the validator
+   will: payee listed, amount within the per-payment maximum and today's remaining cap, enough left
+   in the allowance and in the float, not expired, no other payment from it still confirming.
+5. If everything fits, the agent key signs a spend of the allowance (`AgentPay`) with no tap. The
+   agent is told, for example: "Auto-paid 2 ADA from your on-chain allowance (no tap needed); 3 ADA
+   left today." Otherwise the request comes to your phone as usual, with the reason
+   (`ALLOWANCE_PAYEE_NOT_LISTED`, `ALLOWANCE_LIMIT_EXCEEDED`, `ALLOWANCE_INSUFFICIENT`,
+   `ALLOWANCE_EXPIRED`, `ALLOWANCE_BUSY`, `ALLOWANCE_UNAVAILABLE`). Auto-pay never turns an
+   approval into a deny.
+6. Top-up and revoke are owner spends signed with your passkey, checked on the device first
+   (`checkCardanoAllowanceOwnerSpendTx`). Revoking returns the budget and the float to your wallet
+   and **destroys the agent key**.
+
+What stays with the passkey: swaps, tokens, Masumi escrow payments (the escrow's refund would go to
+the agent key, not to you), and any payment outside the allowance.
+
+**Honest framing:** the agent key is held by ZyroPay's server, encrypted, one per allowance. If
+the server were compromised, the most an attacker could take is what the ledger allows before you
+revoke: the per-payment maximum per transaction and the daily cap per day, only to the listed
+payees, until the expiry, plus the float. Nothing else in your wallet, which still needs your
+passkey. See [Allowance contract](/architecture/allowance-contract/) for the validator.
+
+**Live on preprod, 2026-10-31**, from the user's passkey wallet: the allowance was created with one
+tap (<TxRef id="autopay-create" />, 155.66391 ADA locked, $5 per payment, a daily cap of
+103.77594 ADA, a 5 ADA float to the agent key), and ChatGPT then bought an x402 report with no tap
+(<TxRef id="autopay" />): policy `allow`, reason `AUTO_PAY_ALLOWANCE`, `CONFIRMED`, the Plutus V3
+validator executed, 2 ADA to the seller and 153.66391 ADA back to the allowance with the updated
+datum, the seller's receipt verified.
+
+## Proven
+
+Autonomous mode on Solana and EVM networks has no live run in this evidence set. The engine, the
+envelope builder and the refusals above are tested offline
+
+<Status kind="offline" />.
+
+Auto-pay **in the app** is live on preprod: the create (<TxRef id="autopay-create" />) and an x402
+payment by ChatGPT with no tap (<TxRef id="autopay" />) <Status kind="live" />. Top-up, revoke, sends
+and every fallback are tested offline against the real transaction builders over a simulated
+ledger, and the official x402 facilitator accepts an allowance spend
+(`apps/seller/test/allowance-x402.test.ts`) <Status kind="offline" />. The allowance **contract**
+also ran a full scripted cycle with test keys (<TxRef id="allowance" />: lock, two agent payments,
+three refusals by the validator, revoke).
+
+**Code:** `packages/shared/src/delegated-policy.ts`, `packages/shared/src/policy.ts`
+(`AUTONOMY_ELIGIBLE_TOOLS`, `AUTONOMY_ELIGIBLE_FAMILIES`), `apps/api/src/services/delegated.ts`,
+`apps/mobile/src/lib/autonomous.ts`; for Cardano `packages/shared/src/cardano-allowance.ts`
+(`evaluateAutoPay`), `packages/shared/src/cardano-tx-check.ts`,
+`packages/blockchain/src/cardano/allowance.ts`, `apps/api/src/services/allowances.ts`.

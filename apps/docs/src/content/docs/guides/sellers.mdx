@@ -1,0 +1,156 @@
+---
+title: "For sellers"
+description: "Sell an API to AI agents on Cardano with x402: the 402 ZyroPay accepts, settlement only on success, signed delivery receipts, the Masumi escrow route, and registering on Masumi and Sokosumi."
+---
+
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+
+The demo seller, `apps/seller` (Cardano Address Intelligence), is a complete reference: a Cloudflare
+Worker that sells a JSON report for 2 tADA per request, with the official `@x402/hono` middleware and
+the `@x402/cardano` facilitator embedded. Copy its shape; its README has every detail.
+
+## The 402 ZyroPay pays
+
+```json
+{
+  "x402Version": 2,
+  "resource": {
+    "url": "<the exact requested URL, query included>",
+    "description": "Cardano address intelligence report",
+    "mimeType": "application/json"
+  },
+  "accepts": [
+    {
+      "scheme": "exact",
+      "network": "cardano:preprod",
+      "amount": "2000000",
+      "asset": "lovelace",
+      "payTo": "<your preprod key-hash address>",
+      "maxTimeoutSeconds": 600,
+      "extra": { "confirmationPolicy": { "l1Confirmations": 0 }, "areFeesSponsored": false }
+    }
+  ]
+}
+```
+
+ZyroPay refuses a 402 whose `resource.url` differs from the URL the agent called, a `payTo` that is a
+script address (outside escrow) or the buyer's own, the `script` transfer method, sponsored fees, and
+amounts above the buyer's `maxAmount` or the deployment cap (5 tADA on staging). Use `@x402/*` 2.29.0
+exactly: 2.26 re-encoded the transaction in the facilitator and broke the body hash.
+
+## Charge only on success
+
+With `@x402/hono`, verification runs before your handler and settlement after it, and settlement
+happens only if the handler answers below 400. Validate input **before** the 402 (the demo seller
+answers 400 for an invalid address before asking for payment), and answer 503 when an upstream fails:
+the buyer is then not charged. Run the facilitator in your worker (`FACILITATOR_MODE=embedded`): it
+answers as soon as the transaction is submitted, where the hosted preprod facilitator can time out
+behind its gateway while the payment lands.
+
+## Sign delivery receipts
+
+Add `X-Delivery-Receipt` to every settled response: an Ed25519 signature with the payment key of your
+`payTo` address over the paid URL, `payTo`, the payment transaction and the SHA-256 of the exact body
+([format](/how-it-works/receipts/#the-format-v1)). ZyroPay verifies it against the address it paid and
+its own hash of the body, and shows the buyer "Delivery verified". In the demo seller this is
+`SELLER_SIGNING_KEY`, derived from the seller mnemonic by `pnpm --filter @zyropay/seller receipt-key`;
+it can spend what `payTo` holds, so keep it as secret as the mnemonic.
+
+## Offer an escrow route
+
+`GET /v1/address-report/escrow` in the demo seller sells the same report through Masumi escrow:
+
+- `ExactCardanoScheme({ masumi: { seller } })` issues a fresh, seller-signed quote (COSE over the terms
+  digest) for every 402; `payTo` is the canonical escrow address.
+- Price at least 4 tADA, so the output clears the minimum UTxO once the result hash is in the datum.
+- Deadlines from the 402: payBy +5 min, submitResult +15, unlock +30, dispute +45. `@x402/cardano`
+  requires at least 5 min from payBy to submit and 15 min between the later steps.
+- After answering, submit the result hash on chain (SubmitResult). Return `X-Escrow-Result-Hash`,
+  `X-Escrow-Id` and `X-Escrow-Status` with the report; the hash must be the SHA-256 of exactly the
+  bytes you sent, the same value your receipt signs.
+- Run a sweeper every minute to retry SubmitResult, withdraw after `unlockTime`, and decide refund
+  requests. Fund your address with fees and a pure-ADA collateral output of at least 5 tADA.
+
+What ZyroPay checks on your terms is on [Escrow with Masumi](/how-it-works/escrow/#from-quote-to-lock).
+The escrow route ran live end to end: the lock, the seller's SubmitResult and its Withdraw after
+unlock are on [Evidence](/evidence/). The sweeper has to stay cheap: the shared escrow address holds
+hundreds of other sellers' escrows, so skip any UTxO whose datum does not mention your key hash before
+decoding it ([Engineering notes](/architecture/engineering-notes/)).
+
+## Register on Masumi and Sokosumi
+
+A registry entry lets agents find you with `find_agents` and lets buyers with "only pay registered
+agents" pay you. The demo seller is registered on the Masumi preprod registry as **Cardano Address
+Intelligence** <Status kind="live" />: the registry NFT mint is on [Evidence](/evidence/#masumi-registry-entry),
+and its `agentIdentifier` is
+`67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b106fe284ceb06b6c8510815f3d9813378d66b57c8c9cecf4e31532928f000000`.
+
+How it is put together:
+
+```text
+Sokosumi catalog / any Masumi buyer
+   │  MIP-003: /availability /input_schema /start_job /status
+   ▼
+https://masumi-agent.zyropay.online      MIP-003 Worker (apps/sokosumi-agent/mip003)
+   │  three payment routes only, wallet-scoped key
+   ▼
+Cloudflare tunnel → allow-list gateway → Masumi Payment Service 0.29.0   (infrastructure/masumi, Docker)
+   │  signs the terms, submits result hashes, collects the escrow
+   ▼
+Cardano preprod (Blockfrost)
+```
+
+- **Payment Service.** Masumi's own node from the official Docker quickstart (image pinned by
+  digest, its own Postgres), run locally. `POST /registry` minted the NFT from the node's selling
+  wallet; the same node signs the escrow terms for every hire and submits the result hash. A paid
+  listing needs the node anyway, so registering through it costs nothing extra.
+- **Gateway and tunnel.** The node is never exposed directly. A small Node gateway passes only the
+  three payment routes the Worker needs (no `/admin`, which answers 404 through the tunnel), and
+  `cloudflared` publishes the gateway on a tunnel URL the Worker holds as a secret (`MPS_URL`).
+- **MIP-003 Worker.** A separate Worker (`cardano-address-intel-masumi`) so the x402 seller stays
+  untouched; it reuses the seller's report code. `GET /availability` answers
+  `{"status": "available", "type": "masumi-agent"}`, which is what the registry needs to mark the
+  entry Online, and `POST /start_job` returns node-signed terms in state `awaiting_payment`.
+- **Price.** Fixed 1 tUSDM on the V2 escrow: Sokosumi lists V2 agents only with Fixed pricing in a
+  unit it can bill.
+- **Sokosumi Coworker.** `apps/sokosumi-agent` also answers Sokosumi Coworker Tasks with a local
+  worker that reaches the Payment Service on `127.0.0.1`, without the tunnel (Sokosumi CLI 1.1.0).
+  The Coworker is registered under the Vendor ZyroPay, and a paid Task is live
+  <Status kind="live" />: Sokosumi locked 1 tUSDM (<TxRef id="sokosumi" />
+  ), the Payment Service submitted the result hash (<TxRef id="sokosumi-result" />) and collected
+  after unlock (<TxRef id="sokosumi-collect" />
+  ); the worker checked the net receipt on Blockfrost before marking the Task settled. A free Task
+  and a follow-up comment ran first, off chain.
+
+That NFT sits in the Payment Service's selling wallet, which is right for MIP-003 (the node signs
+those terms) but not for x402, where the seller's own key signs. So the x402 seller has a second
+entry <Status kind="live" />, **Cardano Address Intelligence (x402)**
+(<TxRef id="registry-x402" />), with `agentIdentifier`
+`67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10ef4582034c97dbf2d8a68ae186a4cc429a944a77c45c7f4b58c38bf8000000`.
+It was registered through the same Payment Service with `recipientWalletAddress` set to the seller's
+`payTo`, so the NFT was minted straight to that key: Masumi metadata has no seller key, and the
+seller is whoever holds the NFT. Its metadata names `api_base_url`
+https://address-intel.zyropay.online and a Fixed 5 ADA price on the V2 escrow, the escrow route's
+price.
+
+To claim an identity in your own x402 terms:
+
+1. Register with `apiBaseUrl` covering your paid URLs, a Fixed price equal to the route's price, the
+   canonical V2 escrow as the payment source, and `recipientWalletAddress` = your `payTo` (or
+   transfer the NFT there afterwards).
+2. Put the `agentIdentifier` in the terms you sign. With `@x402/cardano` that is
+   `masumi: { seller, agentIdentifier }`; the demo seller reads it from `MASUMI_AGENT_IDENTIFIER`.
+3. Give your facilitator a registry validator: `@x402/cardano` refuses a claim nobody vouches for.
+   The demo seller's embedded facilitator vouches only for its own configured identity.
+
+ZyroPay then checks that your payment key holds the live NFT, that the endpoint covers the URL and
+that the signed price equals the registered price, and refuses the payment if any check fails. The
+runbooks are
+`infrastructure/masumi/README.md` (registration, about 30 minutes, mostly waiting for preprod) and
+`apps/sokosumi-agent/README.md` (Coworker).
+
+## Hire other sellers
+
+Your handler can itself pay another x402 seller and embed its receipt, from a separate small budget
+wallet with a per-job cap: see [Agents hiring agents](/how-it-works/sub-hire/).

@@ -1,0 +1,62 @@
+---
+title: "Components"
+description: "Every part of ZyroPay, what it does, why it exists and what it guarantees, with the rules no part may break. Sourced from the engineering documents and the code."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Catalog from "../../../components/Catalog.astro";
+
+<Diagram
+  name="architecture"
+  alt="Architecture: the AI client talks OAuth and MCP to the MCP worker; the app with your passkey talks to the API worker; the MCP worker makes internal calls to the API and probes and retries x402 sellers; the API forwards stamps unchanged to your Turnkey sub-org and uses Neon Postgres and the chain providers."
+  caption="ZyroPay's parts and who talks to whom. The two ZyroPay workers are outlined."
+/>
+
+## Rules no part may break
+
+1. **The MCP server never signs.** It holds no Turnkey credential and no database URL. Its only
+   credential is the internal service token, and it only calls the API's `/internal/v1/*`. On every
+   call the API checks that the agent is still active and not revoked.
+2. **The API never holds your root credential.** Your passkey is the only root of your sub-org. The
+   parent organization can read sub-orgs but cannot write to them.
+3. **An approval binds to `payloadHash`**, the SHA-256 of the payment's canonical terms. Any material
+   change makes a new hash, and the old approval no longer applies.
+4. **Amounts are integer strings in base units, arithmetic is bigint.** Lint rules ban floating-point
+   parsing of money.
+5. **Fail closed.** No valuation, a stale price, a malformed amount, a policy error or an unexpected
+   Turnkey result never auto-allows a payment.
+6. **Mainnet and testnet never mix.** Production serves mainnets only; development and staging serve
+   testnets only. Mock adapters are refused in production.
+7. **Mocks are labelled.** Every fake implementation is named `Mock*` and returns `simulated: true`,
+   and the UI shows a badge for it.
+
+## Built from parts you can check
+
+| Part                          | What it gives you                                                                                                                                      |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Passkeys**                  | Sign in and approve with Face ID, Touch ID or your device PIN. No password, no seed phrase on screen.                                                  |
+| **Turnkey secure enclaves**   | Keys are generated and used inside hardware-isolated enclaves. ZyroPay never holds them and cannot move your money.                                    |
+| **Server-side policy engine** | Dollar limits per payment, day and month, recipient allowlists, escrow above a threshold and expiry, checked before your phone ever buzzes.            |
+| **Model Context Protocol**    | Any assistant that speaks MCP can connect with OAuth, read balances and ask for a payment. You can revoke it at any time.                              |
+| **x402 on Cardano**           | Paid HTTP resources quote a price in a 402. ZyroPay builds the payment, direct or into Masumi escrow, and checks the seller's signed delivery receipt. |
+
+## The packages
+
+| Component    | Where                                          | Runs on                                    | Responsibility                                                                                                  |
+| ------------ | ---------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| App          | `apps/mobile`, `packages/ui`, `apps/web-host`  | Expo (iOS, Android), static web on Workers | Sign-up with a passkey, portfolio, send and receive, approvals, agents and their policies, escrow and refunds   |
+| API          | `apps/api`, `packages/wallet`                  | Cloudflare Worker (Hono)                   | System of record: sessions, policy, state machine, reservations, Turnkey forwarding, broadcast, escrow, audit   |
+| MCP server   | `apps/mcp`                                     | Cloudflare Worker                          | OAuth for agent clients, the ten tools, the x402 probe and paid retry; never signs                              |
+| Chain layer  | `packages/blockchain`                          | library                                    | Builders and independent decoders for Solana, EVM and Cardano (own CBOR codec), broadcasters, portfolio, prices |
+| Integrations | `packages/integrations`                        | library                                    | Plugins (x402, Masumi escrow and registry, Jupiter), on-ramp, push                                              |
+| Contracts    | `packages/shared`                              | library                                    | Schemas, money, networks, state machine, canonical payload and hash, policy engine, REST and MCP contracts      |
+| Database     | `infrastructure/database`                      | Drizzle on Neon Postgres                   | Schema and forward-only migrations                                                                              |
+| Demo sellers | `apps/seller`, `apps/specialist`               | Cloudflare Workers (separate parties)      | x402 sellers on Cardano preprod: Address Intelligence (direct and escrow) and Token Intelligence                |
+| Masumi       | `apps/sokosumi-agent`, `infrastructure/masumi` | Worker and a local Payment Service         | Registering the seller as a Masumi agent and answering Sokosumi tasks                                           |
+
+## Every component
+
+Each card below is a real part of the system: what it does, why it exists, what it guarantees, and
+where in the engineering documents the claim comes from.
+
+<Catalog />

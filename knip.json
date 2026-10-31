@@ -1,0 +1,48 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreExportsUsedInFile": {
+    "interface": true,
+    "type": true
+  },
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/*.mjs", "neon.ts"],
+      "ignoreDependencies": ["@neon/env"]
+    },
+    "apps/mobile": {
+      "entry": [
+        "src/app/**/*.{ts,tsx}",
+        "src/**/*.web.{ts,tsx}",
+        "src/shims/*.ts",
+        "scripts/*.{js,mjs}",
+        "e2e-web/*.{ts,mjs}",
+        "public/theme-boot.js",
+        "metro.config.js",
+        "babel.config.js"
+      ],
+      "ignoreDependencies": [
+        "babel-preset-expo",
+        "expo-application",
+        "expo-glass-effect",
+        "expo-symbols"
+      ],
+      "ignoreBinaries": ["expo-doctor"]
+    },
+    "apps/landing": {
+      "entry": ["scripts/*.mjs", "src/pages/**/*.astro"]
+    },
+    "packages/integrations": {
+      "entry": ["src/__workers__/smoke.ts"]
+    },
+    "packages/config": {
+      "ignoreDependencies": ["@cloudflare/workers-types"]
+    },
+    "apps/docs": {
+      "entry": ["scripts/*.mjs", "src/components/*.astro", "src/content.config.ts"],
+      "ignoreDependencies": ["@astrojs/check"]
+    }
+  },
+  "ignoreIssues": {
+    "packages/shared/src/money.ts": ["duplicates"]
+  }
+}

@@ -1,0 +1,35 @@
+---
+/** Talk · Permission · Payment · Trust · Record: the five layers and what each one does. */
+const STACK = [
+  { role: "Talk", tech: "MCP", note: "Your AI asks over the Model Context Protocol. It holds no key." },
+  {
+    role: "Permission",
+    tech: "ZyroPay",
+    note: "Your policy and your passkey decide. The approval is bound to the exact payload.",
+    ours: true,
+  },
+  { role: "Payment", tech: "x402", note: "The seller quotes a price in an HTTP 402. ZyroPay builds the payment." },
+  {
+    role: "Trust",
+    tech: "Masumi escrow",
+    note: "The money waits in escrow until the seller delivers. Refundable before it unlocks.",
+  },
+  {
+    role: "Record",
+    tech: "Cardano",
+    note: "The payment, the lock and the seller's result hash are on chain for anyone to check.",
+  },
+];
+---
+
+<ul class="zp-stack" aria-label="The ZyroPay stack">
+  {
+    STACK.map((s) => (
+      <li class={s.ours ? "zp-stack--ours" : undefined}>
+        <span class="zp-stack__role">{s.role}</span>
+        <span class="zp-stack__tech">{s.tech}</span>
+        <span class="zp-stack__note">{s.note}</span>
+      </li>
+    ))
+  }
+</ul>

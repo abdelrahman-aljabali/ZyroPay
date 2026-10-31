@@ -1,0 +1,9 @@
+{
+  "extends": "@zyropay/config/tsconfig/base.json",
+  "compilerOptions": {
+    // Library code runs on Workers, Node and Hermes: no Node or DOM globals allowed.
+    "types": []
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "@zyropay/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "REST API on Cloudflare Workers (Hono). Owner: API.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "echo \"Deploy with an environment: deploy:staging or deploy:production (docs/DEPLOY.md)\" && exit 1",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:pg": "vitest run test/postgres",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "check:deploy": "wrangler deploy --dry-run --env staging --outdir dist/staging && wrangler deploy --dry-run --env production --outdir dist/production"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "catalog:",
+    "@noble/curves": "catalog:",
+    "@sentry/cloudflare": "catalog:",
+    "@zyropay/blockchain": "workspace:*",
+    "@zyropay/db": "workspace:*",
+    "@zyropay/integrations": "workspace:*",
+    "@zyropay/shared": "workspace:*",
+    "@zyropay/wallet": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "hono": "catalog:",
+    "pg": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@electric-sql/pglite": "catalog:",
+    "@evolution-sdk/evolution": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@x402/cardano": "catalog:",
+    "@zyropay/config": "workspace:*",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  }
+}

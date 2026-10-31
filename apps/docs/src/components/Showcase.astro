@@ -1,0 +1,42 @@
+---
+/**
+ * "Watch the demo · Read the code", from config/showcase.json at the repo root (shared with
+ * the landing page). A null URL renders an honest placeholder, never a dead link.
+ */
+import showcase from "../../../../config/showcase.json";
+
+const video = showcase.video.url;
+const repo = showcase.repository.url;
+const minutes = Math.round((showcase.video.durationSeconds / 60) * 2) / 2;
+---
+
+<div class="zp-showcase">
+  {
+    video ? (
+      <a class="zp-showcase__item" href={video}>
+        <span class="zp-showcase__label">Watch the demo</span>
+        <span class="zp-showcase__note">
+          {showcase.video.title}, {minutes} min
+        </span>
+      </a>
+    ) : (
+      <div class="zp-showcase__item">
+        <span class="zp-showcase__label">Watch the demo</span>
+        <span class="zp-showcase__note">The video is not published yet.</span>
+      </div>
+    )
+  }
+  {
+    repo ? (
+      <a class="zp-showcase__item" href={repo}>
+        <span class="zp-showcase__label">Read the code</span>
+        <span class="zp-showcase__note">{showcase.repository.label}</span>
+      </a>
+    ) : (
+      <div class="zp-showcase__item">
+        <span class="zp-showcase__label">Read the code</span>
+        <span class="zp-showcase__note">The public repository is not published yet.</span>
+      </div>
+    )
+  }
+</div>

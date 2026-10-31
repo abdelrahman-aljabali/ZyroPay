@@ -1,0 +1,369 @@
+/*
+ * Showcase (demo video + source code). Self-contained: override the --sc-* properties on
+ * .zp-showcase (or an ancestor) to fit another page; the defaults match the dark landing page.
+ */
+.zp-showcase {
+  --sc-text: var(--text, #f3f4f6);
+  --sc-text-2: var(--text-2, #a9adb6);
+  --sc-text-3: var(--text-3, #868a94);
+  --sc-line: var(--line, rgb(255 255 255 / 0.09));
+  --sc-line-2: var(--line-2, rgb(255 255 255 / 0.14));
+  --sc-warm: var(--warm, #fff1de);
+  --sc-surface: #0c0d11;
+  --sc-on-accent: #0b0c10;
+  --sc-radius: 28px;
+  --sc-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  display: grid;
+  gap: clamp(28px, 4vw, 48px);
+  color: var(--sc-text);
+}
+
+.zp-showcase .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.zp-showcase__head {
+  max-width: 780px;
+}
+
+.zp-showcase__title {
+  margin: 0;
+  font-size: clamp(34px, 4.2vw, 60px);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.038em;
+  text-wrap: balance;
+}
+
+.zp-showcase__sub {
+  max-width: 50ch;
+  margin: 20px 0 0;
+  color: var(--sc-text-2);
+  font-size: 18px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+/* The 16:9 frame ------------------------------------------------------------------------- */
+.zp-showcase__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--sc-radius);
+  background: var(--sc-surface);
+  box-shadow:
+    inset 0 0 0 1px var(--sc-line-2),
+    0 50px 120px -50px rgb(0 0 0 / 0.9);
+  container-type: inline-size;
+  isolation: isolate;
+}
+
+.zp-showcase__video,
+.zp-showcase__iframe,
+.zp-showcase__poster,
+.zp-showcase__poster img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.zp-showcase__poster img {
+  object-fit: cover;
+}
+
+.zp-showcase__video {
+  background: #000000;
+}
+
+/* Drawn poster: the hero's headline under one warm key light. */
+.zp-showcase__art {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 8cqw;
+  background:
+    radial-gradient(55% 80% at 82% 0%, rgb(255 241 222 / 0.16), transparent 70%),
+    radial-gradient(40% 60% at 0% 100%, rgb(120 140 190 / 0.1), transparent 70%),
+    linear-gradient(180deg, #0f1015, #08090c);
+  font-size: clamp(22px, 6.2cqw, 76px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.zp-showcase__art::after {
+  /* Fine scanlines: reads as "screen", never as content. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.018) 0 1px,
+    transparent 1px 4px
+  );
+  pointer-events: none;
+}
+
+.zp-showcase__art-line {
+  display: block;
+}
+
+.zp-showcase__art-line:nth-child(2) {
+  color: rgb(243 244 246 / 0.62);
+}
+
+.zp-showcase__art-line:nth-child(3) {
+  color: rgb(243 244 246 / 0.38);
+}
+
+/* Play (embed / link) */
+.zp-showcase__play {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 8px 26px 8px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.94);
+  color: var(--sc-on-accent);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 20px 60px -10px rgb(0 0 0 / 0.7);
+  transition: transform 300ms var(--sc-ease);
+}
+
+.zp-showcase__play::before {
+  /* The whole frame is the hit area. */
+  content: "";
+  position: absolute;
+  inset: -100vmax;
+}
+
+.zp-showcase__play span span {
+  color: #4a4d55;
+  font-weight: 500;
+}
+
+.zp-showcase__playicon {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--sc-on-accent);
+}
+
+.zp-showcase__playicon::after {
+  content: "";
+  position: absolute;
+  left: 19px;
+  top: 15px;
+  border-style: solid;
+  border-width: 9px 0 9px 15px;
+  border-color: transparent transparent transparent #ffffff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .zp-showcase__play:hover {
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+}
+
+.zp-showcase__play:focus-visible {
+  outline: 3px solid var(--sc-warm);
+  outline-offset: 4px;
+}
+
+/* Placeholder */
+.zp-showcase__soon {
+  position: absolute;
+  z-index: 2;
+  left: 8cqw;
+  right: 8cqw;
+  bottom: clamp(16px, 6cqw, 56px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 0;
+}
+
+.zp-showcase__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: inset 0 0 0 1px var(--sc-line-2);
+  color: var(--sc-text);
+  font-size: 14px;
+  font-weight: 600;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.zp-showcase__chip::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sc-warm);
+  box-shadow: 0 0 10px 1px rgb(255 241 222 / 0.6);
+}
+
+.zp-showcase__meta {
+  color: var(--sc-text-2);
+  font-size: 14px;
+}
+
+/* Actions -------------------------------------------------------------------------------- */
+.zp-showcase__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+}
+
+.zp-showcase__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 20px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--sc-line-2);
+  color: var(--sc-text);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 200ms ease,
+    transform 160ms var(--sc-ease);
+}
+
+a.zp-showcase__btn:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.zp-showcase__btn:hover {
+    background: rgb(255 255 255 / 0.06);
+  }
+}
+
+.zp-showcase__btn--primary {
+  background: var(--sc-text);
+  box-shadow: none;
+  color: var(--sc-on-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.zp-showcase__btn--primary:hover {
+    background: #ffffff;
+  }
+}
+
+.zp-showcase__btn--soon {
+  color: var(--sc-text-2);
+  box-shadow: inset 0 0 0 1px var(--sc-line-2);
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.025) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+.zp-showcase__btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 559px) {
+  .zp-showcase {
+    --sc-radius: 20px;
+  }
+
+  .zp-showcase__sub {
+    font-size: 16px;
+  }
+
+  .zp-showcase__play {
+    min-height: 52px;
+    padding-right: 18px;
+    font-size: 15px;
+  }
+
+  .zp-showcase__playicon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .zp-showcase__playicon::after {
+    left: 16px;
+    top: 12px;
+    border-width: 8px 0 8px 13px;
+  }
+
+  .zp-showcase__chip,
+  .zp-showcase__meta {
+    font-size: 13px;
+  }
+
+  .zp-showcase__btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zp-showcase__play,
+  .zp-showcase__btn {
+    transition: none;
+  }
+}
+
+/* Small frames: the drawn headline moves up so the placeholder line below never meets it. */
+@container (max-width: 640px) {
+  .zp-showcase__art {
+    justify-content: flex-start;
+    padding-top: 8cqw;
+    font-size: 7.4cqw;
+  }
+
+  .zp-showcase__soon {
+    bottom: 5cqw;
+    gap: 6px 10px;
+  }
+}
+
+@container (max-width: 380px) {
+  .zp-showcase__meta {
+    display: none;
+  }
+}

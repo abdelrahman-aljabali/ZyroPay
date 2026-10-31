@@ -1,0 +1,96 @@
+---
+title: "8. Discover and identify"
+description: "How your AI finds sellers in the Masumi agent registry on Cardano, and how ZyroPay verifies a seller's claimed registry identity on chain before it pays into escrow."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Status from "../../../components/Status.astro";
+import TxRef from "../../../components/TxRef.astro";
+
+Masumi keeps a registry of AI agents on Cardano. Each agent is a CIP-25 NFT under the V2 registry
+policy `67ab0c92…bd0b` (the same policy id on preprod and mainnet); its metadata names the agent's
+API endpoint, its price and its payment source. The `agentIdentifier` is the policy id plus the asset
+name, 120 hex characters.
+
+The registry is **permissionless**: anyone can mint an entry. A registration therefore proves
+identity _binding_ (this key controls a live NFT whose metadata names this endpoint and price), not
+trustworthiness. ZyroPay uses it for two things: letting your AI find sellers, and refusing a seller
+that claims an identity it does not hold.
+
+<Diagram
+  name="registry"
+  alt="Sequence diagram of discovery and identity checks, steps 1 to 11, as described in the list below."
+  caption="Discovery (steps 1 to 7) and the identity check at quote time (8 to 11)."
+/>
+
+1. The agent calls `find_agents` with a query, a capability, a tag or a maximum price.
+2. The MCP worker asks the API.
+3. The API reads the registry through Blockfrost: live NFTs under the registry policy and their
+   metadata. Reads are size-capped and time-bounded; metadata is cached for a week, liveness for a
+   minute.
+4. The agent gets names, endpoints, prices and whether each is payable through Masumi escrow. Every
+   metadata string is sanitized and wrapped as untrusted data: a registry entry is attacker-written
+   text.
+5. The agent calls `verify_agent` with an `agentIdentifier` (and optionally the URL it will call and
+   the seller address from a 402).
+6. The API checks: the NFT is live and held by exactly one address; that address has a key (not a
+   script) payment credential; the metadata advertises the canonical Masumi escrow; the endpoint is
+   public `https`, and covers the URL when given.
+7. The agent gets `ok`, or the exact reasons (`not_found`, `burned`, `multiple_holders`,
+   `endpoint_insecure`, …; the full list is in the [MCP reference](/reference/mcp/#verify_agent)).
+8. The agent pays with escrow.
+9. The MCP worker requests the resource.
+10. The seller's 402 carries signed terms that claim an `agentIdentifier`.
+11. At quote time ZyroPay verifies the claim: the NFT is live and held by exactly one key address
+    whose payment key hash is the terms' signer, the agent advertises the canonical escrow, its
+    endpoint covers the paid URL, and the signed price equals its registered fixed price. Any failure,
+    including an unreachable registry, refuses the quote. A verified identity
+    (`agentIdentifier`, name, seller key hash) is bound into the payload, and the lock verifier checks
+    the datum carries the same identifier.
+
+## In the app and in the policy
+
+The approval shows `x402.sellerIdentity`: registered with its name and identifier, or "not claimed"
+for an escrow seller without one. Two policy settings use it:
+
+- **Only pay registered Masumi agents** (`requireRegisteredAgent`, off by default): a `pay_x402`
+  without a verified identity is denied with `AGENT_NOT_REGISTERED`. Only escrow payments can carry
+  one, so agents with this rule prefer escrow when the 402 offers it.
+- **Trusted agents** (`trustedAgentIdentifiers`, up to 50): with the rule above, any other registered
+  agent is denied with `AGENT_NOT_TRUSTED`.
+
+`find_agents` and `verify_agent` are read-only and available to every active agent; they are not
+gated by the policy's tool list.
+
+## Limits
+
+- The identity is checked at quote time, not again at approval. An NFT transferred in between is not
+  noticed.
+- A search scans at most 100 live registry entries per query.
+
+## Proven
+
+The registry reads, the identity checks, a stolen identity refused and the policy rules are tested
+over recorded preprod Blockfrost responses <Status kind="offline" />
+(`packages/integrations/src/__tests__/masumi-registry.test.ts`,
+`apps/api/test/integration/masumi-registry.test.ts`).
+
+The demo seller is registered live <Status kind="live" />: our own Masumi Payment Service minted the
+registry entry for Cardano Address Intelligence, with its MIP-003 endpoint at
+https://masumi-agent.zyropay.online (<TxRef id="registry" />). That NFT is held by the Payment
+Service's selling wallet, so the x402 seller has its own entry <Status kind="live" />:
+"Cardano Address Intelligence (x402)", minted straight to the seller's `payTo`
+(<TxRef id="registry-x402" />). The key that signs the escrow terms holds the NFT, and every
+escrow 402 claims its `agentIdentifier`. ZyroPay's identity check passes on the live seller
+(`verifySeller` and the escrow quote, run on 2026-10-30 against preprod), so
+`requireRegisteredAgent` lets its escrow payments through. Direct x402 payments still carry no
+claim (the `exact` scheme has no field for one), so with that rule an agent pays this seller
+through escrow.
+
+From a real client <Status kind="live" />: on 2026-10-31 ChatGPT's `find_agents` returned both
+ZyroPay agents ("Cardano Address Intelligence (x402)", 5 tADA escrow, and "Cardano Address
+Intelligence", Sokosumi/MIP-003), and `verify_agent` for `address-intel.zyropay.online` returned
+`ok: true` ([Evidence](/evidence/#discovery-from-chatgpt-off-chain)).
+
+**Code:** `packages/integrations/src/masumi-registry.ts`, `apps/api/src/services/masumi.ts`,
+`packages/shared/src/domain/masumi.ts`.

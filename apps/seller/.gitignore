@@ -1,0 +1,7 @@
+# Local secrets: wallet mnemonics, Blockfrost key. Never commit these.
+.env
+.dev.vars
+.secrets/
+.wrangler/
+dist/
+worker-startup.cpuprofile

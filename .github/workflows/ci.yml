@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      # Real Postgres for apps/api/test/postgres (FOR UPDATE row locks across connections).
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      # e2e smoke: creates (and drops) its own database on the same service.
+      SMOKE_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      TURBO_TELEMETRY_DISABLED: "1"
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@v4
+
+      # Version comes from package.json "packageManager".
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Format
+        run: pnpm format:check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      # Includes docs.test.ts (generated docs in sync) and the real-Postgres concurrency
+      # tests (TEST_DATABASE_URL above).
+      - name: Test
+        run: pnpm test
+
+      # Workerd e2e suites (MCP OAuth/tools/security), serialized.
+      - name: Test (e2e)
+        run: pnpm test:e2e
+
+      # API + MCP under wrangler dev against Postgres, MCP OAuth with the SDK client,
+      # approval with the mock passkey, request reaches CONFIRMED.
+      - name: Smoke (end to end)
+        run: pnpm smoke
+
+      - name: Migrations (drizzle-kit check, no pending schema changes)
+        working-directory: infrastructure/database
+        run: |
+          pnpm exec drizzle-kit check
+          pnpm exec drizzle-kit generate --name ci-drift-check | tee /tmp/drizzle-generate.log
+          grep -q "No schema changes" /tmp/drizzle-generate.log
+
+      - name: Worker builds (wrangler deploy --dry-run for api and mcp)
+        run: pnpm build
+
+  # Cross-browser web E2E: the mock-mode UI journey on Chromium, WebKit and Firefox at
+  # phone (393x852, 412x915) and laptop (1440x900) sizes (apps/mobile/e2e-web). The real
+  # passkey test needs a real-mode stack and skips here (E2E_REAL_URL unset).
+  web-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TURBO_TELEMETRY_DISABLED: "1"
+      EXPO_NO_TELEMETRY: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Playwright browsers
+        working-directory: apps/mobile
+        run: pnpm exec playwright install --with-deps chromium webkit firefox
+
+      - name: Web E2E (mock mode, 3 engines x 3 viewports)
+        run: pnpm test:web
+
+      - name: Upload traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-e2e-results
+          path: apps/mobile/e2e-web/.results
+          retention-days: 7

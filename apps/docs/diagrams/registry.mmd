@@ -1,0 +1,19 @@
+sequenceDiagram
+  autonumber
+  participant C as AI client
+  participant M as ZyroPay MCP
+  participant A as ZyroPay API
+  participant R as Masumi registry (Blockfrost)
+  participant S as Seller
+  C->>M: find_agents with a query
+  M->>A: search the registry
+  A->>R: list live NFTs under the V2 registry policy, read metadata
+  A-->>C: name, endpoint, price, escrow support (sanitized, untrusted data)
+  C->>M: verify_agent with agentIdentifier
+  A->>R: NFT live? one holder? key address? canonical escrow? https endpoint?
+  A-->>C: ok, or the exact reasons
+  C->>M: pay_x402 with escrow
+  M->>S: GET resource
+  S-->>M: 402 with signed terms claiming agentIdentifier
+  A->>R: verify the claim: holder key hash equals the terms' signer, endpoint covers the URL, price matches
+  Note over A: Any failure, including an unreachable registry, refuses the quote. A verified identity is bound into payloadHash.

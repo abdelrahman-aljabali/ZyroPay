@@ -1,0 +1,43 @@
+appId: ${APP_ID}
+name: Add wallet (create with passkey, watch an address)
+---
+- runFlow: subflows/onboard-simulated.yaml
+- tapOn: "Wallets"
+- assertVisible:
+    id: "wallets-screen"
+# Create: the simulated passkey makes the wallet, then the app registers it.
+- tapOn:
+    id: "wallets-add"
+- tapOn:
+    id: "add-wallet-create"
+- tapOn:
+    id: "create-chain-base-sepolia"
+- tapOn:
+    id: "wallets-create-name"
+- inputText: "Travel"
+- tapOn:
+    id: "wallets-create-submit"
+- extendedWaitUntil:
+    visible: "Wallet created with your passkey"
+    timeout: 10000
+- assertVisible: "Travel"
+- back
+# Watch: read only, validated for the chosen chain.
+- tapOn:
+    id: "wallets-add"
+- tapOn:
+    id: "add-wallet-watch"
+- tapOn:
+    id: "watch-chain-solana-devnet"
+- tapOn:
+    id: "wallets-watch-address"
+- inputText: "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T"
+- tapOn:
+    id: "wallets-watch-name"
+- inputText: "Cold storage"
+- tapOn:
+    id: "wallets-watch-submit"
+- extendedWaitUntil:
+    visible: "Cold storage"
+    timeout: 10000
+- assertVisible: "Watch only — can't send or be used by agents"

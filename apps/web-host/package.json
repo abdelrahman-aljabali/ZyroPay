@@ -1,0 +1,18 @@
+{
+  "name": "@zyropay/web-host",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static hosting of the ZyroPay web app (Expo web export) on Cloudflare Workers static assets. Owner: Mobile.",
+  "scripts": {
+    "build:web": "node scripts/build.mjs",
+    "preview": "wrangler dev --port 8085",
+    "check:deploy": "wrangler deploy --dry-run --env staging && wrangler deploy --dry-run --env production",
+    "deploy": "echo \"Deploy with an environment: deploy:staging or deploy:production (docs/DEPLOY.md)\" && exit 1",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production"
+  },
+  "devDependencies": {
+    "wrangler": "catalog:"
+  }
+}

@@ -1,0 +1,50 @@
+---
+/*
+ * Networks, in one line: the demo runs on Cardano Preprod; the same approval screen covers the
+ * other live test networks. Marks are official files listed in src/lib/networks.json with their
+ * sources (docs/BRAND_ASSETS.md), shown unaltered on plain plates.
+ */
+import networks from "../lib/networks.json";
+
+interface Net {
+  name: string;
+  slug: string;
+  file: string | null;
+  live: boolean;
+  plate: "dark" | "white" | "none";
+}
+
+const live = (networks as Net[]).filter((n) => n.live);
+const cardano = live.find((n) => n.slug === "cardano");
+const others = live.filter((n) => n.slug !== "cardano");
+---
+
+<section class="s-netline" id="networks" aria-label="Networks">
+  <p>
+    <span class="s-netline__lead">
+      {
+        cardano?.file ? (
+          <span class="s-netplate s-netplate--cardano">
+            <img src={cardano.file} alt="" width="16" height="16" loading="lazy" />
+          </span>
+        ) : null
+      }
+      Runs on Cardano Preprod.
+    </span>
+    <span class="s-netline__rest">
+      The same approval screen also works on
+      {
+        others.map((n, i) => (
+          <span class="s-netline__net">
+            <span class:list={["s-netplate", { "s-netplate--white": n.plate === "white" }]}>
+              {n.file ? <img src={n.file} alt="" width="16" height="16" loading="lazy" /> : null}
+            </span>
+            {n.name}
+            {i < others.length - 2 ? "," : i === others.length - 2 ? " and" : ""}
+          </span>
+        ))
+      }
+      test networks.
+    </span>
+  </p>
+</section>

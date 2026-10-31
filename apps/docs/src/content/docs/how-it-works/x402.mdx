@@ -1,0 +1,99 @@
+---
+title: "4. Paying with x402 on Cardano"
+description: "How ZyroPay pays an HTTP 402 resource on Cardano with the x402 exact scheme. What it checks in the seller's requirements, how the signed payment is handed back through the agent, and why its own transaction builder is compatible with the official facilitator."
+---
+
+import Diagram from "../../../components/Diagram.astro";
+import Status from "../../../components/Status.astro";
+import ExplorerChecks from "../../../components/ExplorerChecks.astro";
+
+[x402](https://www.x402.org/) turns HTTP's `402 Payment Required` into a payment protocol: the
+server answers 402 with machine-readable requirements, and the client retries with a payment. On
+Cardano, ZyroPay uses x402 version 2 with the **exact** scheme: a transfer of exactly the quoted
+amount to the quoted `payTo` address, valid for at most the quoted time. The agent asks; ZyroPay
+builds and checks the transaction; you sign; the seller's facilitator submits it.
+
+<Diagram
+  name="x402-direct"
+  alt="Sequence diagram of a direct x402 payment on Cardano, steps 1 to 14, as described in the list below."
+  caption="A direct x402 payment on Cardano preprod. Numbers match the list below."
+/>
+
+1. The agent calls `pay_x402` with the resource URL, the network (`cardano-preprod`), the asset, the
+   most it accepts (`maxAmount`, in lovelace) and an idempotency key.
+2. The MCP worker requests the resource.
+3. The seller answers `402` with a `PAYMENT-REQUIRED` header: `x402Version: 2`, scheme `exact`,
+   network `cardano:preprod`, amount, asset `lovelace`, `payTo`, `maxTimeoutSeconds`, and the
+   resource's exact URL.
+4. The worker passes the requirements to the API, which checks them and the
+   [policy](/how-it-works/policy/), then builds a plain ADA transfer to `payTo` (see below).
+5. The request comes back `PENDING_APPROVAL`.
+6. You approve with your passkey, which signs the transaction body hash
+   ([step 3](/how-it-works/passkey/)). The API attaches the witness and **broadcasts nothing**.
+7. The agent's next `get_approval_status` call sees the payment is ready.
+8. The MCP worker fetches the payment header from the API.
+9. It retries the exact bound URL with `PAYMENT-SIGNATURE` (public https only, no redirects, 64 KiB,
+   90 s). The seller's facilitator verifies the transaction, then the handler runs, and settlement
+   happens only if the handler answers below 400.
+10. The facilitator submits the transaction to Cardano.
+11. The seller answers `200` with the report, `PAYMENT-RESPONSE` (the transaction id) and an
+    `X-Delivery-Receipt` ([step 7](/how-it-works/receipts/)).
+12. The MCP worker reports the delivery to the API: the receipt, verbatim, and its **own** SHA-256 of
+    the body bytes it read.
+13. The request is at `BROADCAST` under the transaction id ZyroPay already knew; the API follows it
+    to `CONFIRMED` and settles the reservation into the ledger.
+14. The agent gets the paid response and the receipt verdict, exactly once.
+
+## What ZyroPay checks before you are asked
+
+From the 402, ZyroPay takes only a requirement it can honour, and refuses the payment otherwise:
+
+- x402 version 2, scheme `exact`, the network the agent named, and the transfer method `default`
+  (or `masumi`, for [escrow](/how-it-works/escrow/)). The `script` method, which would lock funds at
+  an arbitrary script with a server-chosen datum, is always refused. So are sponsored fees.
+- The amount is above zero, at most the agent's `maxAmount`, and at most the deployment's cap
+  (`X402_CAPS`, 5 tADA on staging).
+- `payTo` is a valid key-hash address on that network and not your own address.
+- `maxTimeoutSeconds` is within bounds, and the transaction's validity ends no later than that.
+- The 402's resource URL is the URL the agent asked for (host case and default ports normalized;
+  query order is not). A 402 for another URL is refused.
+
+The terms (`payTo`, amount, asset, URL, method, the raw requirement) go into the payload's plugin
+data, so the `payloadHash` you approve commits to them. The transaction has one output of exactly the
+amount to `payTo`, plus change to you, and no metadata or scripts.
+
+## Our own CBOR, the official facilitator
+
+ZyroPay's API builds Cardano transactions with its own CBOR codec, not the Evolution SDK the
+`@x402/cardano` package uses, so compatibility had to be shown rather than assumed. An offline test
+builds and signs a payment exactly as the API does and runs it through the official
+`@x402/cardano` 2.29.0 facilitator: it verifies (`isValid: true`), the facilitator's transaction id
+equals ZyroPay's body hash, and the transaction is byte-identical after Evolution decodes and
+re-encodes it. Nine negative controls fail as they should. The packages are pinned to 2.29.0 exactly,
+because 2.26 re-encoded the transaction in the facilitator and broke the body hash.
+
+The demo seller runs that facilitator inside its own worker (`FACILITATOR_MODE=embedded`), which
+answers as soon as the transaction is submitted. The hosted preprod facilitator waits for a block
+behind a gateway timeout of about 60 s, so a payment could land while the buyer saw a timeout.
+
+## Proven live
+
+ChatGPT, connected through the ZyroPay MCP connector, bought an address report from the demo seller
+for 2 ADA. The user approved with a passkey; the facilitator submitted; the report arrived with HTTP 200
+and its receipt verified. About 160 s from the request to `CONFIRMED`, most of it the human approval.
+
+<ExplorerChecks id="x402-direct" />
+
+<Status kind="offline" /> The API lifecycle, receipt failures and expiry
+(`apps/api/test/integration/x402-cardano.test.ts`), the paid retry through the real MCP SDK client
+(`apps/mcp/tests/e2e/x402.test.ts`) and facilitator compatibility
+(`apps/seller/test/facilitator-compat.test.ts`).
+
+## Not on other chains yet
+
+x402 payments on Ethereum, Base and Solana are quoted, bound and signed (EVM as an EIP-3009
+authorization signed with the passkey), but not handed to the resource: their `x402.status` is
+`unsupported`. Cardano is the only chain where the agent receives the paid response today.
+
+**Code:** `packages/integrations/src/x402.ts`, `apps/api/src/services/x402.ts`,
+`apps/mcp/src/mcp/x402.ts`, `apps/mcp/src/mcp/x402-delivery.ts`, `apps/seller`.

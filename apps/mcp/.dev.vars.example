@@ -1,0 +1,9 @@
+# Copy to apps/mcp/.dev.vars for `pnpm --filter @zyropay/mcp dev`. Never commit real values.
+INTERNAL_SERVICE_TOKEN=change-me-at-least-32-characters-long
+MCP_OAUTH_COOKIE_SECRET=change-me-at-least-32-characters-long
+# Local API worker (apps/api `wrangler dev`). Deployed workers use the API service binding.
+API_INTERNAL_URL=http://localhost:8787
+
+# Error monitoring (docs/MONITORING.md). Empty = Sentry off.
+SENTRY_DSN_MCP=
+SENTRY_ENVIRONMENT=development

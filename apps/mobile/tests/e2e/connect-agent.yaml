@@ -1,0 +1,43 @@
+# Connect agent: Agents -> Connect -> Claude instructions (MCP URL) -> enter code -> review -> approve.
+appId: ${APP_ID}
+name: Connect agent
+---
+- runFlow: subflows/onboard-simulated.yaml
+- tapOn: "Agents"
+- assertVisible:
+    id: "agents-screen"
+- tapOn:
+    id: "agents-connect"
+- tapOn:
+    id: "connect-client-claude"
+- assertVisible:
+    id: "mcp-url"
+- tapOn:
+    id: "instructions-enter-code"
+- tapOn:
+    id: "claim-code-input"
+- inputText: "ABCD1234"
+- assertVisible: "ABCD-1234"
+- tapOn:
+    id: "claim-continue"
+- extendedWaitUntil:
+    visible:
+      id: "claim-review"
+    timeout: 10000
+- assertVisible: "Connect Claude?"
+- assertVisible: "Check the return address"
+- scrollUntilVisible:
+    element:
+      id: "claim-approve"
+    direction: DOWN
+- tapOn:
+    id: "claim-approve"
+- extendedWaitUntil:
+    visible:
+      id: "claim-success"
+    timeout: 10000
+- tapOn:
+    id: "claim-done"
+- assertVisible:
+    id: "agent-detail"
+- assertVisible: "Always ask"

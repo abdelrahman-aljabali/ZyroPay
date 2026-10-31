@@ -1,0 +1,207 @@
+{
+  "$comment": "Live cycle on Cardano preprod, 2026-10-30, produced by packages/blockchain/scripts/allowance-preprod.ts (--out). Public data only. Refusals were sent to Blockfrost's evaluator only, never to the chain.",
+  "network": "cardano-preprod",
+  "owner": "addr_test1vp728c73kcswazpl89vv44phxrglcksh9fwllqs2hkvr22sg399v3",
+  "agent": "addr_test1vru7fmgv4vyyqfj53t4nvkhgylrh09tlwx89xvpj8qnerhq3yr2xv",
+  "payee": "addr_test1qr954ww3l08ezv7gqk8kddlckaqupe2fkv6shu6len37cn4t54p3mmj5xp74prvahzg5qljdvff6cxucu2lzug775hcs0dkaen",
+  "scriptHash": "2e6f46a3598b59a61bb66fc66360e8104b159d494de56bddaeb9a037",
+  "scriptAddress": "addr_test1wqhx734rtx94nfsmkehuvcmqaqgyk9vaf9x7267a46u6qdcw7x4js",
+  "create": {
+    "txHash": "71ca615d2703dac9df230d2c991c54af9924b08a8cc689885fed99af67cb95f0",
+    "block": "1cd8b0de0d7834471ab0dbf302a82cb26f2069882782922887aa4d765020d9e0",
+    "height": 5354958,
+    "slot": 137720171,
+    "time": "2026-10-30T23:36:11.000Z",
+    "fee": "172365",
+    "validContract": true
+  },
+  "datum": {
+    "agentKeyHash": "f9e4ed0cab084026548aeb365ae827c777957f718e533032382791dc",
+    "perPaymentMax": "3000000",
+    "periodMs": "86400000",
+    "periodCap": "5000000",
+    "periodStart": "1793403356000",
+    "spentInPeriod": "0",
+    "allowedPayees": [
+      {
+        "kind": "key",
+        "hash": "cb4ab9d1fbcf9133c8058f66b7f8b741c0e549b3350bf35fcce3ec4e"
+      }
+    ],
+    "expiresAt": "1794008156000"
+  },
+  "refusals": [
+    {
+      "name": "over-per-payment-max",
+      "lovelace": "4000000",
+      "payee": "addr_test1qr954ww3l08ezv7gqk8kddlckaqupe2fkv6shu6len37cn4t54p3mmj5xp74prvahzg5qljdvff6cxucu2lzug775hcs0dkaen",
+      "spentBefore": "0",
+      "redeemerIndex": 0,
+      "unsignedTxId": "8600bddc5038071953a633c250945ca28371044ea44314cc1478961aeafc7476",
+      "submitted": false,
+      "evaluation": {
+        "ogmiosV5": {
+          "httpStatus": 200,
+          "result": {
+            "EvaluationFailure": {
+              "ScriptFailures": {}
+            }
+          }
+        },
+        "ogmiosV6": {
+          "httpStatus": 200,
+          "error": {
+            "code": 3010,
+            "message": "Some scripts of the transactions terminated with error(s).",
+            "data": [
+              {
+                "validator": {
+                  "index": 0,
+                  "purpose": "spend"
+                },
+                "error": {
+                  "code": 3012,
+                  "message": "Some of the scripts failed to evaluate to a positive outcome. The field 'data.validationError' informs about the nature of the error, and 'data.traces' lists all the execution traces collected during the script execution.",
+                  "data": {
+                    "validationError": "An error has occurred:\nThe machine terminated because of an error, either from a built-in function or from an explicit use of 'error'.\nCaused by: (error)",
+                    "traces": []
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "unlisted-payee",
+      "lovelace": "2000000",
+      "payee": "addr_test1vru7fmgv4vyyqfj53t4nvkhgylrh09tlwx89xvpj8qnerhq3yr2xv",
+      "spentBefore": "0",
+      "redeemerIndex": 0,
+      "unsignedTxId": "c48043561bb97429a250272d738d30d0c2576a159c40712855c6420fbe5fc381",
+      "submitted": false,
+      "evaluation": {
+        "ogmiosV5": {
+          "httpStatus": 200,
+          "result": {
+            "EvaluationFailure": {
+              "ScriptFailures": {}
+            }
+          }
+        },
+        "ogmiosV6": {
+          "httpStatus": 200,
+          "error": {
+            "code": 3010,
+            "message": "Some scripts of the transactions terminated with error(s).",
+            "data": [
+              {
+                "validator": {
+                  "index": 0,
+                  "purpose": "spend"
+                },
+                "error": {
+                  "code": 3012,
+                  "message": "Some of the scripts failed to evaluate to a positive outcome. The field 'data.validationError' informs about the nature of the error, and 'data.traces' lists all the execution traces collected during the script execution.",
+                  "data": {
+                    "validationError": "An error has occurred:\nThe machine terminated because of an error, either from a built-in function or from an explicit use of 'error'.\nCaused by: (error)",
+                    "traces": []
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "over-period-cap",
+      "lovelace": "2000000",
+      "payee": "addr_test1qr954ww3l08ezv7gqk8kddlckaqupe2fkv6shu6len37cn4t54p3mmj5xp74prvahzg5qljdvff6cxucu2lzug775hcs0dkaen",
+      "spentBefore": "4000000",
+      "redeemerIndex": 0,
+      "unsignedTxId": "bd181ba07d19b4091ff81f4f90ffe6fdd2bcf1d9cb3bc7792e4fccbf0a0f1795",
+      "submitted": false,
+      "evaluation": {
+        "ogmiosV5": {
+          "httpStatus": 200,
+          "result": {
+            "EvaluationFailure": {
+              "ScriptFailures": {}
+            }
+          }
+        },
+        "ogmiosV6": {
+          "httpStatus": 200,
+          "error": {
+            "code": 3010,
+            "message": "Some scripts of the transactions terminated with error(s).",
+            "data": [
+              {
+                "validator": {
+                  "index": 0,
+                  "purpose": "spend"
+                },
+                "error": {
+                  "code": 3012,
+                  "message": "Some of the scripts failed to evaluate to a positive outcome. The field 'data.validationError' informs about the nature of the error, and 'data.traces' lists all the execution traces collected during the script execution.",
+                  "data": {
+                    "validationError": "An error has occurred:\nThe machine terminated because of an error, either from a built-in function or from an explicit use of 'error'.\nCaused by: (error)",
+                    "traces": []
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "agentPays": [
+    {
+      "txHash": "caea37ca0c0f7b035ccef7a4f71c7d940fc641b4658f507cbcdf6fead8f0f5e7",
+      "block": "cead93bd529c7241b0cac4029424c4b008cbab972341a33509bbf4345d4789cc",
+      "height": 5354960,
+      "slot": 137720249,
+      "time": "2026-10-30T23:37:29.000Z",
+      "fee": "291123",
+      "validContract": true,
+      "exUnits": {
+        "mem": "264349",
+        "steps": "106417209"
+      },
+      "plannedFee": "291123",
+      "spentInPeriodAfter": "2000000"
+    },
+    {
+      "txHash": "f3aec34444a1a2e1b92746bf0e604a6011ff3bef6d2a792e0e27d0dbb2c7a2fb",
+      "block": "2053fc7943062d77fd70bd2e9ceec92c10d1d8a85d749a7df4239291c606156f",
+      "height": 5354962,
+      "slot": 137720307,
+      "time": "2026-10-30T23:38:27.000Z",
+      "fee": "291123",
+      "validContract": true,
+      "exUnits": {
+        "mem": "264349",
+        "steps": "106417209"
+      },
+      "plannedFee": "291123",
+      "spentInPeriodAfter": "4000000"
+    }
+  ],
+  "revoke": {
+    "txHash": "e8d6b563b1b595ed15c7f1ba6824a52a96d7f8cef7433eeb226108c48f9b4284",
+    "block": "1913a73ddf74d19fa3484fbf56b67019832a18d5f5316767859f9cc4a65f7c78",
+    "height": 5354963,
+    "slot": 137720358,
+    "time": "2026-10-30T23:39:18.000Z",
+    "fee": "259217",
+    "validContract": true,
+    "exUnits": {
+      "mem": "28095",
+      "steps": "7961098"
+    },
+    "returnedLovelace": "16000000"
+  }
+}

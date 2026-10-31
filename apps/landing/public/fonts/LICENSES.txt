@@ -1,0 +1,15 @@
+Fonts served by the ZyroPay landing page
+=========================================
+
+All fonts are self-hosted (font-src 'self'); nothing is loaded from a font CDN.
+
+inter-var-opsz.woff2
+  Family:  Inter 4 (variable: wght 100-900, opsz 14-32), roman only
+  Source:  @fontsource-variable/inter 5.3.0 (files/inter-latin-opsz-normal.woff2)
+  Upstream: https://github.com/rsms/inter
+  License: SIL Open Font License 1.1, see Inter-OFL.txt
+  Changes: subset to Basic Latin plus a few punctuation marks with fontTools pyftsubset
+           (layout features kept: kern, calt, tnum, pnum, frac, ccmp, locl).
+
+The copyright notice declares no Reserved Font Name, so the OFL allows this subset (modified)
+version to keep its name. The OFL text travels with the font in this folder.

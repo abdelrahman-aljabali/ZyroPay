@@ -1,0 +1,18 @@
+sequenceDiagram
+  autonumber
+  participant C as AI client
+  participant M as ZyroPay MCP
+  participant A as ZyroPay API
+  participant U as You, in the app
+  C->>M: POST /mcp with no token
+  M-->>C: 401 and protected-resource metadata
+  C->>M: OAuth 2.1 authorize with PKCE (S256), resource = /mcp
+  M->>A: create a pending connection
+  A-->>M: user code, for example ABCD-1234
+  M-->>C: consent page shows the code
+  U->>A: enter the code, review client name and redirect URI
+  U->>A: approve, choosing wallets and networks
+  Note over A: New agent: Always Ask, spending off, zero limits, no protocols
+  M->>A: poll the connection
+  A-->>M: approved, with userId and agentId
+  M-->>C: authorization code, then tokens (15 min access, rotating refresh)

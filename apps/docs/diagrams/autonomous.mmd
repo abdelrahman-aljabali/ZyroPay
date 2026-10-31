@@ -1,0 +1,17 @@
+sequenceDiagram
+  autonumber
+  participant U as You, with your passkey
+  participant A as ZyroPay API
+  participant T as Turnkey, your sub-org
+  participant C as AI client
+  U->>A: switch an agent to Autonomous
+  A-->>U: public half of a new P-256 key (private half stored encrypted)
+  U->>T: passkey creates a non-root user holding that key
+  U->>T: passkey creates the policy envelope: chains, recipients, per-payment caps
+  U->>A: save the policy with the stamped envelope request
+  A->>T: forward it unchanged, record the policy ids
+  C->>A: later: send to an allowlisted recipient
+  A->>A: USD per-payment, daily, monthly limits on spent plus reserved, then reserve
+  A->>T: sign with the delegated key
+  Note over T: Turnkey signs only inside the envelope. Cardano and swaps never reach this path.
+  A->>A: check signed bytes against reviewed bytes, broadcast, settle on confirmation

@@ -1,0 +1,51 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "cardano-address-intel",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  // @x402/hono uses the Buffer global; @x402/core references `process`.
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // src/evolution.ts re-exports the real package with a precomputed escrow-script
+  // application (deriving it costs > 2 s CPU on Cloudflare, over the request limit).
+  "alias": { "@evolution-sdk/evolution": "./src/evolution.ts" },
+  // Public URL: https://address-intel.zyropay.online (Cloudflare custom domain; no workers.dev).
+  "routes": [{ "pattern": "address-intel.zyropay.online", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false,
+  // Non-secret vars. Secrets: `wrangler secret put BLOCKFROST_PROJECT_ID`, and optionally
+  // `wrangler secret put SELLER_SIGNING_KEY < .secrets/seller.signing-key` (delivery receipts).
+  // Locally, every value can come from apps/seller/.dev.vars (git-ignored; template: .env.example).
+  "vars": {
+    // payTo: preprod, key-hash payment credential (generated with `pnpm --filter @zyropay/seller wallet seller`).
+    "SELLER_ADDRESS": "addr_test1qr954ww3l08ezv7gqk8kddlckaqupe2fkv6shu6len37cn4t54p3mmj5xp74prvahzg5qljdvff6cxucu2lzug775hcs0dkaen",
+    "FACILITATOR_URL": "https://x402.preprod.dev.ecosyseng.cf-deployments.org",
+    "PRICE_LOVELACE": "2000000",
+    "L1_CONFIRMATIONS": "0",
+    // Escrow route (GET /v1/address-report/escrow, x402 assetTransferMethod "masumi").
+    // Needs SELLER_SIGNING_KEY. Other knobs (see README): ESCROW_MAX_TIMEOUT_SECONDS,
+    // ESCROW_SUBMIT_AFTER_PAYBY_MIN, ESCROW_UNLOCK_AFTER_SUBMIT_MIN,
+    // ESCROW_DISPUTE_AFTER_UNLOCK_MIN, ESCROW_SCAN_PAGES.
+    "ESCROW_PRICE_LOVELACE": "5000000",
+    // Demo policy on preprod: the sweeper authorizes every refund request it finds.
+    "AUTO_AUTHORIZE_REFUNDS": "true",
+    // Masumi registry identity every escrow 402 claims ("Cardano Address Intelligence (x402)",
+    // NFT minted to SELLER_ADDRESS 2026-10-30 23:28 UTC, infrastructure/masumi/EVIDENCE.md §3).
+    "MASUMI_AGENT_IDENTIFIER": "67ab0c92c4ac1610895a1c965ee50aba41a8f1513b15240723b3bd0b10ef4582034c97dbf2d8a68ae186a4cc429a944a77c45c7f4b58c38bf8000000",
+    // OFF by default. "enabled" allows `?demo=tamper|nodelivery` on the escrow route only
+    // (a deliberately dishonest seller, to demo refunds; responses carry X-Demo-Mode).
+    "DEMO_DISHONEST_MODE": "enabled",
+    // Agents hiring agents (README "Sub-hiring"). OFF unless SUBHIRE_ENABLED is "true"; also
+    // needs the secret SELLER_BUYER_MNEMONIC (the seller's small budget wallet).
+    "SUBHIRE_ENABLED": "true",
+    "SPECIALIST_URL": "https://token-intel.zyropay.online",
+    "SPECIALIST_PAY_TO": "addr_test1qzh7pyt3dpfe4a8mtdl03vgtcem259dzg6m7x8sp4kq86lfg4cf5daqs4twh4h6gujv0nhlmhmp65ugesp9wleyf7qvqncwequ",
+    "SUBHIRE_MAX_LOVELACE": "3000000",
+  },
+  // Escrow sweeper: submit pending results, Withdraw after unlock_time, AuthorizeRefund.
+  "triggers": { "crons": ["* * * * *"] },
+  // Escrow delivery records (result hashes awaiting SubmitResult). Created with
+  // `wrangler kv namespace create cardano-address-intel-escrow` (2026-10-30; README "Escrow").
+  "kv_namespaces": [{ "binding": "ESCROW_KV", "id": "d5ac39564e8a4d5bb23a768b62d6887d" }],
+  "dev": { "port": 8790 },
+}

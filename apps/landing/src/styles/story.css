@@ -1,0 +1,966 @@
+/*
+ * The Cardano story: Ask → Decide → Prove, the receipt, the stack strip, the comparison and the
+ * live evidence. Builds on the tokens in site.css. Cardano blue is a network accent only.
+ */
+
+.s {
+  --cardano: #0033ad;
+  --cardano-tint: #8ea6ff;
+  --paper: #fbfaf6;
+  --ink: #16171b;
+  --ink-2: #5c5f66;
+  --stamp-ok: #0b7a45;
+  --stamp-bad: #c4291c;
+}
+
+/* Hero additions ---------------------------------------------------------------------------- */
+.s-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 10px;
+  margin-bottom: 22px;
+  padding: 7px 14px 7px 12px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 500;
+  animation: s-in 1400ms var(--ease) both;
+}
+
+.s-eyebrow__dot,
+.b-net {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cardano-tint);
+  box-shadow: 0 0 0 3px rgb(0 51 173 / 0.45);
+}
+
+/* The receipt arrives after the payment and stamps itself. */
+.rc.s-hero__receipt {
+  position: absolute;
+  z-index: 6;
+  left: -32px;
+  top: max(10%, 84px);
+  width: min(316px, 45%);
+  opacity: 0;
+  transform: translate3d(0, 40px, 0) rotate(-4deg);
+  transition:
+    opacity 500ms ease 250ms,
+    transform 800ms var(--ease) 250ms;
+  pointer-events: none;
+}
+
+.s-hero__receipt[data-hidden="false"] {
+  opacity: 1;
+  transform: rotate(-4deg);
+  pointer-events: auto;
+}
+
+/* Narrower desktops: the same receipt, smaller, so the phone's "Paid" line stays clear. */
+@media (min-width: 1100px) and (max-width: 1399px) {
+  .rc.s-hero__receipt {
+    left: -24px;
+    zoom: 0.86;
+  }
+}
+
+/* Desktop hero only: a tighter receipt, so it sits beside the phone's result, not over it. */
+@media (min-width: 1100px) {
+  .s-hero__receipt .rc__paper {
+    padding-inline: 20px;
+  }
+
+  .s-hero__receipt .rc__item {
+    font-size: 19px;
+  }
+
+  .s-hero__receipt .rc__rows {
+    gap: 6px;
+  }
+
+  .s-hero__receipt .rc__rows div {
+    grid-template-columns: 4.6em minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .s-hero__receipt .rc__rows dt,
+  .s-hero__receipt .rc__rows dd {
+    font-size: 12.5px;
+  }
+
+  .s-hero__receipt .rc__rows dd.rc__mono {
+    font-size: 12px;
+  }
+
+  .s-hero__receipt .rc__perf {
+    margin-inline: -20px;
+  }
+
+  .s-hero__receipt .rc__stamp {
+    font-size: 17px;
+  }
+
+  .s-hero__receipt .rc__verdict {
+    font-size: 13px;
+  }
+}
+
+/* Receipt ---------------------------------------------------------------------------------- */
+.rc {
+  position: relative;
+  margin: 0;
+  filter: drop-shadow(0 28px 40px rgb(0 0 0 / 0.55)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.3));
+}
+
+.rc__paper {
+  --tooth: 7px;
+
+  position: relative;
+  padding: 22px 22px calc(18px + var(--tooth));
+  border-radius: 10px 10px 0 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+  /* Torn-off bottom edge. */
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% /
+    calc(var(--tooth) * 2) 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% /
+    calc(var(--tooth) * 2) 100%;
+}
+
+.rc__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rc__tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ecebe6;
+  letter-spacing: 0.04em;
+}
+
+/* A real run: the tag carries Cardano blue and a live dot. */
+.rc[data-live="true"] .rc__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e7ecfb;
+  color: var(--cardano);
+}
+
+.rc[data-live="true"] .rc__tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.rc__item {
+  margin-top: 8px;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.rc__rows {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 0;
+}
+
+.rc__rows div {
+  display: grid;
+  grid-template-columns: 4.9em minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+}
+
+.rc__rows dt {
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.rc__rows dd {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.rc__mono {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: -0.01em;
+}
+
+.rc__rows dd.rc__mono {
+  font-size: 12.5px;
+}
+
+.rc__rows a {
+  position: relative;
+  color: var(--cardano);
+  font-weight: 600;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* 44px hit area without changing the row rhythm. */
+.rc__rows a::after {
+  content: "";
+  position: absolute;
+  inset: -15px -6px;
+}
+
+.rc__rows div:has(a) {
+  overflow: visible;
+}
+
+.rc__rows dd:has(a) {
+  overflow: visible;
+}
+
+.rc__pending {
+  color: var(--ink-2);
+  font-family: inherit;
+  font-style: italic;
+}
+
+.rc[data-variant="mismatch"][data-stamped="true"] dd[data-bad="true"] {
+  color: var(--stamp-bad);
+  font-weight: 700;
+}
+
+/* Perforation with punched notches on both sides. */
+.rc__perf {
+  position: relative;
+  display: block;
+  height: 0;
+  margin: 16px -22px 14px;
+  border-top: 2px dashed #d8d5cc;
+}
+
+.rc__perf::before,
+.rc__perf::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--notch, #101114);
+}
+
+.rc__perf::before {
+  left: -7px;
+}
+
+.rc__perf::after {
+  right: -7px;
+}
+
+.rc__foot {
+  display: grid;
+  gap: 10px;
+}
+
+.rc__verdict {
+  min-height: 2.8em;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.rc[data-stamped="true"] .rc__verdict {
+  color: var(--stamp-ok);
+  font-weight: 600;
+}
+
+.rc[data-variant="mismatch"][data-stamped="true"] .rc__verdict {
+  color: var(--stamp-bad);
+}
+
+.rc__refund {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--stamp-bad);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.rc__refund:disabled {
+  background: #ecebe6;
+  color: var(--ink-2);
+  cursor: default;
+}
+
+.rc__refund:focus-visible,
+.rc__rows a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.rc__stamp {
+  justify-self: start;
+  margin: 2px 0 0 2px;
+  padding: 6px 12px;
+  border: 3px solid currentColor;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 2px var(--paper),
+    inset 0 0 0 3.5px currentColor;
+  color: var(--stamp-ok);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transform: rotate(-4deg) scale(1.9);
+  pointer-events: none;
+}
+
+/* Before the stamp: an empty dashed frame where it will land. */
+.rc[data-stamped="false"] .rc__stamp {
+  opacity: 1;
+  border: 2px dashed #d3d0c6;
+  box-shadow: none;
+  color: transparent;
+  transform: rotate(-4deg);
+}
+
+.rc[data-variant="mismatch"] .rc__stamp {
+  color: var(--stamp-bad);
+}
+
+.rc[data-stamped="true"] .rc__stamp {
+  opacity: 0.94;
+  transform: rotate(-4deg);
+  animation: rc-stamp 520ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+.s-hero__receipt[data-stamped="true"] .rc__stamp {
+  animation-delay: 1100ms;
+}
+
+.rc[data-stamped="true"] .rc__paper {
+  animation: rc-thud 320ms ease-out both;
+}
+
+.s-hero__receipt[data-stamped="true"] .rc__paper {
+  animation-delay: 1180ms;
+}
+
+@keyframes rc-stamp {
+  0% {
+    opacity: 0;
+    transform: rotate(-9deg) scale(1.9);
+  }
+
+  60% {
+    opacity: 0.94;
+    transform: rotate(-3deg) scale(0.96);
+  }
+
+  100% {
+    opacity: 0.94;
+    transform: rotate(-4deg) scale(1);
+  }
+}
+
+@keyframes rc-thud {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  40% {
+    transform: translateY(2px) scale(0.995);
+  }
+}
+
+/* Ask, Decide, Prove ------------------------------------------------------------------------- */
+.b-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: clamp(40px, 5vw, 64px);
+}
+
+.b-beat {
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.015));
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.b-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.b-step span {
+  color: var(--text-3);
+  font-family: var(--mono);
+  letter-spacing: 0;
+}
+
+.b-title {
+  margin-top: 14px;
+  font-size: clamp(22px, 1.9vw, 28px);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.b-text {
+  margin-top: 10px;
+  color: var(--text-2);
+  font-size: 15.5px;
+  line-height: 1.55;
+}
+
+.b-art {
+  margin-block: auto;
+  padding-top: 32px;
+}
+
+/* 01: the chat bubble */
+.b-ask {
+  display: grid;
+  gap: 10px;
+}
+
+.b-ask__you {
+  justify-self: end;
+  max-width: 88%;
+  margin-bottom: 6px;
+  padding: 12px 16px;
+  border-radius: 20px 20px 6px 20px;
+  background: rgb(255 255 255 / 0.12);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.b-ask__who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.b-ask__bubble {
+  justify-self: start;
+  max-width: 92%;
+  padding: 12px 16px;
+  border-radius: 20px 20px 20px 6px;
+  background: rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.b-ask__req {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: var(--text);
+  color: #0b0c10;
+}
+
+.b-ask__item {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.b-ask__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4a4d55;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 02: the approval card, in the app's own styles */
+.b-device {
+  container-type: inline-size;
+}
+
+.b-app {
+  position: relative;
+  inset: auto;
+  padding: calc(var(--u) * 14);
+  border-radius: calc(var(--u) * 36);
+  background: #ffffff;
+  user-select: auto;
+  -webkit-user-select: auto;
+}
+
+.b-card {
+  margin-top: 0;
+}
+
+.b-card__who {
+  color: var(--text-2);
+  font-size: calc(var(--u) * 16);
+}
+
+.b-card__who b {
+  color: var(--text);
+}
+
+.b-card .zp-amount {
+  margin-top: calc(var(--u) * 10);
+}
+
+.b-card .zp-fiat {
+  font-family: var(--mono);
+  font-size: calc(var(--u) * 15);
+}
+
+/* 03: the receipt and the seller switch */
+.b-prove {
+  display: grid;
+  gap: 18px;
+  --notch: #0d0e11;
+}
+
+.b-seg {
+  justify-self: start;
+}
+
+.b-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  min-height: 44px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.b-again {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* The stack strip ----------------------------------------------------------------------------- */
+.s-strip__row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  margin-top: clamp(40px, 5vw, 64px);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.s-strip__cell {
+  position: relative;
+  padding: 26px 22px 28px;
+  border-left: 1px solid var(--line);
+}
+
+.s-strip__cell:first-child {
+  border-left: 0;
+}
+
+.s-strip__cell.is-ours {
+  background: linear-gradient(180deg, rgb(255 241 222 / 0.14), rgb(255 241 222 / 0.04));
+  box-shadow: inset 0 0 0 1px rgb(255 241 222 / 0.35);
+}
+
+.s-strip__cell.is-net::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--cardano);
+}
+
+.s-strip__role {
+  color: var(--text-3);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.s-strip__cell.is-ours .s-strip__role {
+  color: var(--warm);
+}
+
+.s-strip__tech {
+  margin-top: 8px;
+  font-size: clamp(20px, 1.8vw, 26px);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.s-strip__note {
+  margin-top: 10px;
+  color: var(--text-2);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+/* Comparison ------------------------------------------------------------------------------------ */
+.s-vs__wrap {
+  margin-top: clamp(40px, 5vw, 64px);
+}
+
+.s-vs__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.s-vs__table thead th {
+  padding: 0 24px 18px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  vertical-align: bottom;
+}
+
+.s-vs__table thead th span {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.s-vs__table thead td {
+  width: 22%;
+}
+
+.s-vs__table tbody th {
+  padding: 20px 24px 20px 0;
+  color: var(--text-3);
+  font-size: 14px;
+  font-weight: 600;
+  vertical-align: top;
+}
+
+.s-vs__table tbody td {
+  padding: 20px 24px;
+  color: var(--text-2);
+  vertical-align: top;
+}
+
+.s-vs__table tbody tr {
+  border-top: 1px solid var(--line);
+}
+
+.s-vs__table .is-ours {
+  background: rgb(255 255 255 / 0.04);
+  color: var(--text);
+}
+
+.s-vs__table thead th.is-ours {
+  border-radius: 20px 20px 0 0;
+  padding-top: 20px;
+}
+
+.s-vs__table tbody tr:last-child td.is-ours {
+  border-radius: 0 0 20px 20px;
+}
+
+/* Hack verdict for the dishonest seller */
+.s-verdict--refund {
+  background: rgb(255 197 107 / 0.14);
+  color: var(--amber);
+}
+
+/* Evidence ledger --------------------------------------------------------------------------------- */
+.s-proof__grid .s-artifact--ledger {
+  grid-column: 1 / 8;
+  grid-row: 1 / 3;
+}
+
+.s-proof__grid .s-artifact--hash,
+.s-proof__grid .s-artifact--policy {
+  grid-column: 8 / 13;
+  grid-row: auto;
+}
+
+.s-ledger {
+  display: grid;
+}
+
+.s-ledger li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+}
+
+.s-ledger__label {
+  min-width: 0;
+}
+
+.s-ledger__tx {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: var(--cardano-tint);
+  text-decoration: none;
+}
+
+.s-ledger__tx code {
+  font-family: var(--mono);
+  font-size: 13.5px;
+}
+
+.s-ledger__pending {
+  flex: none;
+  padding: 5px 12px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  color: var(--text-3);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Networks, in one line -------------------------------------------------------------------- */
+.s-netline {
+  padding: clamp(72px, 9vw, 120px) var(--m) 0;
+  text-align: center;
+}
+
+.s-netline p {
+  max-width: 96ch;
+  margin: 0 auto;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 2;
+}
+
+.s-netline__lead {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 6px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.s-netline__net {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 4px;
+  white-space: nowrap;
+}
+
+/* The approval card's Cardano mark: the standalone starburst at 62% of its plate. */
+.zp-plate--cardano img {
+  width: 62%;
+  height: 62%;
+}
+
+/* Tablet and phone ------------------------------------------------------------------------- */
+@media (max-width: 1099px) {
+  .s-eyebrow {
+    display: none;
+  }
+
+  /* On small screens the receipt lands on the phone, in the first viewport. */
+  .rc.s-hero__receipt {
+    top: calc(var(--pw) * 0.2);
+    bottom: auto;
+    left: 50%;
+    width: min(340px, calc(var(--pw) + 24px), calc(100vw - 32px));
+    margin-left: calc(min(340px, calc(var(--pw) + 24px), calc(100vw - 32px)) / -2);
+    transform: translate3d(0, 40px, 0) rotate(-2deg);
+  }
+
+  .s-hero__receipt[data-hidden="false"] {
+    transform: rotate(-2deg);
+  }
+
+  .b-grid {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 560px;
+  }
+
+  .s-strip__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .s-strip__cell {
+    display: grid;
+    grid-template-columns: 7.5em minmax(0, 1fr);
+    gap: 4px 16px;
+    padding: 20px;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .s-strip__cell:first-child {
+    border-top: 0;
+  }
+
+  .s-strip__cell.is-net::before {
+    inset: 0 auto 0 0;
+    width: 3px;
+    height: auto;
+  }
+
+  .s-strip__tech {
+    margin-top: 0;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .s-strip__role {
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .s-strip__note {
+    grid-column: 2;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 719px) {
+  .b-beat {
+    padding: 22px;
+  }
+
+  .s-strip__cell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .s-strip__tech,
+  .s-strip__note,
+  .s-strip__role {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  /* The table becomes one card per row. */
+  .s-vs__table,
+  .s-vs__table tbody,
+  .s-vs__table tr,
+  .s-vs__table th,
+  .s-vs__table td {
+    display: block;
+  }
+
+  .s-vs__table thead {
+    display: none;
+  }
+
+  .s-vs__table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    padding: 16px 0;
+  }
+
+  .s-vs__table tbody th {
+    grid-column: 1 / -1;
+    padding: 0;
+    color: var(--text);
+    font-size: 15px;
+  }
+
+  .s-vs__table tbody td {
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-size: 14.5px;
+  }
+
+  .s-vs__table tbody td::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-3);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .s-vs__table tbody td:not(.is-ours)::before {
+    content: "Hot wallet";
+  }
+
+  .s-vs__table tbody td.is-ours::before {
+    content: "ZyroPay";
+  }
+
+  .s-vs__table tbody tr:last-child td.is-ours {
+    border-radius: 14px;
+  }
+
+  .s-ledger li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 12px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .s-eyebrow,
+  .rc[data-stamped="true"] .rc__stamp,
+  .rc[data-stamped="true"] .rc__paper {
+    animation: none;
+  }
+
+  .s-hero__receipt {
+    transition: opacity 200ms ease;
+  }
+}

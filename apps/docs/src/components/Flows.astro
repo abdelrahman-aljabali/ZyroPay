@@ -1,0 +1,24 @@
+---
+/** The step-by-step flows from src/data/architecture.json, each as a numbered list. */
+import arch from "../data/architecture.json";
+
+const label = new Map(arch.nodes.map((n) => [n.id, n.label]));
+---
+
+{
+  arch.flows.map((flow) => (
+    <>
+      <h2 id={`flow-${flow.id}`}>{flow.title}</h2>
+      <ol class="zp-flow">
+        {flow.steps.map((s) => (
+          <li>
+            <strong class="zp-flow__hop">
+              {label.get(s.from)} → {label.get(s.to)}.
+            </strong>{" "}
+            {s.text} <span class="zp-node__refs">({s.ref})</span>
+          </li>
+        ))}
+      </ol>
+    </>
+  ))
+}

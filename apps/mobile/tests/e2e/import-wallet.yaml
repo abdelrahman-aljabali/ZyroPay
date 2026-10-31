@@ -1,0 +1,64 @@
+appId: ${APP_ID}
+name: Import wallet (simulated, public BIP-39 test vector only)
+# ADR-003. Runs against a mock-mode build (EXPO_PUBLIC_USE_MOCKS=1): typing and pasting are
+# disabled there and only the public test vectors can be imported, so no real secret is
+# ever entered. Not run in CI (needs a simulator/device).
+---
+- runFlow: subflows/onboard-simulated.yaml
+- tapOn: "Wallets"
+- assertVisible:
+    id: "wallets-screen"
+- tapOn:
+    id: "wallets-add"
+- tapOn:
+    id: "add-wallet-import"
+- assertVisible:
+    id: "wallets-import-screen"
+- assertVisible: "Never share your recovery phrase"
+# Recovery phrase: fill the BIP-39 test vector, check the local preview, import.
+- tapOn:
+    id: "import-fill-test"
+- assertVisible: "Valid recovery phrase"
+- tapOn:
+    id: "import-continue"
+- extendedWaitUntil:
+    visible: "HAgk 14Jp MQLg t6rV gv7c BQFJ WFto 5Dqx i472 uT3D Kpqk"
+    timeout: 15000
+- assertVisible: "0x98 58Ef FD23 2B40 33E4 7d90 003D 41EC 34Ec aEda 94"
+# Cardano: opt in and see the honest ADR-002 note.
+- tapOn:
+    id: "import-toggle-cardano"
+- assertVisible:
+    text: ".*Yoroi, Eternl or Daedalus.*"
+- tapOn:
+    id: "import-name"
+- inputText: "Old phone"
+- hideKeyboard
+- tapOn:
+    id: "import-submit"
+- extendedWaitUntil:
+    visible: "Wallet imported (simulated)"
+    timeout: 15000
+- assertVisible: "Old phone"
+- back
+# Private key: the public Hardhat account #0 key.
+- tapOn:
+    id: "wallets-add"
+- tapOn:
+    id: "add-wallet-import"
+- tapOn:
+    id: "import-kind-key"
+- assertVisible: "Never share your private key"
+- tapOn:
+    id: "import-fill-test-evm"
+- assertVisible: "Looks like an EVM key (Ethereum, Base and other EVM chains)."
+- tapOn:
+    id: "import-continue"
+- assertVisible:
+    text: ".*0xf3 9Fd6 e51a ad88.*"
+- tapOn:
+    id: "import-submit"
+- extendedWaitUntil:
+    visible: "Wallet imported (simulated)"
+    timeout: 15000
+- assertVisible: "Imported private key"

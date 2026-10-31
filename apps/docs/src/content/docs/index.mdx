@@ -1,0 +1,116 @@
+---
+title: "ZyroPay"
+description: "A non-custodial wallet where your AI can ask to pay, and you decide. How it works on Cardano with MCP, x402 and Masumi escrow, with every claim tied to a preprod transaction."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+import Stack from "../../components/Stack.astro";
+import Showcase from "../../components/Showcase.astro";
+import TxRef from "../../components/TxRef.astro";
+
+ZyroPay is a non-custodial wallet where your AI can ask to pay, and you decide. An AI assistant
+(Claude, ChatGPT or any MCP client) connects to ZyroPay over OAuth. It can read balances and ask
+for payments, but it holds no key and neither does the server it talks to. Every request is
+checked against the policy you set for that agent, and by default you approve it with your
+passkey on a review of exactly what will be signed. On Cardano, ZyroPay pays HTTP 402 (x402)
+resources directly or into Masumi escrow, verifies the seller's signed delivery receipt, and
+compares the result hash the seller records on chain with the bytes your agent actually
+received.
+
+<Showcase />
+
+## Design in five lines
+
+<ol class="zp-five">
+  <li>The agent asks; it never holds a key, and the MCP server it talks to cannot sign either.</li>
+  <li>
+    Your policy decides first: which tools, wallets, networks, recipients and protocols, what USD
+    limits, escrow above a threshold, registered sellers only.
+  </li>
+  <li>
+    Your passkey signs what you reviewed: the approval is bound to a SHA-256 of the payment's terms,
+    and the API refuses any other bytes.
+  </li>
+  <li>
+    On Cardano the payment is a plain x402 transfer, or a lock in Masumi escrow that the seller
+    collects only after it records a result hash on chain.
+  </li>
+  <li>
+    ZyroPay checks the delivery: the seller's signature over the exact bytes received, and their
+    hash against the on-chain result, so you know when to ask for a refund.
+  </li>
+</ol>
+
+## The stack
+
+<Stack />
+
+ZyroPay is the permission layer. MCP, x402, Masumi and Cardano are open technologies it uses;
+Turnkey holds the keys in secure enclaves, behind your passkey.
+
+## Proven on Cardano preprod
+
+| What happened                                                            | Transaction                     |
+| ------------------------------------------------------------------------ | ------------------------------- |
+| First passkey-signed Cardano send from ZyroPay (1 ADA)                   | <TxRef id="first-send" />       |
+| ChatGPT paid an x402 report through ZyroPay (2 ADA), receipt verified    | <TxRef id="x402-direct" />      |
+| An AI agent paid into Masumi escrow (5 ADA)                              | <TxRef id="escrow-lock" />      |
+| The seller recorded its result hash; ZyroPay's proof: verified           | <TxRef id="escrow-result" />    |
+| The seller collected the escrow after unlock (Withdraw)                  | <TxRef id="seller-collect" />   |
+| The demo seller registered on the Masumi registry (NFT mint)             | <TxRef id="registry" />         |
+| A dishonest seller caught (proof `mismatch`); the passkey-signed refund  | <TxRef id="refund-withdraw" />  |
+| A paid Sokosumi Task (1 tUSDM): our Payment Service collected it         | <TxRef id="sokosumi-collect" /> |
+| A seller hired another agent over x402 while serving the user (1.5 ADA)  | <TxRef id="sub-hire" />         |
+| An off-allowlist send denied; allowed after the user changed the policy  | <TxRef id="policy-allowlist" /> |
+| Auto-pay: ChatGPT paid 2 ADA with no tap, within limits Cardano enforced | <TxRef id="autopay" />          |
+
+Each transaction, with what to check on the explorer, is on the [Evidence](/evidence/) page.
+What is proven live and what only by tests is on [Live vs tested offline](/evidence/coverage/).
+
+## Who it is for
+
+- **People who want their AI to buy things** such as data or API calls, without handing it a
+  wallet, a seed phrase or a card.
+- **Agent builders** who need a payment tool with a human in the loop, limits and an audit trail,
+  over a standard MCP connector.
+- **Sellers of paid APIs** on Cardano who want buyers that pay per request over x402 and can check
+  what they received.
+
+## Status
+
+- **Test networks only.** Cardano preprod, Solana devnet, Ethereum Sepolia and Base Sepolia, at
+  https://app.zyropay.online. Production is not deployed.
+- **Not audited.** No external security review has taken place. The threat model and its open
+  items are in [Security and trust](/security/).
+- **On Cardano, the passkey or an on-chain allowance.** Turnkey cannot bound a Cardano signature
+  with a policy, so an agent pays on Cardano only with your passkey approval, or with no tap from
+  an allowance you created with your passkey, whose limits the Cardano ledger enforces. See
+  [Autonomous mode](/how-it-works/autonomous/).
+- Everything that is not yet proven live is listed in [Limits and roadmap](/limits/).
+
+## Start here
+
+<CardGrid>
+  <LinkCard
+    title="How it works"
+    description="Ten short pages in reading order, each with a numbered sequence diagram."
+    href="/how-it-works/"
+  />
+  <LinkCard
+    title="Security and trust"
+    description="What you trust, what happens if they lie, and what each party learns."
+    href="/security/trust/"
+  />
+  <LinkCard
+    title="Connect your AI"
+    description="Sign up, connect Claude or ChatGPT, set a policy, approve a payment."
+    href="/guides/users/"
+  />
+  <LinkCard
+    title="Sell to agents"
+    description="An x402 seller on Cardano: 402, receipts, the escrow route."
+    href="/guides/sellers/"
+  />
+</CardGrid>

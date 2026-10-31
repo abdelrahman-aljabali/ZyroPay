@@ -1,0 +1,681 @@
+{
+  "$comment": "Live evidence on Cardano preprod, rendered by src/components/Evidence*.astro and TxRef.astro. Append a run by filling txHash (64 lowercase hex, copied from the explorer) plus block, feeLovelace and the checks you made. Never invent a hash: an item with txHash null renders as 'Awaiting live run'. Facts below were read back from Koios preprod tx_info on 2026-10-30 and 2026-10-31.",
+  "explorer": {
+    "cardano-preprod": "https://preprod.cardanoscan.io/transaction/"
+  },
+  "items": [
+    {
+      "id": "first-send",
+      "title": "First passkey-signed Cardano send",
+      "network": "cardano-preprod",
+      "txHash": "081800083252d4c1a46ebb7afc53ba1dd61c02847b7b219d01c5f2868eef1ace",
+      "block": 5353436,
+      "time": "2026-10-30T14:03:30Z",
+      "feeLovelace": "167349",
+      "amount": "1 ADA to the demo seller",
+      "latency": null,
+      "what": "A plain send from the web app. The user's passkey signed the transaction body hash (SIGN_RAW_PAYLOAD_V2); the API attached the witness and broadcast through Blockfrost. The first Cardano transaction ZyroPay ever submitted.",
+      "page": "/how-it-works/passkey/",
+      "checks": [
+        [
+          "Input",
+          "One UTxO from the user's enterprise address addr_test1vqj6…3wa (no stake part, ADR-002)"
+        ],
+        ["Output #0", "1 ADA to the demo seller addr_test1qr954…kaen"],
+        ["Output #1", "Change back to the sender's address"],
+        ["Fee", "0.167349 ADA (271-byte transaction)"],
+        ["Validity", "An upper bound (TTL) only"],
+        ["Scripts, metadata", "None. One vkey witness."]
+      ]
+    },
+    {
+      "id": "x402-direct",
+      "title": "AI-paid x402 report, direct",
+      "network": "cardano-preprod",
+      "txHash": "83ecc5742fafb0a332032c9b11902f54e2dcc71262843e6592103680c79d787b",
+      "block": 5353756,
+      "time": "2026-10-30T15:59:52Z",
+      "feeLovelace": "167349",
+      "amount": "2 ADA to the seller's payTo",
+      "latency": "About 160 s from the agent's request to CONFIRMED, including the human approval",
+      "what": "ChatGPT, connected through the ZyroPay MCP connector, called pay_x402 for the address report. The user approved with a passkey; the seller's facilitator submitted the transaction; the report came back with HTTP 200 and its delivery receipt verified.",
+      "page": "/how-it-works/x402/",
+      "checks": [
+        ["Input", "One UTxO from the same user address addr_test1vqj6…3wa"],
+        ["Output #0", "Exactly 2 ADA (the 402's amount) to payTo addr_test1qr954…kaen"],
+        ["Output #1", "Change to the sender"],
+        ["Validity", "TTL 489 slots after inclusion: inside the 402's maxTimeoutSeconds (600)"],
+        ["Fee", "0.167349 ADA"],
+        ["Scripts, metadata", "None. A plain transfer: the x402 exact scheme"]
+      ]
+    },
+    {
+      "id": "escrow-lock",
+      "title": "AI-paid lock into Masumi escrow",
+      "network": "cardano-preprod",
+      "txHash": "630f20122b624f2e7960d8ad5e1c037b299f12bf4cd97d078f91dba41243c653",
+      "block": 5353819,
+      "time": "2026-10-30T16:25:09Z",
+      "feeLovelace": "187589",
+      "amount": "5 ADA locked at the escrow script",
+      "latency": "About 130 s from the agent's request to the lock, including the human approval",
+      "what": "The agent paid the escrow route of the same seller. ZyroPay verified the seller-signed terms, built the inline datum, bound it into the payload hash, and the user's passkey signed the lock.",
+      "page": "/how-it-works/escrow/",
+      "checks": [
+        [
+          "Output #0",
+          "Exactly 5 ADA to the Masumi V2 escrow script addr_test1wzs4e6…37w4g, with an inline datum"
+        ],
+        ["Datum: buyer", "Payment key hash 25a18eb6… (the user's address)"],
+        ["Datum: seller", "Payment key hash cb4ab9d1… (the seller's address)"],
+        ["Datum: state", "FundsLocked (constructor 0), result_hash empty"],
+        [
+          "Datum: deadlines",
+          "payBy 16:28:38, submitResult 16:38:38, unlock 16:53:38, external dispute 17:08:38 (UTC)"
+        ],
+        ["Validity", "TTL = payBy rounded down to a slot (137694518)"],
+        ["Output #1", "Change to the user; no script runs at lock time"],
+        ["Fee", "0.187589 ADA (731-byte transaction)"]
+      ]
+    },
+    {
+      "id": "escrow-result",
+      "title": "Seller's on-chain SubmitResult, proof verified",
+      "network": "cardano-preprod",
+      "txHash": "ee7b142e7306e1ecce7fb57f1da3c904f6a1c372eaacf3c471f581f5db865361",
+      "block": 5353820,
+      "time": "2026-10-30T16:25:30Z",
+      "feeLovelace": "688128",
+      "amount": "5 ADA stays in escrow",
+      "latency": "21 s after the lock, in the next block",
+      "what": "The seller recorded result_hash = SHA-256 of the report it delivered. ZyroPay compared it with the SHA-256 the MCP worker computed over the bytes the agent received: equal, so the proof state is verified.",
+      "page": "/how-it-works/proof/",
+      "checks": [
+        ["Inputs", "The escrow UTxO 630f2012…#0 (5 ADA, script) and a 20 ADA seller UTxO"],
+        ["Script", "One Plutus V3 execution (the 10,003-byte vested_pay script, inline)"],
+        ["Output #0", "5 ADA back to the escrow, same datum except the fields below"],
+        ["Datum: result_hash", "d80a4d02d13d08a45d4662e432c5a5a6550ac9c2a093549f5dbbd0c6afbfbfce"],
+        ["Datum: state", "ResultSubmitted (constructor 1); seller cooldown set"],
+        ["Collateral", "The same 20 ADA seller UTxO, with a 15 ADA collateral return"],
+        ["Fee", "0.688128 ADA (11,052-byte transaction, paid by the seller)"]
+      ],
+      "proof": {
+        "state": "verified",
+        "onChainHash": "d80a4d02d13d08a45d4662e432c5a5a6550ac9c2a093549f5dbbd0c6afbfbfce"
+      }
+    },
+    {
+      "id": "seller-collect",
+      "title": "Seller collects after unlock_time (Withdraw)",
+      "network": "cardano-preprod",
+      "txHash": "c59d85cf3b906342d70adcdf20247c42a01070fadff642d2b4a3d34814b916d3",
+      "block": 5353887,
+      "time": "2026-10-30T16:54:17Z",
+      "feeLovelace": "642366",
+      "amount": "4.357634 ADA to the seller (5 ADA escrow minus the fee)",
+      "latency": "39 s after unlock_time, within one cron period",
+      "what": "The seller worker's cron sweeper (every minute) saw chain time pass unlock_time and spent the escrow with the Withdraw redeemer. This closes the honest lifecycle of the escrow above: lock, SubmitResult, Withdraw. No ZyroPay component and no passkey is involved; the seller collects alone.",
+      "page": "/how-it-works/escrow/",
+      "checks": [
+        ["Input", "The escrow UTxO ee7b142e…5361#0 (5 ADA at the script, state ResultSubmitted)"],
+        [
+          "Script",
+          "One Plutus V3 spend of the vested_pay script a15ce9d8…14ad, redeemer Constr 0 [] (Withdraw)"
+        ],
+        [
+          "Output #0",
+          "4,357,634 lovelace to the seller addr_test1qr954…kaen; no output back to the escrow"
+        ],
+        [
+          "Validity",
+          "Starts at slot 137696019, after unlock_time (16:53:38 UTC): the script only allows Withdraw then"
+        ],
+        ["Signer", "The seller's payment key (cb4ab9d1…), the key the datum names"],
+        ["Fee", "0.642366 ADA (10,450-byte transaction, the script inline, paid out of the escrow)"]
+      ]
+    },
+    {
+      "id": "registry",
+      "title": "Masumi registry registration (NFT mint)",
+      "network": "cardano-preprod",
+      "txHash": "11dcdf21c55a4eca0d8bddbd3b823785ae19ef84e218e6f93b304c816f1486e9",
+      "block": 5354719,
+      "time": "2026-10-30T22:06:48Z",
+      "feeLovelace": "289014",
+      "amount": "1 registry NFT, held with 5 ADA by the selling wallet",
+      "latency": null,
+      "what": "Our own Masumi Payment Service (0.29.0, Docker) minted the registry entry for Cardano Address Intelligence from its selling wallet. The NFT's asset id is the agentIdentifier; its metadata points Sokosumi and other Masumi buyers at the MIP-003 endpoint https://masumi-agent.zyropay.online, at a fixed 1 tUSDM.",
+      "page": "/guides/sellers/",
+      "checks": [
+        [
+          "Mint",
+          "1 asset under the Masumi V2 registry policy 67ab0c92…bd0b, mint redeemer Constr 0 []"
+        ],
+        [
+          "agentIdentifier",
+          "67ab0c92…bd0b106fe284…8f000000 (policy id followed by the asset name)"
+        ],
+        ["Output #0", "The NFT with 5 ADA to the selling wallet addr_test1qr44th…c2xv"],
+        ["Metadata 674", "msg: Masumi, RegisterAgent"],
+        [
+          "Metadata 721",
+          "name Cardano Address Intelligence, author ZyroPay, api_base_url https://masumi-agent.zyropay.online"
+        ],
+        ["Fee", "0.289014 ADA (2,922-byte transaction)"]
+      ]
+    },
+    {
+      "id": "registry-x402",
+      "title": "Masumi registry entry held by the x402 seller's key",
+      "network": "cardano-preprod",
+      "txHash": "1c3755b9f7a705651a6871267c7a3b20d654e76d0c1ecf3b0d05301abbbd55d9",
+      "block": 5354940,
+      "time": "2026-10-30T23:28:16Z",
+      "feeLovelace": "290862",
+      "amount": "1 registry NFT with 5 ADA to the x402 seller's payTo",
+      "latency": null,
+      "what": "A second registry entry, \"Cardano Address Intelligence (x402)\", minted by our Payment Service from its selling wallet straight to the x402 seller's payTo (recipientWalletAddress). The key that signs the seller's escrow terms now holds the NFT, and every escrow 402 claims this agentIdentifier. ZyroPay's quote check (verifySeller, then quoteMasumiEscrow on the live 402) passes with no reasons and binds the registered name.",
+      "page": "/guides/sellers/",
+      "checks": [
+        [
+          "Mint",
+          "1 asset under the Masumi V2 registry policy 67ab0c92…bd0b, mint redeemer Constr 0 []"
+        ],
+        [
+          "agentIdentifier",
+          "67ab0c92…bd0b10ef4582…bf8000000 (policy id followed by the asset name)"
+        ],
+        [
+          "Output #0",
+          "The NFT with 5 ADA to the seller's payTo addr_test1qr954…kaen (payment key hash cb4ab9d1…, the key in the escrow datum)"
+        ],
+        ["Input", "One UTxO of the Payment Service selling wallet addr_test1qr44th…c2xv"],
+        ["Metadata 674", "msg: Masumi, RegisterAgent"],
+        [
+          "Metadata 721",
+          "name Cardano Address Intelligence (x402), author ZyroPay, api_base_url https://address-intel.zyropay.online, Fixed 5 ADA (asset \"\") on the V2 escrow addr_test1wzs4e6…37w4g"
+        ],
+        ["Fee", "0.290862 ADA (2,964-byte transaction)"]
+      ]
+    },
+    {
+      "id": "sokosumi",
+      "title": "Sokosumi pays a Task into Masumi escrow (tUSDM)",
+      "network": "cardano-preprod",
+      "txHash": "b786f50dcd8e4500cb0ffd8863fb95646766a683e6858cfce242ef4e3dee0beb",
+      "block": 5354932,
+      "time": "2026-10-30T23:25:00Z",
+      "feeLovelace": "237573",
+      "amount": "1 tUSDM locked for our agent, with 4.46947 ADA",
+      "latency": "About 72 s after our Payment Service created the payment request",
+      "what": "Sokosumi Task 01a18f20…99c6 (\"Paid address check\") on the ZyroPay Coworker Cardano Address Intelligence. Our Payment Service signed the terms; Sokosumi's buyer wallet funded the escrow from the workspace's credits, in a batched lock. Output #1 is this Task's purchase.",
+      "page": "/guides/sellers/",
+      "checks": [
+        [
+          "Output #1",
+          "4,469,470 lovelace and 1 tUSDM (1,000,000 units of 16a55b2a…ddde, asset 0014df10 \"tUSDM\") at the escrow addr_test1wzs4e6…37w4g, inline datum"
+        ],
+        ["Datum: agent_identifier", "67ab0c92…bd0b106fe284…8f000000: our MIP-003 registry entry"],
+        [
+          "Datum: input_hash, purchaser id",
+          "9db3d501…804e and 9dacf0e5e62283238cd4, the values of our Payment Service's request"
+        ],
+        ["Datum: state", "FundsLocked (constructor 0), result_hash empty"],
+        [
+          "Datum: deadlines",
+          "payBy 23:28:47, submitResult 23:43:47, unlock 23:59:47, external dispute 00:15:47 (UTC)"
+        ],
+        ["Output #0", "Another Masumi purchase in the same batch, for a different agent"],
+        ["Metadata 674", "msg: Masumi, PaymentBatched"],
+        ["Fee", "0.237573 ADA (1,863-byte transaction, paid by Sokosumi's buyer wallet)"]
+      ]
+    },
+    {
+      "id": "sokosumi-result",
+      "title": "Our Payment Service records the Task's result hash",
+      "network": "cardano-preprod",
+      "txHash": "7c9a5d87cc58689518eb1571b166406a89ab61d75ed116af29f36d00eb9f949d",
+      "block": 5354934,
+      "time": "2026-10-30T23:25:29Z",
+      "feeLovelace": "709922",
+      "amount": "1 tUSDM stays in escrow",
+      "latency": "29 s after the lock",
+      "what": "The worker waited for the confirmed FundsLocked, ran the report, posted it to the Task and had our Payment Service submit its hash. The Task on Sokosumi is COMPLETED with the report.",
+      "page": "/guides/sellers/",
+      "checks": [
+        [
+          "Inputs",
+          "The escrow UTxO b786f50d…0beb#1 and a selling-wallet UTxO holding the registry NFT 67ab0c92…106fe284…8f000000"
+        ],
+        [
+          "Script",
+          "One Plutus V3 spend of vested_pay a15ce9d8…14ad, redeemer Constr 5 [] (SubmitResult)"
+        ],
+        ["Output #0", "4,503,950 lovelace and 1 tUSDM back to the escrow"],
+        ["Datum: result_hash", "a99f7c6a914e27bcd7e0ffec73156361bee9d61b4ab961019483d8ed791b286e"],
+        ["Datum: state", "ResultSubmitted (constructor 1); seller cooldown set"],
+        ["Metadata 674", "msg: Masumi, SubmitResult"],
+        ["Fee", "0.709922 ADA (11,383-byte transaction, paid by our selling wallet)"]
+      ]
+    },
+    {
+      "id": "sokosumi-collect",
+      "title": "Our Payment Service collects the tUSDM after unlock",
+      "network": "cardano-preprod",
+      "txHash": "a8f4a638393bb5a2793e200291d9abde9f2b7d2ed0ad4ade0c290106b270a22c",
+      "block": 5355046,
+      "time": "2026-10-31T00:10:06Z",
+      "feeLovelace": "671515",
+      "amount": "1 tUSDM to our selling wallet; 4.46947 ADA back to Sokosumi's buyer",
+      "latency": "About 10 min after unlock_time (23:59:47 UTC)",
+      "what": "The Payment Service withdrew the escrow once unlock_time passed. The worker then matched this withdrawal on Blockfrost and checked the net receipt at our selling wallet: 1,000,000 tUSDM units. The Task's payment is settled: a Sokosumi hire paid, delivered and collected on chain.",
+      "page": "/guides/sellers/",
+      "checks": [
+        [
+          "Input",
+          "The escrow UTxO 7c9a5d87…949d#0 (1 tUSDM, ResultSubmitted) and a selling-wallet UTxO"
+        ],
+        [
+          "Script",
+          "One Plutus V3 spend of vested_pay, redeemer Constr 0 [] (Withdraw); no output back to the escrow"
+        ],
+        ["Output #0", "1 tUSDM with 1.38351 ADA to our selling wallet addr_test1qr44th…c2xv"],
+        ["Output #1", "4,469,470 lovelace, the lock's ADA, back to Sokosumi's buyer wallet"],
+        ["Validity", "Starts at slot 137721902 (00:05:02 UTC), after unlock_time"],
+        ["Metadata 674", "msg: Masumi, CollectCompleted"],
+        ["Fee", "0.671515 ADA (10,828-byte transaction, paid by our selling wallet)"]
+      ]
+    },
+    {
+      "id": "sub-hire-buyer",
+      "title": "Agent hires agent: the user pays Address Intelligence",
+      "network": "cardano-preprod",
+      "txHash": "ae026a8c7460167ea239ecb7ab29a9506f615edd718ae913388aef3c135abd41",
+      "block": 5355075,
+      "time": "2026-10-31T00:19:45Z",
+      "feeLovelace": "167349",
+      "amount": "2 ADA to the seller's payTo",
+      "latency": null,
+      "what": "The user's ZyroPay passkey wallet paid the direct x402 route of Cardano Address Intelligence for a report on the seller's own address, which holds native tokens. The report came back with HTTP 200, its delivery receipt verified, and it carried a subcontracted token report paid for by the seller (next item).",
+      "page": "/how-it-works/sub-hire/",
+      "checks": [
+        [
+          "Input",
+          "One UTxO of the user's address addr_test1vqj6…3wa (the change of the refund withdrawal bd2fff00…5303)"
+        ],
+        ["Output #0", "Exactly 2 ADA (the 402's amount) to payTo addr_test1qr954…kaen"],
+        ["Output #1", "Change to the sender"],
+        ["Validity", "TTL 480 slots after inclusion: inside the 402's maxTimeoutSeconds (600)"],
+        ["Fee", "0.167349 ADA (271-byte transaction)"],
+        ["Scripts, metadata", "None. A plain transfer: the x402 exact scheme"]
+      ]
+    },
+    {
+      "id": "sub-hire",
+      "title": "Agent hires agent: Address Intelligence pays Token Intelligence",
+      "network": "cardano-preprod",
+      "txHash": "07096aad8afc181c3e813bccc4a777c932ac6477a304165299dad8f66cfb891a",
+      "block": 5355074,
+      "time": "2026-10-31T00:19:10Z",
+      "feeLovelace": "168405",
+      "amount": "1.5 ADA to the specialist's payTo",
+      "latency": "35 s before the buyer's payment settled (one block earlier)",
+      "what": "While building the report, Address Intelligence paid Cardano Token Intelligence over x402 from its own small budget wallet, verified the specialist's delivery receipt and embedded the token report, that receipt and this transaction id under subcontracted. The sub-payment lands before the buyer's payment because the seller works after verifying the buyer's payment and settles it after the work.",
+      "page": "/how-it-works/sub-hire/",
+      "checks": [
+        [
+          "Input",
+          "One UTxO of the seller's budget wallet addr_test1qptxz…xy3z, not its payTo wallet"
+        ],
+        ["Output #0", "Change back to the budget wallet"],
+        [
+          "Output #1",
+          "Exactly 1.5 ADA (the specialist's 402 amount, under the 3 ADA cap) to payTo addr_test1qzh7p…wequ"
+        ],
+        ["Validity", "TTL 597 slots after inclusion"],
+        ["Fee", "0.168405 ADA (295-byte transaction)"],
+        ["Scripts, metadata", "None. A plain transfer: the x402 exact scheme"]
+      ]
+    },
+    {
+      "id": "allowance-create",
+      "title": "Owner locks an agent allowance",
+      "network": "cardano-preprod",
+      "txHash": "71ca615d2703dac9df230d2c991c54af9924b08a8cc689885fed99af67cb95f0",
+      "block": 5354958,
+      "time": "2026-10-30T23:36:11Z",
+      "feeLovelace": "172365",
+      "amount": "20 ADA into the allowance",
+      "latency": null,
+      "what": "The owner key locks 20 ADA at its allowance address with the limits as an inline datum: 3 ADA per payment, 5 ADA per day, one payee, expiry in 7 days. No script runs at creation.",
+      "page": "/architecture/allowance-contract/",
+      "checks": [
+        [
+          "Output #0",
+          "20 ADA to addr_test1wqhx734rtx94nfsmkehuvcmqaqgyk9vaf9x7267a46u6qdcw7x4js with an inline datum: agent f9e4ed0c…91dc, 3000000, 86400000, 5000000, period start, 0, [payee cb4ab9d1…ec4e], expiry"
+        ],
+        ["Signers", "One vkey witness: the owner addr_test1vp72…399v3"],
+        ["Scripts", "None: creation is an ordinary payment"]
+      ]
+    },
+    {
+      "id": "allowance",
+      "title": "Agent pays within an on-chain allowance, no passkey tap",
+      "network": "cardano-preprod",
+      "txHash": "caea37ca0c0f7b035ccef7a4f71c7d940fc641b4658f507cbcdf6fead8f0f5e7",
+      "block": 5354960,
+      "time": "2026-10-30T23:37:29Z",
+      "feeLovelace": "291123",
+      "amount": "2 ADA to the demo seller, from a 20 ADA allowance",
+      "latency": null,
+      "what": "The agent key spends the allowance script (Plutus V3, AgentPay) and pays the x402 seller; the owner did not sign. The validator checked the limits in the datum. Driven by a script with test keys; the same spend from the app is the auto-pay run below.",
+      "page": "/architecture/allowance-contract/",
+      "checks": [
+        [
+          "Input",
+          "The allowance UTxO 71ca615d…95f0#0 (20 ADA at addr_test1wqhx…7x4js, script 2e6f46a3…a037) plus one UTxO of the agent addr_test1vru7…r2xv"
+        ],
+        [
+          "Redeemer",
+          "Spend, Constr 0 (AgentPay); 264,349 memory units, 106,417,209 CPU steps, measured by the evaluator"
+        ],
+        [
+          "Output #0",
+          "18 ADA back to the allowance address, inline datum with spent_in_period = 2000000, every other field unchanged"
+        ],
+        ["Output #1", "2 ADA to the demo seller addr_test1qr954…kaen, the only payee in the datum"],
+        ["Output #2", "The agent's change: the fee came from the agent, not from the allowance"],
+        [
+          "Signers",
+          "Required signer and the only vkey witness: the agent key f9e4ed0c…91dc. No owner signature"
+        ],
+        [
+          "Validity",
+          "Both bounds set: the script reads the period from the lower bound and the expiry from the upper"
+        ]
+      ]
+    },
+    {
+      "id": "allowance-pay-2",
+      "title": "Second allowance payment: the counter reaches 4 of 5 ADA",
+      "network": "cardano-preprod",
+      "txHash": "f3aec34444a1a2e1b92746bf0e604a6011ff3bef6d2a792e0e27d0dbb2c7a2fb",
+      "block": 5354962,
+      "time": "2026-10-30T23:38:27Z",
+      "feeLovelace": "291123",
+      "amount": "2 ADA to the demo seller",
+      "latency": null,
+      "what": "The agent pays again from the continuing allowance output; the datum's counter goes from 2 to 4 ADA. A third 2 ADA payment would pass the 5 ADA cap: the evaluator refused it and it was never submitted.",
+      "page": "/architecture/allowance-contract/",
+      "checks": [
+        ["Input", "The allowance output caea37ca…f5e7#0 (18 ADA)"],
+        ["Output #0", "16 ADA back to the allowance, spent_in_period = 4000000"],
+        ["Signers", "Only the agent key"]
+      ]
+    },
+    {
+      "id": "allowance-revoke",
+      "title": "Owner revokes the allowance",
+      "network": "cardano-preprod",
+      "txHash": "e8d6b563b1b595ed15c7f1ba6824a52a96d7f8cef7433eeb226108c48f9b4284",
+      "block": 5354963,
+      "time": "2026-10-30T23:39:18Z",
+      "feeLovelace": "259217",
+      "amount": "16 ADA back to the owner",
+      "latency": null,
+      "what": "The owner key spends the allowance with the Owner redeemer and takes the remainder back; nothing is left at the script address.",
+      "page": "/architecture/allowance-contract/",
+      "checks": [
+        ["Input", "The allowance output f3aec344…a2fb#0 (16 ADA); the fee comes out of it"],
+        ["Redeemer", "Spend, Constr 1 (Owner); 28,095 memory units, 7,961,098 CPU steps"],
+        ["Output #0", "15.740783 ADA to the owner addr_test1vp72…399v3 (16 ADA minus the fee)"],
+        ["Signers", "Only the owner key; collateral from an owner UTxO"]
+      ]
+    },
+    {
+      "id": "autopay-create",
+      "title": "Auto-pay allowance created in the app, one passkey tap",
+      "network": "cardano-preprod",
+      "txHash": "add08c9fed47e3370c78088676cfc42f846e865f0ddd3e724faec73206e3f8a8",
+      "block": 5356488,
+      "time": "2026-10-31T09:00:26Z",
+      "feeLovelace": "174037",
+      "amount": "155.66391 ADA into the allowance, 5 ADA fee float to the agent key",
+      "latency": null,
+      "what": "In the app's Auto-pay on Cardano screen the user set $5 per payment and a daily cap; the API converted them to lovelace, generated an encrypted agent key for this allowance and built the lock. The app checked the bytes on the device (checkCardanoAllowanceCreateTx) and the user's passkey signed it from addr_test1vqj6…3wa. No script runs at creation.",
+      "page": "/how-it-works/autonomous/",
+      "checks": [
+        ["Input", "One UTxO of the user's passkey wallet addr_test1vqj6…3wa"],
+        [
+          "Output #0",
+          "155.66391 ADA to the user's allowance address addr_test1wrlx29…p9wn04 (script fe651537…1aeb, parameterized by the user's key 25a18eb6…0004), with an inline datum"
+        ],
+        [
+          "Datum: limits",
+          "agent ea987881…e4c3, 25943985 lovelace per payment ($5), window 86400000 ms, 103775940 lovelace per window, period start 2026-10-31 00:00 UTC, spent 0"
+        ],
+        [
+          "Datum: payees",
+          "cb4ab9d1…ec4e (the x402 seller's payTo) and f9e4ed0c…91dc (addr_test1vru7…r2xv, on the agent's recipient allowlist)"
+        ],
+        ["Datum: expiry", "2026-11-07 08:58 UTC, 7 days"],
+        [
+          "Output #1",
+          "Exactly 5 ADA to the agent key addr_test1vr4fs7…e2r7jq: the float for fees and collateral"
+        ],
+        ["Output #2", "Change back to the user"],
+        ["Fee", "0.174037 ADA (423-byte transaction)"],
+        ["Scripts", "None: creation is an ordinary payment"]
+      ]
+    },
+    {
+      "id": "autopay",
+      "title": "ChatGPT pays an x402 report from the allowance, no tap",
+      "network": "cardano-preprod",
+      "txHash": "987cb74358846030b5b5dde30fd07c19fd06a1a5d69033118bf0448b1ff2e93a",
+      "block": 5356540,
+      "time": "2026-10-31T09:16:04Z",
+      "feeLovelace": "293462",
+      "amount": "2 ADA to the seller's payTo, from the allowance",
+      "latency": null,
+      "what": "ChatGPT, through the ZyroPay MCP connector, bought the address report on the direct x402 route. The policy decision was allow with reason AUTO_PAY_ALLOWANCE: nothing went to the phone. The agent key signed a spend of the allowance (AgentPay), the seller's facilitator submitted it, the Plutus V3 validator checked the limits, and the request reached CONFIRMED. The seller's signed delivery receipt verified.",
+      "page": "/how-it-works/autonomous/",
+      "checks": [
+        [
+          "Inputs",
+          "The allowance UTxO add08c9f…f8a8#0 (155.66391 ADA at addr_test1wrlx29…p9wn04) and the agent's float add08c9f…f8a8#1 (5 ADA)"
+        ],
+        [
+          "Redeemer",
+          "Spend, Constr 0 (AgentPay) on script fe651537…1aeb; 274,101 memory units, 110,909,110 CPU steps; valid"
+        ],
+        [
+          "Output #0",
+          "153.66391 ADA back to the allowance address, inline datum with spent_in_period = 2000000, every other field unchanged"
+        ],
+        [
+          "Output #1",
+          "Exactly 2 ADA (the 402's amount) to payTo addr_test1qr954…kaen, a listed payee"
+        ],
+        [
+          "Output #2",
+          "4.706538 ADA back to the agent key: the float minus the fee. The allowance paid no fee"
+        ],
+        ["Collateral", "The agent's float add08c9f…f8a8#1, posted, not spent"],
+        [
+          "Validity",
+          "Both bounds set (slots 137754863 to 137755403); the upper bound is 439 slots after inclusion, inside the 402's maxTimeoutSeconds (600)"
+        ],
+        ["Fee", "0.293462 ADA (2,596-byte transaction, the script inline)"],
+        [
+          "Off chain",
+          "Request 01a1913d-6fe7-7bd5-9b24-def768ce6540: policy allow, AUTO_PAY_ALLOWANCE, CONFIRMED, no approval record"
+        ]
+      ]
+    },
+    {
+      "id": "refund-lock",
+      "title": "Dishonest-seller demo: AI-paid lock, passkey-signed",
+      "network": "cardano-preprod",
+      "txHash": "81f0c109c6494432198ae368883ab3d3091b56a3a8ca15a43e3963597188f29b",
+      "block": 5355031,
+      "time": "2026-10-31T00:05:33Z",
+      "feeLovelace": "190273",
+      "amount": "5 ADA locked at the escrow script",
+      "latency": null,
+      "what": "ChatGPT, through the ZyroPay MCP connector, paid the demo seller's escrow route with its dishonest switch on (demo=tamper). The user's passkey signed the lock from addr_test1vqj6…3wa. The signed terms claim the x402 seller's own registry identity.",
+      "page": "/security/attacks/",
+      "checks": [
+        ["Output #0", "Exactly 5 ADA to the escrow addr_test1wzs4e6…37w4g, with an inline datum"],
+        [
+          "Datum: agent_identifier",
+          "67ab0c92…bd0b10ef4582…bf8000000: the x402 seller's registry entry"
+        ],
+        ["Datum: state", "FundsLocked (constructor 0), result_hash empty"],
+        [
+          "Datum: deadlines",
+          "payBy 00:08:53, submitResult 00:18:53, unlock 00:33:53, external dispute 00:48:53 (UTC)"
+        ],
+        ["Output #1", "Change to the user; no script runs at lock time"],
+        ["Validity", "TTL = payBy rounded down to a slot (137722133)"],
+        ["Fee", "0.190273 ADA (792-byte transaction)"]
+      ]
+    },
+    {
+      "id": "proof-mismatch",
+      "title": "Dishonest seller: the on-chain result does not match the delivery",
+      "network": "cardano-preprod",
+      "txHash": "1d01264b4d25eeabbfbc4d7a604b39fde42b212614cd5d27c25ed5644ebc70b5",
+      "block": 5355033,
+      "time": "2026-10-31T00:05:57Z",
+      "feeLovelace": "690812",
+      "amount": "5 ADA stays in escrow",
+      "latency": "24 s after the lock",
+      "what": "In its tamper mode the seller recorded one result_hash on chain and delivered other bytes. The MCP worker's SHA-256 over what the agent received is 38c36289…a6bc; the datum says 75813c47…aeea. ZyroPay set the proof state to mismatch and recommended a refund, before the seller could collect.",
+      "page": "/how-it-works/proof/",
+      "checks": [
+        ["Inputs", "The escrow UTxO 81f0c109…f29b#0 (5 ADA, script) and a seller UTxO"],
+        [
+          "Script",
+          "One Plutus V3 spend of vested_pay a15ce9d8…14ad, redeemer Constr 5 [] (SubmitResult)"
+        ],
+        ["Output #0", "5 ADA back to the escrow"],
+        ["Datum: result_hash", "75813c4789ee8f465e7cd5de90b683a0fb19822afd9a21da46582283b4c2aeea"],
+        ["Datum: state", "ResultSubmitted (constructor 1); seller cooldown set"],
+        ["Fee", "0.690812 ADA (11,113-byte transaction, paid by the seller)"]
+      ],
+      "proof": {
+        "state": "mismatch",
+        "onChainHash": "75813c4789ee8f465e7cd5de90b683a0fb19822afd9a21da46582283b4c2aeea"
+      }
+    },
+    {
+      "id": "refund",
+      "title": "Refund requested with the passkey (SetRefundRequested)",
+      "network": "cardano-preprod",
+      "txHash": "ef0b0dfecb1f1e9decfff2b8961486a2946516420deef49436a8c351d67f50d5",
+      "block": 5355037,
+      "time": "2026-10-31T00:07:43Z",
+      "feeLovelace": "695215",
+      "amount": "5 ADA stays in escrow",
+      "latency": "106 s after the seller's result",
+      "what": "The user took the refund ZyroPay recommended. The API built and evaluated the Plutus spend, and the passkey signed its body hash. With a result already on chain the escrow becomes Disputed: the seller can no longer collect at unlock; the money moves only if the seller authorizes the refund or, after the dispute time, the Masumi admins decide.",
+      "page": "/how-it-works/escrow/",
+      "checks": [
+        [
+          "Inputs",
+          "The escrow UTxO 1d01264b…70b5#0 and one UTxO of the user's address addr_test1vqj6…3wa"
+        ],
+        ["Script", "One Plutus V3 spend of vested_pay, redeemer Constr 1 [] (SetRefundRequested)"],
+        ["Output #0", "5 ADA back to the escrow, result_hash kept"],
+        ["Datum: state", "Disputed (constructor 3); buyer cooldown set"],
+        [
+          "Collateral",
+          "A pure-ADA UTxO of the user, with a collateral return (taken only if the script failed)"
+        ],
+        ["Fee", "0.695215 ADA (11,061-byte transaction, paid by the user)"]
+      ]
+    },
+    {
+      "id": "refund-authorize",
+      "title": "The seller authorizes the refund (AuthorizeRefund)",
+      "network": "cardano-preprod",
+      "txHash": "fe66b1f7f1575c04f0182a77d990dff0e53fca32c38906fe54cd29af11e8761e",
+      "block": 5355038,
+      "time": "2026-10-31T00:08:15Z",
+      "feeLovelace": "687990",
+      "amount": "5 ADA stays in escrow",
+      "latency": "32 s after the request",
+      "what": "The seller's worker saw the refund request and authorized it with the seller key. The result hash is cleared and the escrow waits for the buyer's withdrawal.",
+      "page": "/how-it-works/escrow/",
+      "checks": [
+        ["Inputs", "The escrow UTxO ef0b0dfe…50d5#0 and a seller UTxO"],
+        ["Script", "One Plutus V3 spend of vested_pay, redeemer Constr 6 [] (AuthorizeRefund)"],
+        ["Output #0", "5 ADA back to the escrow"],
+        ["Datum: state", "RefundAuthorized (constructor 5), result_hash empty"],
+        ["Fee", "0.68799 ADA (11,080-byte transaction, paid by the seller)"]
+      ]
+    },
+    {
+      "id": "refund-withdraw",
+      "title": "The buyer withdraws the refund (WithdrawRefund), passkey-signed",
+      "network": "cardano-preprod",
+      "txHash": "bd2fff00f34ed61642d2327e1c541f4e5d89bc26557618b163984899cdde5303",
+      "block": 5355048,
+      "time": "2026-10-31T00:10:27Z",
+      "feeLovelace": "642818",
+      "amount": "4.357182 ADA back to the user (5 ADA escrow minus the fee)",
+      "latency": "4 min 54 s from the lock to the money back",
+      "what": "The passkey signed the WithdrawRefund spend and the escrow closed with everything going back to the user's address. Proof before release caught the mismatch, and the buyer got the money back on chain; the seller never collected. The seller's status route says \"status\": \"refunded\", closedBy bd2fff00…5303.",
+      "page": "/how-it-works/escrow/",
+      "checks": [
+        [
+          "Input",
+          "Only the escrow UTxO fe66b1f7…761e#0 (5 ADA, RefundAuthorized); the fee comes out of it"
+        ],
+        ["Script", "One Plutus V3 spend of vested_pay, redeemer Constr 3 [] (WithdrawRefund)"],
+        [
+          "Output #0",
+          "4,357,182 lovelace to the user's addr_test1vqj6…3wa; no output back to the escrow"
+        ],
+        ["Collateral", "A pure-ADA UTxO of the user, with a collateral return"],
+        ["Fee", "0.642818 ADA (10,398-byte transaction)"]
+      ]
+    },
+    {
+      "id": "policy-allowlist",
+      "title": "Allowed after the user changed the policy (recipient allowlist)",
+      "network": "cardano-preprod",
+      "txHash": "abc83827a0e4c710bb07c36f11490b1f50f1aa7e2f0939cabe844da4c399c26a",
+      "block": 5355131,
+      "time": "2026-10-31T00:39:41Z",
+      "feeLovelace": "166117",
+      "amount": "1 ADA to addr_test1vru7…2xv",
+      "latency": null,
+      "what": "ChatGPT asked ZyroPay to send 1 tADA to an address that was not on the agent's recipient allowlist. ZyroPay rejected the request at policy time, before anything reached the phone, and rejected a retry the same way; no funds moved. The user then added the address to the allowlist in the app; the next request went to the phone, was approved with the passkey and broadcast. This is that send.",
+      "page": "/how-it-works/policy/",
+      "checks": [
+        [
+          "Input",
+          "One UTxO of the user's address addr_test1vqj6…3wa (the change of ae026a8c…bd41)"
+        ],
+        ["Output #0", "Change to the sender"],
+        [
+          "Output #1",
+          "Exactly 1 ADA to addr_test1vru7fmgv4vyyqfj53t4nvkhgylrh09tlwx89xvpj8qnerhq3yr2xv"
+        ],
+        ["Validity", "An upper bound (TTL) only"],
+        ["Fee", "0.166117 ADA (243-byte transaction)"],
+        ["Scripts, metadata", "None. One vkey witness."]
+      ]
+    },
+    {
+      "id": "refund-not-delivered",
+      "title": "Refund after the deadline, no result on chain (not_delivered)",
+      "network": "cardano-preprod",
+      "txHash": null,
+      "page": "/how-it-works/escrow/",
+      "what": "The seller never records a result; after the submit deadline the buyer withdraws the escrow without the seller's authorization."
+    }
+  ]
+}

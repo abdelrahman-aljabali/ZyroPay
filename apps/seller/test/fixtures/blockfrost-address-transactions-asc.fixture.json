@@ -1,0 +1,13 @@
+{
+  "_fixture": "FIXTURE (synthetic test data in the documented Blockfrost response shape; not real chain data)",
+  "_endpoint": "GET /addresses/{address}/transactions?order=asc&count=1",
+  "_shape": "address_transactions_content",
+  "body": [
+    {
+      "tx_hash": "0146ea4a167c82bac0a083081ce6821c32a84ede4b32fb08857f362742a4541b",
+      "tx_index": 3,
+      "block_height": 3200000,
+      "block_time": 1772353800
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "_fixture": "FIXTURE (synthetic test data in the documented Blockfrost response shape; not real chain data)",
+  "_endpoint": "GET /addresses/{address}",
+  "_shape": "address_content",
+  "body": {
+    "address": "addr_test1qqg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyfzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3qwzdgzn",
+    "amount": [
+      {
+        "unit": "lovelace",
+        "quantity": "1520000000"
+      },
+      {
+        "unit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa74657374746f6b656e",
+        "quantity": "1000"
+      },
+      {
+        "unit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa6f74686572",
+        "quantity": "5"
+      },
+      {
+        "unit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "quantity": "1"
+      }
+    ],
+    "stake_address": "stake_test1uq3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsw4fsh7",
+    "type": "shelley",
+    "script": false
+  }
+}

@@ -1,0 +1,11 @@
+flowchart LR
+  H["X-Delivery-Receipt<br/>(seller, verbatim)"] --> V
+  B["SHA-256 of the body bytes<br/>(computed by the MCP worker)"] --> V
+  T["What was paid<br/>(stored by the API)"] --> V
+  V{API verifier} --> K1["blake2b-224(publicKey) is the<br/>paid address's payment key hash"]
+  V --> K2["names the paid URL, payTo<br/>and payment transaction"]
+  V --> K3["contentSha256 equals<br/>the buyer's own hash"]
+  V --> K4["Ed25519 signature valid"]
+  K1 & K2 & K3 & K4 --> OK["Delivery verified,<br/>signed by the seller you paid"]
+  classDef ok fill:{{okBg}},stroke:{{ok}},color:{{text}},stroke-width:1.5px
+  class OK ok
